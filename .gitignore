@@ -1,0 +1,5 @@
+.ninja_deps
+.ninja_log
+x64/
+x86/
+ninja.exe

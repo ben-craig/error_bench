@@ -1,0 +1,79 @@
+ninja_required_version = 1.7
+
+#MY_VC_DIR=C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Tools\MSVC\14.14.26428
+MY_VC_DIR=C:\Program Files (x86)\Microsoft Visual Studio\2017\Professional\VC\Tools\MSVC\14.16.27023
+MY_VC_BIN_DIR=$MY_VC_DIR\bin\Hostx64\x64
+MY_DDK_VER=10.0.17763.0
+MY_DDK_INCLUDE=C:\Program Files (x86)\Windows Kits\10\Include\$MY_DDK_VER
+MY_DDK_LIB=C:\Program Files (x86)\Windows Kits\10\Lib\$MY_DDK_VER
+MY_DDK_BIN=C:\Program Files (x86)\Windows Kits\10\bin\$MY_DDK_VER
+CC="$MY_VC_BIN_DIR\cl.exe"
+LINK_PROG="$MY_VC_BIN_DIR\link.exe"
+
+NO_EH_CCFLAGS= $
+/nologo $
+/showIncludes $
+/c $
+/W3 $
+/WX $
+/GS- $
+/GR $
+/Gy $
+/Gw $
+/EHsc $
+/O2 $
+/MD $
+/I"." $
+/I"$MY_DDK_INCLUDE\ucrt" $
+/I"$MY_DDK_INCLUDE\um" $
+/I"$MY_DDK_INCLUDE\shared" $
+/I"$MY_VC_DIR\include"
+
+EH_CCFLAGS= $
+$NO_EH_CCFLAGS $
+/EHsc
+
+LINK_FLAGS= $
+/nologo $
+/OPT:REF $
+/release $
+/subsystem:CONSOLE $
+/machine:x64 $
+/incremental:no $
+/OPT:ICF $
+/NXCOMPAT $
+/DYNAMICBASE $
+/DEBUG $
+/LIBPATH:"$MY_DDK_LIB\um\x64" $
+/LIBPATH:"$MY_DDK_LIB\ucrt\x64" $
+/LIBPATH:"$MY_VC_DIR\lib\x64" $
+msvcrt.lib $
+kernel32.lib $
+ucrt.lib
+
+rule dummy_dep
+    command = ""
+
+rule eh_compile
+    command = $CC $EH_CCFLAGS /Fo$out $in
+    description = NO_EH_CXX $out
+    deps = msvc
+
+rule no_eh_compile
+    command = $CC $NO_EH_CCFLAGS /Fo$out $in
+    description = NO_EH_CXX $out
+    deps = msvc
+
+rule link
+    command = $LINK_PROG $LINK_FLAGS /OUT:$out $in
+    description = LINK $out
+
+rule map_link
+    command = $LINK_PROG $LINK_FLAGS /MAP:$out.map /OUT:$out $in
+    description = MAP_LINK $out
+
+rule measure
+    command = python3 measure_size.py $in $out
+    description = MEASURE $out
+
+subninja generated_targets_from_gen.rb.ninja
