@@ -3,3 +3,4 @@
 x64/
 x86/
 ninja.exe
+generated_targets_from_gen.rb.ninja

@@ -2,13 +2,16 @@ ninja_required_version = 1.7
 
 #MY_VC_DIR=C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Tools\MSVC\14.14.26428
 MY_VC_DIR=C:\Program Files (x86)\Microsoft Visual Studio\2017\Professional\VC\Tools\MSVC\14.16.27023
-MY_VC_BIN_DIR=$MY_VC_DIR\bin\Hostx64\x64
+x64_MY_VC_BIN_DIR=$MY_VC_DIR\bin\Hostx64\x64
+x86_MY_VC_BIN_DIR=$MY_VC_DIR\bin\Hostx86\x86
 MY_DDK_VER=10.0.17763.0
 MY_DDK_INCLUDE=C:\Program Files (x86)\Windows Kits\10\Include\$MY_DDK_VER
 MY_DDK_LIB=C:\Program Files (x86)\Windows Kits\10\Lib\$MY_DDK_VER
 MY_DDK_BIN=C:\Program Files (x86)\Windows Kits\10\bin\$MY_DDK_VER
-CC="$MY_VC_BIN_DIR\cl.exe"
-LINK_PROG="$MY_VC_BIN_DIR\link.exe"
+x64_CC="$x64_MY_VC_BIN_DIR\cl.exe"
+x64_LINK_PROG="$x64_MY_VC_BIN_DIR\link.exe"
+x86_CC="$x86_MY_VC_BIN_DIR\cl.exe"
+x86_LINK_PROG="$x86_MY_VC_BIN_DIR\link.exe"
 
 NO_EH_CCFLAGS= $
 /nologo $
@@ -33,44 +36,69 @@ EH_CCFLAGS= $
 $NO_EH_CCFLAGS $
 /EHsc
 
-LINK_FLAGS= $
+allproc_LINK_FLAGS= $
 /nologo $
 /OPT:REF $
 /release $
 /subsystem:CONSOLE $
-/machine:x64 $
 /incremental:no $
 /OPT:ICF $
 /NXCOMPAT $
 /DYNAMICBASE $
 /DEBUG $
-/LIBPATH:"$MY_DDK_LIB\um\x64" $
-/LIBPATH:"$MY_DDK_LIB\ucrt\x64" $
-/LIBPATH:"$MY_VC_DIR\lib\x64" $
 msvcrt.lib $
 kernel32.lib $
 ucrt.lib
 
-rule dummy_dep
-    command = ""
+x86_LINK_FLAGS= $
+/machine:x86 $
+/LIBPATH:"$MY_DDK_LIB\um\x86" $
+/LIBPATH:"$MY_DDK_LIB\ucrt\x86" $
+/LIBPATH:"$MY_VC_DIR\lib\x86" $
+$allproc_LINK_FLAGS $
 
-rule eh_compile
-    command = $CC $EH_CCFLAGS /Fo$out $in
-    description = NO_EH_CXX $out
+x64_LINK_FLAGS= $
+/machine:x64 $
+/LIBPATH:"$MY_DDK_LIB\um\x64" $
+/LIBPATH:"$MY_DDK_LIB\ucrt\x64" $
+/LIBPATH:"$MY_VC_DIR\lib\x64" $
+$allproc_LINK_FLAGS $
+
+rule x64_eh_compile
+    command = $x64_CC $EH_CCFLAGS /Fo$out $in
+    description = x64_NO_EH_CXX $out
     deps = msvc
 
-rule no_eh_compile
-    command = $CC $NO_EH_CCFLAGS /Fo$out $in
-    description = NO_EH_CXX $out
+rule x64_no_eh_compile
+    command = $x64_CC $NO_EH_CCFLAGS /Fo$out $in
+    description = x64_NO_EH_CXX $out
     deps = msvc
 
-rule link
-    command = $LINK_PROG $LINK_FLAGS /OUT:$out $in
-    description = LINK $out
+rule x64_link
+    command = $x64_LINK_PROG $x64_LINK_FLAGS /OUT:$out $in
+    description = x64_LINK $out
 
-rule map_link
-    command = $LINK_PROG $LINK_FLAGS /MAP:$out.map /OUT:$out $in
-    description = MAP_LINK $out
+rule x64_map_link
+    command = $x64_LINK_PROG $x64_LINK_FLAGS /MAP:$out.map /OUT:$out $in
+    description = x64_MAP_LINK $out
+
+rule x86_eh_compile
+    command = $x86_CC $EH_CCFLAGS /Fo$out $in
+    description = x86_NO_EH_CXX $out
+    deps = msvc
+
+rule x86_no_eh_compile
+    command = $x86_CC $NO_EH_CCFLAGS /Fo$out $in
+    description = x86_NO_EH_CXX $out
+    deps = msvc
+
+rule x86_link
+    command = $x86_LINK_PROG $x86_LINK_FLAGS /OUT:$out $in
+    description = x86_LINK $out
+
+rule x86_map_link
+    command = $x86_LINK_PROG $x86_LINK_FLAGS /MAP:$out.map /OUT:$out $in
+    description = x86_MAP_LINK $out
 
 rule measure
     command = python3 measure_size.py $in $out
