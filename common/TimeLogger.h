@@ -31,7 +31,7 @@ inline TimeLogger::~TimeLogger()
 
   double count = (double)(stop.QuadPart - start.QuadPart);
   count = count * 1e9 / freq.QuadPart;
-  printf("%.4f\t%s\n", count / ITERATIONS, str);
+  printf("%.4f\n", count / ITERATIONS);
 }
 
 inline void Setup()

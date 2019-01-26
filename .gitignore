@@ -2,5 +2,6 @@
 .ninja_log
 x64/
 x86/
+totals/
 ninja.exe
 generated_targets_from_gen.rb.ninja

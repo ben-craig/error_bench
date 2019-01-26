@@ -23,7 +23,7 @@ def gen_config(file, test_config, proc)
     file.print "    #{proc}\\#{dir}\\callee.obj $\n"
     file.print "    #{proc}\\#{dir}\\dtor.obj\n\n"
 
-    file.print "build #{proc}\\#{dir}\\main.size: measure #{proc}\\#{dir}\\main.exe.map\n\n"
+    file.print "build #{proc}\\#{dir}\\main.size: measure_size #{proc}\\#{dir}\\main.exe.map\n\n"
 
     file.print "build #{proc}\\#{dir}\\bench.exe : #{proc}_link $\n"
     file.print "    #{proc}\\#{dir}\\bench.obj $\n"
@@ -41,14 +41,22 @@ def main()
             end
         end
 
-        h.print "default"
+        h.print "build totals\\sizes.csv: collect_sizes"
         TEST_DIRS.each do |t|
             ["x86", "x64"].each do |proc|
-                h.print " #{proc}\\#{t[:dir]}\\bench.exe"
                 h.print " #{proc}\\#{t[:dir]}\\main.size"
             end
         end
-        h.print "\n"
+        h.print "\n\n"
+        h.print "build totals\\times.csv: collect_benches"
+        TEST_DIRS.each do |t|
+            ["x86", "x64"].each do |proc|
+                h.print " #{proc}\\#{t[:dir]}\\bench.exe"
+            end
+        end
+        h.print "\n\n"
+
+        h.print "default totals\\sizes.csv totals\\times.csv\n"
     end
 end
 

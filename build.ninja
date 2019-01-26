@@ -19,7 +19,6 @@ NO_EH_CCFLAGS= $
 /c $
 /W3 $
 /WX $
-/GS- $
 /GR $
 /Gy $
 /Gw $
@@ -100,8 +99,16 @@ rule x86_map_link
     command = $x86_LINK_PROG $x86_LINK_FLAGS /MAP:$out.map /OUT:$out $in
     description = x86_MAP_LINK $out
 
-rule measure
+rule measure_size
     command = python3 measure_size.py $in $out
-    description = MEASURE $out
+    description = SIZE $out
+
+rule collect_sizes
+    command = python3 concat_files.py $out $in
+    description = COLLECT_SIZES
+
+rule collect_benches
+    command = python3 concat_benches.py $out $in
+    description = COLLECT_BENCHES
 
 subninja generated_targets_from_gen.rb.ninja
