@@ -12,8 +12,9 @@ x64_CC="$x64_MY_VC_BIN_DIR\cl.exe"
 x64_LINK_PROG="$x64_MY_VC_BIN_DIR\link.exe"
 x86_CC="$x86_MY_VC_BIN_DIR\cl.exe"
 x86_LINK_PROG="$x86_MY_VC_BIN_DIR\link.exe"
+DUMPBIN_PROG="$x64_MY_VC_BIN_DIR\dumpbin.exe"
 
-NO_EH_CCFLAGS= $
+CCFLAGS= $
 /nologo $
 /showIncludes $
 /c $
@@ -22,18 +23,12 @@ NO_EH_CCFLAGS= $
 /GR $
 /Gy $
 /Gw $
-/EHsc $
 /O2 $
-/MD $
 /I"." $
 /I"$MY_DDK_INCLUDE\ucrt" $
 /I"$MY_DDK_INCLUDE\um" $
 /I"$MY_DDK_INCLUDE\shared" $
 /I"$MY_VC_DIR\include"
-
-EH_CCFLAGS= $
-$NO_EH_CCFLAGS $
-/EHsc
 
 allproc_LINK_FLAGS= $
 /nologo $
@@ -45,9 +40,6 @@ allproc_LINK_FLAGS= $
 /NXCOMPAT $
 /DYNAMICBASE $
 /DEBUG $
-msvcrt.lib $
-kernel32.lib $
-ucrt.lib
 
 x86_LINK_FLAGS= $
 /machine:x86 $
@@ -63,14 +55,9 @@ x64_LINK_FLAGS= $
 /LIBPATH:"$MY_VC_DIR\lib\x64" $
 $allproc_LINK_FLAGS $
 
-rule x64_eh_compile
-    command = $x64_CC $EH_CCFLAGS /Fo$out $in
-    description = x64_NO_EH_CXX $out
-    deps = msvc
-
-rule x64_no_eh_compile
-    command = $x64_CC $NO_EH_CCFLAGS /Fo$out $in
-    description = x64_NO_EH_CXX $out
+rule x64_compile
+    command = $x64_CC $CCFLAGS $EXTRA_FLAGS /Fo$out $in
+    description = x64_CXX $out
     deps = msvc
 
 rule x64_link
@@ -81,14 +68,9 @@ rule x64_map_link
     command = $x64_LINK_PROG $x64_LINK_FLAGS /MAP:$out.map /OUT:$out $in
     description = x64_MAP_LINK $out
 
-rule x86_eh_compile
-    command = $x86_CC $EH_CCFLAGS /Fo$out $in
-    description = x86_NO_EH_CXX $out
-    deps = msvc
-
-rule x86_no_eh_compile
-    command = $x86_CC $NO_EH_CCFLAGS /Fo$out $in
-    description = x86_NO_EH_CXX $out
+rule x86_compile
+    command = $x86_CC $CCFLAGS $EXTRA_FLAGS /Fo$out $in
+    description = x86_CXX $out
     deps = msvc
 
 rule x86_link
@@ -110,5 +92,9 @@ rule collect_sizes
 rule collect_benches
     command = python3 concat_benches.py $out $in
     description = COLLECT_BENCHES
+
+rule asm_dump
+    command = cmd /c $DUMPBIN_PROG /disasm $in > $out
+    description = ASM_DUMP $out
 
 subninja generated_targets_from_gen.rb.ninja

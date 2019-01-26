@@ -36,7 +36,7 @@ def main():
     args = parser.parse_args()
     result = measure_map_size(args.mapFile)
     with open(args.outputFile, 'w') as fout:
-        fout.write(args.mapFile + "\t" + str(result) + "\n")
+        fout.write(args.mapFile + "," + str(result) + "\n")
 
 if __name__ == '__main__':
     import sys

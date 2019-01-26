@@ -6,7 +6,7 @@ def main():
     with open(sys.argv[1], 'wb') as fout:
         for name in sys.argv[2:]:
             res = subprocess.check_output([name])
-            fout.write((name + "\t").encode('utf-8'))
+            fout.write((name + ",").encode('utf-8'))
             fout.write(res)
 
 if __name__ == '__main__':
