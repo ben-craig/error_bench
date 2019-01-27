@@ -5,6 +5,8 @@ TEST_DIRS = [
     {:dir => "tls_error_struct", :cc_flags => ""},
     {:dir => "return_val", :cc_flags => ""},
     {:dir => "return_struct", :cc_flags => ""},
+    {:dir => "ref_struct", :cc_flags => ""},
+    {:dir => "ref_val", :cc_flags => ""},
 ]
 
 def scrub_name(fname)
