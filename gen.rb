@@ -15,6 +15,14 @@ TEST_DIRS = [
     {:dir => "inc_global\\return_struct", :cc_flags => ""},
     {:dir => "inc_global\\ref_struct", :cc_flags => ""},
     {:dir => "inc_global\\ref_val", :cc_flags => ""},
+    {:dir => "two_func\\wont_throw", :cc_flags => ""},
+    {:dir => "two_func\\may_throw", :cc_flags => "/EHsc"},
+    {:dir => "two_func\\tls_error_val", :cc_flags => ""},
+    {:dir => "two_func\\tls_error_struct", :cc_flags => ""},
+    {:dir => "two_func\\return_val", :cc_flags => ""},
+    {:dir => "two_func\\return_struct", :cc_flags => ""},
+    {:dir => "two_func\\ref_struct", :cc_flags => ""},
+    {:dir => "two_func\\ref_val", :cc_flags => ""},
 ]
 
 def scrub_name(fname)
