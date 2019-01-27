@@ -1,12 +1,20 @@
 TEST_DIRS = [
-    {:dir => "wont_throw", :cc_flags => ""},
-    {:dir => "may_throw", :cc_flags => "/EHsc"},
-    {:dir => "tls_error_val", :cc_flags => ""},
-    {:dir => "tls_error_struct", :cc_flags => ""},
-    {:dir => "return_val", :cc_flags => ""},
-    {:dir => "return_struct", :cc_flags => ""},
-    {:dir => "ref_struct", :cc_flags => ""},
-    {:dir => "ref_val", :cc_flags => ""},
+    {:dir => "simple\\wont_throw", :cc_flags => ""},
+    {:dir => "simple\\may_throw", :cc_flags => "/EHsc"},
+    {:dir => "simple\\tls_error_val", :cc_flags => ""},
+    {:dir => "simple\\tls_error_struct", :cc_flags => ""},
+    {:dir => "simple\\return_val", :cc_flags => ""},
+    {:dir => "simple\\return_struct", :cc_flags => ""},
+    {:dir => "simple\\ref_struct", :cc_flags => ""},
+    {:dir => "simple\\ref_val", :cc_flags => ""},
+    {:dir => "inc_global\\wont_throw", :cc_flags => ""},
+    {:dir => "inc_global\\may_throw", :cc_flags => "/EHsc"},
+    {:dir => "inc_global\\tls_error_val", :cc_flags => ""},
+    {:dir => "inc_global\\tls_error_struct", :cc_flags => ""},
+    {:dir => "inc_global\\return_val", :cc_flags => ""},
+    {:dir => "inc_global\\return_struct", :cc_flags => ""},
+    {:dir => "inc_global\\ref_struct", :cc_flags => ""},
+    {:dir => "inc_global\\ref_val", :cc_flags => ""},
 ]
 
 def scrub_name(fname)
