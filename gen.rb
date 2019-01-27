@@ -2,6 +2,9 @@ TEST_DIRS = [
     {:dir => "wont_throw", :cc_flags => ""},
     {:dir => "may_throw", :cc_flags => "/EHsc"},
     {:dir => "tls_error_val", :cc_flags => ""},
+    {:dir => "tls_error_struct", :cc_flags => ""},
+    {:dir => "return_val", :cc_flags => ""},
+    {:dir => "return_struct", :cc_flags => ""},
 ]
 
 def scrub_name(fname)
