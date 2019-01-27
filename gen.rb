@@ -1,6 +1,7 @@
 TEST_DIRS = [
     {:dir => "wont_throw", :cc_flags => ""},
     {:dir => "may_throw", :cc_flags => "/EHsc"},
+    {:dir => "tls_error_val", :cc_flags => ""},
 ]
 
 def scrub_name(fname)
@@ -16,8 +17,9 @@ class TestCase
         @dest = "#{@proc}\\#{scrub_name(flags)}\\#{@src_info[:dir]}"
         @flags = "    EXTRA_FLAGS = " + @src_info[:cc_flags] + " " + @scenario_cc_flags + "\n"
         @cc = "#{@proc}_compile"
+        @dir = "src\\#{@src_info[:dir]}"
     end
-    def dir; @src_info[:dir]; end
+    def dir; @dir; end
     def proc; @proc; end
     def dest; @dest; end
     def flags; @flags; end
@@ -42,9 +44,9 @@ def gen_config(file, test_case)
     file.print "#===========================================================\n"
     file.print "# #{dest_dir}\n"
     file.print "#===========================================================\n"
-    file.print "build #{dest_dir}\\dtor.obj: #{cc} common\\dtor.cpp\n"
+    file.print "build #{dest_dir}\\dtor.obj: #{cc} src\\common\\dtor.cpp\n"
     file.print cc_flags
-    file.print "build #{dest_dir}\\TimeLogger.obj: #{cc} common\\TimeLogger.cpp\n"
+    file.print "build #{dest_dir}\\TimeLogger.obj: #{cc} src\\common\\TimeLogger.cpp\n"
     file.print cc_flags
     file.print "build #{dest_dir}\\caller.obj: #{cc} #{dir}\\caller.cpp\n"
     file.print cc_flags

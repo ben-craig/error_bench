@@ -24,7 +24,7 @@ CCFLAGS= $
 /Gy $
 /Gw $
 /O2 $
-/I"." $
+/I"src" $
 /I"$MY_DDK_INCLUDE\ucrt" $
 /I"$MY_DDK_INCLUDE\um" $
 /I"$MY_DDK_INCLUDE\shared" $
