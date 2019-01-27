@@ -44,6 +44,8 @@ def gen_config(file, test_case)
     file.print "#===========================================================\n"
     file.print "build #{dest_dir}\\dtor.obj: #{cc} common\\dtor.cpp\n"
     file.print cc_flags
+    file.print "build #{dest_dir}\\TimeLogger.obj: #{cc} common\\TimeLogger.cpp\n"
+    file.print cc_flags
     file.print "build #{dest_dir}\\caller.obj: #{cc} #{dir}\\caller.cpp\n"
     file.print cc_flags
     file.print "build #{dest_dir}\\callee.obj: #{cc} #{dir}\\callee.cpp\n"
@@ -64,7 +66,8 @@ def gen_config(file, test_case)
     file.print "    #{dest_dir}\\bench.obj $\n"
     file.print "    #{dest_dir}\\caller.obj $\n"
     file.print "    #{dest_dir}\\callee.obj $\n"
-    file.print "    #{dest_dir}\\dtor.obj\n\n"
+    file.print "    #{dest_dir}\\dtor.obj $\n"
+    file.print "    #{dest_dir}\\TimeLogger.obj\n\n"
 
     file.print "build #{dest_dir}\\main.exe.asm: asm_dump #{dest_dir}\\main.exe\n"
     file.print "build #{dest_dir}\\bench.exe.asm: asm_dump #{dest_dir}\\bench.exe\n"
@@ -90,9 +93,10 @@ def main()
         each_case do |c|
             h.print " #{c.dest}\\bench.exe"
         end
-        h.print " | totals\\sizes.csv\n\n"
+        h.print "\n\n"
+        h.print "build bench: phony totals\\times.csv\n\n"
 
-        h.print "default totals\\times.csv\n"
+        h.print "default totals\\sizes.csv\n"
     end
 end
 
