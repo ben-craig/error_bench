@@ -1,6 +1,5 @@
 #include <common/TimeLogger.h>
 #include "proto.h"
-#include <Windows.h>
 
 int main()
 {
@@ -9,7 +8,7 @@ int main()
     caller();
     caller2(0);
   }
-  TimeLogger logger(__FUNCTION__);
+  TimeLogger logger;
   for (uint64_t i = 0; i < ITERATIONS; ++i) {
     caller();
     caller2(0);

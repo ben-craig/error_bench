@@ -2,8 +2,7 @@
 #include <stdio.h>
 #include <Windows.h>
 
-TimeLogger::TimeLogger(const char *the_case) :
-  str(the_case)
+TimeLogger::TimeLogger()
 {
   Sleep(0);  //try to avoid time slicing in the middle of a run
   LARGE_INTEGER local_start;
