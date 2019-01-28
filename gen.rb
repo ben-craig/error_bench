@@ -1,12 +1,12 @@
 TEST_DIRS = [
-    {:dir => "simple\\wont_throw", :cc_flags => ""},
-    {:dir => "simple\\may_throw", :cc_flags => "/EHsc"},
-    {:dir => "simple\\tls_error_val", :cc_flags => ""},
-    {:dir => "simple\\tls_error_struct", :cc_flags => ""},
-    {:dir => "simple\\return_val", :cc_flags => ""},
-    {:dir => "simple\\return_struct", :cc_flags => ""},
-    {:dir => "simple\\ref_struct", :cc_flags => ""},
-    {:dir => "simple\\ref_val", :cc_flags => ""},
+#    {:dir => "simple\\wont_throw", :cc_flags => ""},
+#    {:dir => "simple\\may_throw", :cc_flags => "/EHsc"},
+#    {:dir => "simple\\tls_error_val", :cc_flags => ""},
+#    {:dir => "simple\\tls_error_struct", :cc_flags => ""},
+#    {:dir => "simple\\return_val", :cc_flags => ""},
+#    {:dir => "simple\\return_struct", :cc_flags => ""},
+#    {:dir => "simple\\ref_struct", :cc_flags => ""},
+#    {:dir => "simple\\ref_val", :cc_flags => ""},
     {:dir => "inc_global\\wont_throw", :cc_flags => ""},
     {:dir => "inc_global\\may_throw", :cc_flags => "/EHsc"},
     {:dir => "inc_global\\tls_error_val", :cc_flags => ""},
@@ -111,7 +111,7 @@ def main()
         each_case do |c|
             h.print " #{c.dest}\\main.size"
         end
-        h.print "\n\n"
+        h.print " | concat_files.py\n\n"
         h.print "build totals\\times.csv: collect_benches"
         each_case do |c|
             h.print " #{c.dest}\\bench.exe"
