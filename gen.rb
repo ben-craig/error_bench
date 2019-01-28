@@ -98,6 +98,9 @@ def gen_config(file, test_case)
     file.print "build #{dest_dir}\\main.size: measure_size #{dest_dir}\\main.exe.map | $\n"
     file.print "    #{dest_dir}\\main.exe.asm $\n"
     file.print "    #{dest_dir}\\bench.exe.asm\n\n"
+
+    file.print "build #{dest_dir}\\bench_padding: check_asm_padding #{dest_dir}\\bench.exe.asm | $\n"
+    file.print "    check_asm_alignment.py\n"
 end
 
 def main()
@@ -112,11 +115,19 @@ def main()
             h.print " #{c.dest}\\main.size"
         end
         h.print " | concat_files.py\n\n"
+
         h.print "build totals\\times.csv: collect_benches"
         each_case do |c|
             h.print " #{c.dest}\\bench.exe"
         end
         h.print "\n\n"
+
+        h.print "build padding: phony $\n"
+        each_case do |c|
+            h.print " #{c.dest}\\bench_padding"
+        end
+        h.print "\n\n"
+
         h.print "build bench: phony totals\\times.csv\n\n"
 
         h.print "default totals\\sizes.csv\n"

@@ -8,7 +8,7 @@ int main()
     caller();
     caller2(0);
   }
-  TimeLogger logger;
+  NOP_SLED; TimeLogger logger;
   for (uint64_t i = 0; i < ITERATIONS; ++i) {
     caller();
     caller2(0);

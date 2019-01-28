@@ -7,7 +7,7 @@ int main()
   for (uint64_t i = 0; i < WARMUP_ITERATIONS; ++i) {
     caller();
   }
-  TimeLogger logger;
+  NOP_SLED; TimeLogger logger;
   for (uint64_t i = 0; i < ITERATIONS; ++i) {
     caller();
   }
