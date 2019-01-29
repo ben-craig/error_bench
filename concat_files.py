@@ -2,7 +2,7 @@
 import sys
 
 HEADER_STR = \
-    "inc_global,inc_size,two_func,two_size,first_overhead,incr_cost,second_overhead\n"
+    "one_neutral,one_neutral_size,two_neutral,two_neutral_size,first_overhead,incr_cost,second_overhead\n"
 
 def main():
     result_map = {}
@@ -12,13 +12,13 @@ def main():
     with open(sys.argv[1], 'w') as fout:
         fout.write(HEADER_STR)
         for key, value in result_map.items():
-            if "two_func" in key:
+            if "two_neutral" in key:
                 continue
-            two_key = key.replace("inc_global", "two_func")
+            two_key = key.replace("one_neutral", "two_neutral")
             parts = key.split("\\")
             parts[3] = "terminate"
             wont_throw_first_key = "\\".join(parts)
-            wont_throw_second_key = wont_throw_first_key.replace("inc_global", "two_func")
+            wont_throw_second_key = wont_throw_first_key.replace("one_neutral", "two_neutral")
             base_first = int(result_map[wont_throw_first_key])
             base_second = int(result_map[wont_throw_second_key])
             second_value = int(result_map[two_key])
