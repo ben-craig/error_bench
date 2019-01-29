@@ -128,7 +128,8 @@ def gen_config(file, test_case)
     file.print "build #{dest_dir}\\bench.exe.asm: asm_dump #{dest_dir}\\bench.exe\n"
 
     file.print "build #{dest_dir}\\main.size: measure_size #{dest_dir}\\main.exe.map | $\n"
-    file.print "    #{dest_dir}\\main.exe.asm\n"
+    file.print "    #{dest_dir}\\main.exe.asm $\n"
+    file.print "    measure_size.py\n"
 
     file.print "build #{dest_dir}\\bench_padding: check_asm_padding #{dest_dir}\\bench.exe.asm | $\n"
     file.print "    check_asm_alignment.py\n"
