@@ -16,7 +16,7 @@ def main():
                 continue
             two_key = key.replace("inc_global", "two_func")
             parts = key.split("\\")
-            parts[3] = "wont_throw"
+            parts[3] = "terminate"
             wont_throw_first_key = "\\".join(parts)
             wont_throw_second_key = wont_throw_first_key.replace("inc_global", "two_func")
             base_first = int(result_map[wont_throw_first_key])

@@ -1,22 +1,22 @@
 TEST_DIRS = [
-#    {:dir => "simple\\wont_throw", :cc_flags => ""},
-#    {:dir => "simple\\may_throw", :cc_flags => "/EHsc"},
+#    {:dir => "simple\\terminate", :cc_flags => ""},
+#    {:dir => "simple\\throw", :cc_flags => "/EHsc"},
 #    {:dir => "simple\\tls_error_val", :cc_flags => ""},
 #    {:dir => "simple\\tls_error_struct", :cc_flags => ""},
 #    {:dir => "simple\\return_val", :cc_flags => ""},
 #    {:dir => "simple\\return_struct", :cc_flags => ""},
 #    {:dir => "simple\\ref_struct", :cc_flags => ""},
 #    {:dir => "simple\\ref_val", :cc_flags => ""},
-    {:dir => "inc_global\\wont_throw", :cc_flags => ""},
-    {:dir => "inc_global\\may_throw", :cc_flags => "/EHsc"},
+    {:dir => "inc_global\\terminate", :cc_flags => ""},
+    {:dir => "inc_global\\throw", :cc_flags => "/EHsc"},
     {:dir => "inc_global\\tls_error_val", :cc_flags => ""},
     {:dir => "inc_global\\tls_error_struct", :cc_flags => ""},
     {:dir => "inc_global\\return_val", :cc_flags => ""},
     {:dir => "inc_global\\return_struct", :cc_flags => ""},
     {:dir => "inc_global\\ref_struct", :cc_flags => ""},
     {:dir => "inc_global\\ref_val", :cc_flags => ""},
-    {:dir => "two_func\\wont_throw", :cc_flags => ""},
-    {:dir => "two_func\\may_throw", :cc_flags => "/EHsc"},
+    {:dir => "two_func\\terminate", :cc_flags => ""},
+    {:dir => "two_func\\throw", :cc_flags => "/EHsc"},
     {:dir => "two_func\\tls_error_val", :cc_flags => ""},
     {:dir => "two_func\\tls_error_struct", :cc_flags => ""},
     {:dir => "two_func\\return_val", :cc_flags => ""},
@@ -96,8 +96,7 @@ def gen_config(file, test_case)
     file.print "build #{dest_dir}\\bench.exe.asm: asm_dump #{dest_dir}\\bench.exe\n"
 
     file.print "build #{dest_dir}\\main.size: measure_size #{dest_dir}\\main.exe.map | $\n"
-    file.print "    #{dest_dir}\\main.exe.asm $\n"
-    file.print "    #{dest_dir}\\bench.exe.asm\n\n"
+    file.print "    #{dest_dir}\\main.exe.asm\n"
 
     file.print "build #{dest_dir}\\bench_padding: check_asm_padding #{dest_dir}\\bench.exe.asm | $\n"
     file.print "    check_asm_alignment.py\n"
