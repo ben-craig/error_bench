@@ -15,13 +15,14 @@ tl::expected<void, error_struct> callee() {
     return {};
 }
 
-tl::expected<void, error_struct> callee2(int v) {
-    if(global_int + v == INT_MAX)
+tl::expected<void, error_struct> callee2(int amount) {
+    if(global_int + amount == INT_MAX)
     {
         error_struct e;
         e.error = &error_info;
         e.domain = &error_domain;
         return tl::unexpected<error_struct>{e};
     }
+    global_int+=amount;
     return {};
 }

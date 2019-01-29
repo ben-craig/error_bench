@@ -8,4 +8,4 @@ void callee(int &e) {
         return;
     }
 }
-void callee2(int, int &) {}
+void callee2(int amount, int &) {global_int+=amount;}

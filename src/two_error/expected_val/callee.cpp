@@ -8,10 +8,11 @@ tl::expected<void, int> callee() {
     }
     return {};
 }
-tl::expected<void, int> callee2(int v) {
-    if(global_int + v == INT_MAX)
+tl::expected<void, int> callee2(int amount) {
+    if(global_int + amount == INT_MAX)
     {
         return tl::unexpected<int>{1};
     }
+    global_int+=amount;
     return {};
 }

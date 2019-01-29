@@ -12,12 +12,13 @@ void callee() {
         return;
     }
 }
-void callee2(int v) {
-    if(global_int + v == INT_MAX)
+void callee2(int amount) {
+    if(global_int + amount == INT_MAX)
     {
         tls_error_struct_var.error = &error_info;
         tls_error_struct_var.domain = &error_domain;
         return;
     }
+    global_int+=amount;
 }
 thread_local error_struct tls_error_struct_var{};

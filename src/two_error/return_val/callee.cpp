@@ -8,10 +8,11 @@ int callee() {
     }
     return 0;
 }
-int callee2(int v) {
-    if(global_int + v == INT_MAX)
+int callee2(int amount) {
+    if(global_int + amount == INT_MAX)
     {
         return 1;
     }
+    global_int+=amount;
     return 0;
 }

@@ -14,13 +14,14 @@ error_struct callee() {
     }
     return error_struct{};
 }
-error_struct callee2(int v)  {
-    if(global_int + v == INT_MAX)
+error_struct callee2(int amount)  {
+    if(global_int + amount == INT_MAX)
     {
         error_struct e;
         e.error = &error_info;
         e.domain = &error_domain;
         return e;
     }
+    global_int+=amount;
     return error_struct{};
 }

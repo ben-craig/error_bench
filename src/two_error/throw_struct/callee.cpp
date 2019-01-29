@@ -21,4 +21,5 @@ void callee2(int amount) {
         e.domain = &error_domain;
         throw e;
     }
+    global_int+=amount;
 }

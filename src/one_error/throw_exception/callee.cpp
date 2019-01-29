@@ -11,4 +11,4 @@ public:
 };
 
 void callee() {if(global_int == INT_MAX) throw err_exception(1);}
-void callee2(int amount) {}
+void callee2(int amount) {global_int+=amount;}

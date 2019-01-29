@@ -13,4 +13,4 @@ void callee() {
         throw e;
     }
 }
-void callee2(int amount) {}
+void callee2(int amount) {global_int+=amount;}

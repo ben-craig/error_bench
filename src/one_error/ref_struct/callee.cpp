@@ -11,4 +11,4 @@ void callee(error_struct &e) {
         e.domain = &error_domain;
     }
 }
-void callee2(int amount, error_struct &) {}
+void callee2(int amount, error_struct &) {global_int+=amount;}
