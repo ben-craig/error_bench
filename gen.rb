@@ -39,6 +39,18 @@ TEST_DIRS = [
     {:dir => "one_error\\ref_val", :cc_flags => ""},
     {:dir => "one_error\\expected_struct", :cc_flags => ""},
     {:dir => "one_error\\expected_val", :cc_flags => ""},
+    {:dir => "two_error\\terminate", :cc_flags => ""},
+    {:dir => "two_error\\throw_val", :cc_flags => "/EHsc"},
+    {:dir => "two_error\\throw_struct", :cc_flags => "/EHsc"},
+    {:dir => "two_error\\throw_exception", :cc_flags => "/EHsc"},
+    {:dir => "two_error\\tls_error_val", :cc_flags => ""},
+    {:dir => "two_error\\tls_error_struct", :cc_flags => ""},
+    {:dir => "two_error\\return_val", :cc_flags => ""},
+    {:dir => "two_error\\return_struct", :cc_flags => ""},
+    {:dir => "two_error\\ref_struct", :cc_flags => ""},
+    {:dir => "two_error\\ref_val", :cc_flags => ""},
+    {:dir => "two_error\\expected_struct", :cc_flags => ""},
+    {:dir => "two_error\\expected_val", :cc_flags => ""},
 ]
 
 def scrub_name(fname)
