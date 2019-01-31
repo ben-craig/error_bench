@@ -39,34 +39,48 @@ PAST_FUNC = 3
 
 def measure_asm_size(asm_file_name):
     asm_loc = Scanner(r"^  ([0-9A-F]+):(.*)")
-    func = Scanner(r"^[^\s]+:$")
+    func = Scanner(r"^([^\s]+):$")
     state = BEFORE_BEGINNING
     addr = 0
     begin_addr_num = 0
+    cur_func = "???"
+    last_func = "???"
+    addr_after_exit = 0
+    needs_addr_after_exit = False
     result = 0
     with open(asm_file_name, 'r') as fin:
         for line in fin:
             if asm_loc.search(line):
-                if state == PAST_FUNC:
-                    continue
                 addr = int(asm_loc.matches.group(1), 16)
-                if state == BEGIN_FUNC and begin_addr_num != 0:
-                    #previous function was perfectly aligned, measure from here
-                    result = result + (addr - begin_addr_num)
+                if needs_addr_after_exit:
+                    addr_after_exit = addr
+                    needs_addr_after_exit = False
+                if state == BEGIN_FUNC and addr_after_exit != 0:
+                    if last_func != "strpbrk":
+                        size = (addr_after_exit - begin_addr_num)
+                        #print(last_func, size)
+                        result = result + size
                     begin_addr_num = addr
+                    addr_after_exit = 0
                 if begin_addr_num == 0:
                     begin_addr_num = addr
                 state = IN_FUNC
                 instructions = asm_loc.matches.group(2)
-                if instructions.startswith(" CC"):
-                    result = result + (addr - begin_addr_num)
-                    begin_addr_num = 0
-                    state = PAST_FUNC
+                if instructions.endswith(" ret") or (" jmp " in instructions):
+                    needs_addr_after_exit = True
             if func.search(line):
                 state = BEGIN_FUNC
+                last_func = cur_func
+                cur_func = func.matches.group(1)
             if line == "  Summary":
                 if state == IN_FUNC:
-                    result = result + (addr - begin_addr_num)
+                    if addr_after_exit != 0:
+                        size = (addr_after_exit - begin_addr_num)
+                    else:
+                        print ("Bias!", asm_file_name)
+                        size = (addr - begin_addr_num)
+                    #print(cur_func, size)
+                    result = result + size
                 return result
     return result
 
