@@ -1,0 +1,57 @@
+ninja_required_version = 1.7
+
+CC="$x86_MY_VC_BIN_DIR\cl.exe"
+LINK_PROG="$x86_MY_VC_BIN_DIR\link.exe"
+DUMPBIN_PROG="$x64_MY_VC_BIN_DIR\dumpbin.exe"
+
+CCFLAGS= $
+-c $
+-Wall $
+-Wextra $
+-Werror $
+-O2 $
+-ffunction-sections $
+-fdata-sections $
+-static $
+-static-libstdc++ $
+-static-libgcc $
+-I"src" $
+
+LINK_FLAGS= $
+-static $
+-static-libstdc++ $
+-static-libgcc $
+
+rule compile
+    command = $CC $CCFLAGS $EXTRA_FLAGS -o $out $in -MMD -MF $out.d
+    description = CXX $out
+    depfile = $out.d
+    deps = gcc
+
+rule link
+    command = $LINK_PROG $LINK_FLAGS -o $out $in
+    description = LINK $out
+
+rule map_link
+    command = $LINK_PROG $LINK_FLAGS /MAP:$out.map /OUT:$out $in
+    description = MAP_LINK $out
+
+rule measure_size
+    command = python3 measure_size.py $in $out
+    description = SIZE $out
+
+rule collect_sizes
+    command = python3 concat_files.py $out $in
+    description = COLLECT_SIZES
+
+rule collect_benches
+    command = python3 concat_benches.py $out $in
+    description = COLLECT_BENCHES
+
+rule asm_dump
+    command = cmd /c $DUMPBIN_PROG /disasm $in > $out
+    description = ASM_DUMP $out
+
+rule check_asm_padding
+    command = python3 check_asm_alignment.py $in
+    description = ASM_ALIGNMENT $in
