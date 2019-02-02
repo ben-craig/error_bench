@@ -227,6 +227,7 @@ template<typename E>
   #ifdef _MSC_VER
     __assume(0);
   #else
+    (void)e;
     __builtin_unreachable();
   #endif
 #endif
