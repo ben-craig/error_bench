@@ -32,7 +32,7 @@ def measure_map_size(map_file_name):
     return result
 
 def measure_asm_size(asm_file_name):
-    asm_loc = Scanner(r"^  ([0-9a-f]+):\s+((?:\s[0-9a-f][0-9a-f])+)")
+    asm_loc = Scanner(r"^  ([0-9a-f]+):\s+((?:[0-9a-f]{2} ))+")
     func = Scanner(r"^([0-9a-f]+)\s+\<([^>]*)\>:$")
     addr_end = 0
     begin_addr_num = 0
@@ -46,16 +46,16 @@ def measure_asm_size(asm_file_name):
                 addr_end = len(instrs)/3 + addr
             if func.search(line):
                 last_size = (addr_end - begin_addr_num)
-                print(cur_func, last_size)
-                results = results + last_size
+                #print(cur_func, last_size)
+                result = result + last_size
                 begin_addr_num = int(func.matches.group(1), 16)
                 addr_end = begin_addr_num
                 cur_func = func.matches.group(2)
 
     # report the very last function as well
     last_size = (addr_end - begin_addr_num)
-    print(cur_func, last_size)
-    results = results + last_size
+    #print(cur_func, last_size)
+    result = result + last_size
     return result
 
 def main():
