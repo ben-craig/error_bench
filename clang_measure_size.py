@@ -43,7 +43,7 @@ def measure_asm_size(asm_file_name):
             if asm_loc.search(line):
                 addr = int(asm_loc.matches.group(1), 16)
                 instrs = asm_loc.matches.group(2)
-                addr_end = len(instrs)/3 + addr
+                addr_end = int(len(instrs)/3 + addr)
             if func.search(line):
                 last_size = (addr_end - begin_addr_num)
                 #print(cur_func, last_size)

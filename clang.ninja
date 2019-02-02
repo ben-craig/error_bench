@@ -39,7 +39,7 @@ rule measure_size
     description = SIZE $out
 
 rule collect_sizes
-    command = python3 concat_files.py $out $in
+    command = python3 clang_concat_files.py $out $in
     description = COLLECT_SIZES
 
 rule collect_benches

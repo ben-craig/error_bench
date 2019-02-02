@@ -5,20 +5,20 @@ HEADER_STR = \
     "proc,flags,type,case_one,one_size,case_two,two_size,first_overhead,incr_cost,second_overhead\n"
 
 def name_to_pivots(name):
-    return ",".join(name.split("/")[0:2])
+    return "x64,default"
 
 def name_to_error_type(name):
-    return name.split("/")[3]
+    return name.split("/")[2]
 
 def name_to_case(name):
-    return name.split("/")[2]
+    return name.split("/")[1]
 
 def diff(fout, key, value, result_map, substr1, substr2):
     two_key = key.replace(substr1, substr2)
     if two_key not in result_map:
         return
     parts = key.split("/")
-    parts[3] = "terminate"
+    parts[2] = "terminate"
     wont_throw_first_key = "/".join(parts)
     wont_throw_second_key = wont_throw_first_key.replace(substr1, substr2)
     base_first = int(result_map.get(wont_throw_first_key, 0))

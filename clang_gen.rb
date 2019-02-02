@@ -173,7 +173,7 @@ def main()
         each_case do |c|
             h.print " #{c.dest}/main.size"
         end
-        h.print " | concat_files.py\n\n"
+        h.print " | clang_concat_files.py\n\n"
 
         h.print "build totals/times.csv: collect_benches"
         each_case do |c|
