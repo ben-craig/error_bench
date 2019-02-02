@@ -5,21 +5,21 @@ HEADER_STR = \
     "proc,flags,type,case_one,one_size,case_two,two_size,first_overhead,incr_cost,second_overhead\n"
 
 def name_to_pivots(name):
-    return ",".join(name.split("\\")[0:2])
+    return ",".join(name.split("/")[0:2])
 
 def name_to_error_type(name):
-    return name.split("\\")[3]
+    return name.split("/")[3]
 
 def name_to_case(name):
-    return name.split("\\")[2]
+    return name.split("/")[2]
 
 def diff(fout, key, value, result_map, substr1, substr2):
     two_key = key.replace(substr1, substr2)
     if two_key not in result_map:
         return
-    parts = key.split("\\")
+    parts = key.split("/")
     parts[3] = "terminate"
-    wont_throw_first_key = "\\".join(parts)
+    wont_throw_first_key = "/".join(parts)
     wont_throw_second_key = wont_throw_first_key.replace(substr1, substr2)
     base_first = int(result_map.get(wont_throw_first_key, 0))
     base_second = int(result_map.get(wont_throw_second_key, 0))
@@ -48,13 +48,13 @@ def main():
     with open(sys.argv[1], 'w') as fout:
         fout.write(HEADER_STR)
         for key, value in result_map.items():
-            if "\\two_" in key:
-                if "\\two_neutral\\" in key:
-                    diff(fout, key, value, result_map, "\\two_neutral", "\\one_error")
-                if "\\two_error\\" in key:
-                    diff(fout, key, value, result_map, "\\two_error", "\\one_catch")
+            if "/two_" in key:
+                if "/two_neutral/" in key:
+                    diff(fout, key, value, result_map, "/two_neutral", "/one_error")
+                if "/two_error/" in key:
+                    diff(fout, key, value, result_map, "/two_error", "/one_catch")
                 continue
-            diff(fout, key, value, result_map, "\\one_", "\\two_")
+            diff(fout, key, value, result_map, "/one_", "/two_")
 
 if __name__ == '__main__':
     if sys.version_info[0] < 3:
