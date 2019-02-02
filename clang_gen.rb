@@ -95,7 +95,7 @@ class TestCase
         # TODO!!!
         @dest = "#{@proc}/#{scrub_name(flags)}/#{@src_info[:dir]}"
         @flags = "    EXTRA_FLAGS = " + @src_info[:cc_flags] + " " + @scenario_cc_flags + "\n"
-        @cc = "#{@proc}_compile"
+        @cc = "compile"
         @dir = "src/#{@src_info[:dir]}"
     end
     def dir; @dir; end
@@ -109,7 +109,7 @@ def each_case
     ["x64"].each do |proc|
         ["default"].each do |flags|
             TEST_DIRS.each do |t|
-                yield TestCase.new(t, proc, flags)
+                yield TestCase.new(t, proc, "")
             end
         end
     end
@@ -137,13 +137,13 @@ def gen_config(file, test_case)
     file.print cc_flags
 
 
-    file.print "build #{dest_dir}/main.exe | #{dest_dir}/main.exe.map: #{test_case.proc}_map_link $\n"
+    file.print "build #{dest_dir}/main.exe | #{dest_dir}/main.exe.map: map_link $\n"
     file.print "    #{dest_dir}/main.obj $\n"
     file.print "    #{dest_dir}/caller.obj $\n"
     file.print "    #{dest_dir}/callee.obj $\n"
     file.print "    #{dest_dir}/dtor.obj\n\n"
 
-    file.print "build #{dest_dir}/bench.exe : #{test_case.proc}_link $\n"
+    file.print "build #{dest_dir}/bench.exe : link $\n"
     file.print "    #{dest_dir}/bench.obj $\n"
     file.print "    #{dest_dir}/caller.obj $\n"
     file.print "    #{dest_dir}/callee.obj $\n"
@@ -164,7 +164,7 @@ end
 def main()
     File.open("build.ninja", "w") do |h|
         h.print "ninja_required_version = 1.7\n\n"
-        h.print "include windows.ninja\n\n"
+        h.print "include clang.ninja\n\n"
 
         each_case do |c|
             gen_config(h, c)
