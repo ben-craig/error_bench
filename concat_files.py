@@ -15,12 +15,14 @@ def name_to_case(name):
 
 def diff(fout, key, value, result_map, substr1, substr2):
     two_key = key.replace(substr1, substr2)
+    if two_key not in result_map:
+        return
     parts = key.split("\\")
     parts[3] = "terminate"
     wont_throw_first_key = "\\".join(parts)
     wont_throw_second_key = wont_throw_first_key.replace(substr1, substr2)
-    base_first = int(result_map[wont_throw_first_key])
-    base_second = int(result_map[wont_throw_second_key])
+    base_first = int(result_map.get(wont_throw_first_key, 0))
+    base_second = int(result_map.get(wont_throw_second_key, 0))
     second_value = int(result_map[two_key])
     first_value = int(value)
 
@@ -49,6 +51,7 @@ def main():
             if "\\two_" in key:
                 if "\\two_neutral\\" in key:
                     diff(fout, key, value, result_map, "\\two_neutral", "\\one_error")
+                    diff(fout, key, value, result_map, "\\two_neutral", "\\one_catch")
                 continue
             diff(fout, key, value, result_map, "\\one_", "\\two_")
 
