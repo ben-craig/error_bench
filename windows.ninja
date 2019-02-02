@@ -24,6 +24,8 @@ CCFLAGS= $
 /Gy $
 /Gw $
 /O2 $
+/std:c++latest $
+/permissive- $
 /I"src" $
 /I"$MY_DDK_INCLUDE\ucrt" $
 /I"$MY_DDK_INCLUDE\um" $

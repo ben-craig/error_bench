@@ -12,8 +12,6 @@ class Scanner(object):
         self.matches = self.cmpexpr.search(string)
         return self.matches is not None
 
-original_size = 0
-
 def measure_map_size(map_file_name):
     scanner = Scanner(r"^ \d\d\d\d:[0-9a-f]+ ([0-9a-f]+)H\s+([^\s]+)")
     result = 0
@@ -24,8 +22,6 @@ def measure_map_size(map_file_name):
                 returnOnFailure = True
                 size_num = int(scanner.matches.group(1), 16)
                 if ".text$" in scanner.matches.group(2):
-                    global original_size
-                    original_size = original_size + size_num
                     continue
                 result = result + size_num
             elif returnOnFailure:
@@ -98,8 +94,6 @@ def main():
     asm_name = args.mapFile.replace(".exe.map", ".exe.asm")
     asm_size = measure_asm_size(asm_name)
     combined = map_size + asm_size
-    global original_size
-    #print(asm_name, original_size, asm_size, original_size - asm_size)
     with open(args.outputFile, 'w') as fout:
         fout.write(str(combined))
 
