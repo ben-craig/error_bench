@@ -6,6 +6,6 @@ int main() {
   } catch (int) {
     ++global_int;
   }
-  caller2(1);
+  caller2(0);
   return global_int;
 }

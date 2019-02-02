@@ -2,5 +2,5 @@
 
 int main() {
   caller();
-  caller2(1);
+  caller2(0);
 }
