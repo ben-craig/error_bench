@@ -51,7 +51,8 @@ def main():
             if "\\two_" in key:
                 if "\\two_neutral\\" in key:
                     diff(fout, key, value, result_map, "\\two_neutral", "\\one_error")
-                    diff(fout, key, value, result_map, "\\two_neutral", "\\one_catch")
+                if "\\two_error\\" in key:
+                    diff(fout, key, value, result_map, "\\two_error", "\\one_catch")
                 continue
             diff(fout, key, value, result_map, "\\one_", "\\two_")
 

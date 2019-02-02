@@ -1,4 +1,21 @@
 #include "proto.h"
+#include <limits.h>
 
-void callee(error_struct &) {}
-void callee2(int amount, error_struct &) {global_int+=amount;}
+int error_info = 100;
+int error_domain = 99;
+
+void callee(error_struct &e) {
+    if(global_int == INT_MAX)
+    {
+        e.error = &error_info;
+        e.domain = &error_domain;
+    }
+}
+void callee2(int amount, error_struct &e) {
+    if(global_int + amount == INT_MAX)
+    {
+        e.error = &error_info;
+        e.domain = &error_domain;
+    }
+    global_int+=amount;
+}
