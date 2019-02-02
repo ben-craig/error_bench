@@ -1,3 +1,6 @@
 #include "proto.h"
 
-int main() { caller(); caller2(1); }
+int main() {
+  caller();
+  caller2(1);
+}

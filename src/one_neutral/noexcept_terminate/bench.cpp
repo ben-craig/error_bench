@@ -1,8 +1,7 @@
-#include <common/TimeLogger.h>
 #include "proto.h"
+#include <common/TimeLogger.h>
 
-int main()
-{
+int main() {
   TimeLogger logger;
   // TODO: make everything in TimeLogger conditionally noexcept
 }

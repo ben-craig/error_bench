@@ -1,17 +1,15 @@
 #include "TimeLogger.h"
-#include <stdio.h>
 #include <Windows.h>
+#include <stdio.h>
 
-TimeLogger::TimeLogger()
-{
-  Sleep(0);  //try to avoid time slicing in the middle of a run
+TimeLogger::TimeLogger() {
+  Sleep(0); // try to avoid time slicing in the middle of a run
   LARGE_INTEGER local_start;
   QueryPerformanceCounter(&local_start);
   start = local_start.QuadPart;
 }
 
-TimeLogger::~TimeLogger()
-{
+TimeLogger::~TimeLogger() {
   LARGE_INTEGER stop;
   QueryPerformanceCounter(&stop);
 
@@ -23,12 +21,10 @@ TimeLogger::~TimeLogger()
   printf("%.4f\n", count / ITERATIONS);
 }
 
-void Setup()
-{
+void Setup() {
   BOOL result = SetPriorityClass(GetCurrentProcess(), HIGH_PRIORITY_CLASS);
-  if (!result)
-  {
-      printf("error %d\n", (int)GetLastError());
-      exit(1);
+  if (!result) {
+    printf("error %d\n", (int)GetLastError());
+    exit(1);
   }
 }

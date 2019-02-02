@@ -1,2 +1,4 @@
 #pragma once
-struct Dtor {~Dtor();};
+struct Dtor {
+  ~Dtor();
+};

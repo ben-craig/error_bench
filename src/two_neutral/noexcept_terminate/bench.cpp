@@ -1,8 +1,8 @@
-#include <common/TimeLogger.h>
 #include "proto.h"
+#include <common/TimeLogger.h>
 
-int main()
-{
-  NOP_SLED; TimeLogger logger;
+int main() {
+  NOP_SLED;
+  TimeLogger logger;
   // TODO add conditional noexcept
 }

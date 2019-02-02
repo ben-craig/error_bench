@@ -3,7 +3,7 @@
 
 int global_int = 0;
 void caller() noexcept {
-    Dtor d;
-    callee();
-    ++global_int;
+  Dtor d;
+  callee();
+  ++global_int;
 }

@@ -1,3 +1,3 @@
 #include "proto.h"
 
-int callee() {return 0;}
+int callee() { return 0; }

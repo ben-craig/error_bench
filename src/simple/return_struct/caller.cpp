@@ -2,6 +2,6 @@
 #include <common/dtor.h>
 
 error_struct caller() {
-    Dtor d;
-    return callee();
+  Dtor d;
+  return callee();
 }

@@ -2,6 +2,6 @@
 #include <common/dtor.h>
 
 void caller(int &e) {
-    Dtor d;
-    callee(e);
+  Dtor d;
+  callee(e);
 }

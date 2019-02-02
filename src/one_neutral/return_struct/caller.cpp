@@ -3,10 +3,10 @@
 
 int global_int = 0;
 error_struct caller() {
-    Dtor d;
-    error_struct e = callee();
-    if(e.error)
-        return e;
-    ++global_int;
+  Dtor d;
+  error_struct e = callee();
+  if (e.error)
     return e;
+  ++global_int;
+  return e;
 }
