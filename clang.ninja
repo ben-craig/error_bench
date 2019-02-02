@@ -34,10 +34,6 @@ rule link
     command = $LINK_PROG $LINK_FLAGS -o $out $in ~/llvm/clang+llvm-7.0.0-x86_64-linux-gnu-ubuntu-14.04/lib/libc++abi.a
     description = LINK $out
 
-rule map_link
-    command = $LINK_PROG $LINK_FLAGS -Xlinker -Map=$out.map -o $out $in ~/llvm/clang+llvm-7.0.0-x86_64-linux-gnu-ubuntu-14.04/lib/libc++abi.a
-    description = MAP_LINK $out
-
 rule measure_size
     command = python3 measure_size.py $in $out
     description = SIZE $out
@@ -51,7 +47,7 @@ rule collect_benches
     description = COLLECT_BENCHES
 
 rule asm_dump
-    command = $DUMPBIN_PROG --disassemble $in > $out
+    command = $DUMPBIN_PROG --headers --disassemble $in > $out
     description = ASM_DUMP $out
 
 rule check_asm_padding
