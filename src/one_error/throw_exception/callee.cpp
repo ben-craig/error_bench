@@ -6,7 +6,7 @@ class err_exception : public std::exception {
 public:
   int val;
   explicit err_exception(int e) : val(e) {}
-  const char *what() const override { return ""; }
+  const char *what() const noexcept override { return ""; }
 };
 
 void callee() {
