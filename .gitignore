@@ -3,5 +3,7 @@
 x64/
 x86/
 totals/
+ruby_linux/
+ruby
 ninja.exe
 build.ninja
