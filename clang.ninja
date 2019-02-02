@@ -1,10 +1,10 @@
 ninja_required_version = 1.7
 
-CC="$x86_MY_VC_BIN_DIR\cl.exe"
-LINK_PROG="$x86_MY_VC_BIN_DIR\link.exe"
-DUMPBIN_PROG="$x64_MY_VC_BIN_DIR\dumpbin.exe"
+CXX=~/llvm/clang+llvm-7.0.0-x86_64-linux-gnu-ubuntu-14.04/bin/clang++
+LINK_PROG=~/llvm/clang+llvm-7.0.0-x86_64-linux-gnu-ubuntu-14.04/bin/lld
+DUMPBIN_PROG=objdump
 
-CCFLAGS= $
+CXXFLAGS= $
 -c $
 -Wall $
 -Wextra $
@@ -23,7 +23,7 @@ LINK_FLAGS= $
 -static-libgcc $
 
 rule compile
-    command = $CC $CCFLAGS $EXTRA_FLAGS -o $out $in -MMD -MF $out.d
+    command = $CXX $CXXFLAGS $EXTRA_FLAGS -o $out $in -MMD -MF $out.d
     description = CXX $out
     depfile = $out.d
     deps = gcc
@@ -33,7 +33,7 @@ rule link
     description = LINK $out
 
 rule map_link
-    command = $LINK_PROG $LINK_FLAGS /MAP:$out.map /OUT:$out $in
+    command = $LINK_PROG $LINK_FLAGS -Map=$out.map -o $out $in
     description = MAP_LINK $out
 
 rule measure_size
@@ -49,7 +49,7 @@ rule collect_benches
     description = COLLECT_BENCHES
 
 rule asm_dump
-    command = cmd /c $DUMPBIN_PROG /disasm $in > $out
+    command = $DUMPBIN_PROG --disassemble $in > $out
     description = ASM_DUMP $out
 
 rule check_asm_padding
