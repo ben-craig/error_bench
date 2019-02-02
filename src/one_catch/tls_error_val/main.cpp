@@ -4,7 +4,7 @@ int main() {
   caller();
   if (tls_error_val_var) {
     tls_error_val_var = 0;
-    ++global_int;
+    global_int = 0;
   }
   caller2(0);
   return global_int;

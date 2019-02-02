@@ -7,5 +7,5 @@ void caller() {
   callee();
   if (tls_error_struct_var.error)
     return;
-  ++global_int;
+  global_int = 0;
 }

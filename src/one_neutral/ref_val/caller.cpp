@@ -7,5 +7,5 @@ void caller(int &e) {
   callee(e);
   if (e)
     return;
-  ++global_int;
+  global_int = 0;
 }

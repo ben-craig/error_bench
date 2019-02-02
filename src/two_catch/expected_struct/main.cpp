@@ -2,10 +2,10 @@
 
 int main() {
   if (!caller()) {
-    ++global_int;
+    global_int = 0;
   }
   if (!caller2(0)) {
-    ++global_int;
+    global_int = 0;
   }
   return global_int;
 }

@@ -7,5 +7,5 @@ void caller() {
   callee();
   if (tls_error_val_var)
     return;
-  ++global_int;
+  global_int = 0;
 }

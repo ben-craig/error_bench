@@ -7,5 +7,5 @@ void caller(error_struct &e) {
   callee(e);
   if (e.error)
     return;
-  ++global_int;
+  global_int = 0;
 }

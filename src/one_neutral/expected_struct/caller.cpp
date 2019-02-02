@@ -7,6 +7,6 @@ tl::expected<void, error_struct> caller() {
   tl::expected<void, error_struct> e = callee();
   if (e)
     return e;
-  ++global_int;
+  global_int = 0;
   return e;
 }

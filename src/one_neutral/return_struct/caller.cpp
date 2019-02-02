@@ -7,6 +7,6 @@ error_struct caller() {
   error_struct e = callee();
   if (e.error)
     return e;
-  ++global_int;
+  global_int = 0;
   return e;
 }

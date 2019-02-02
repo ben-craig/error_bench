@@ -2,7 +2,7 @@
 
 int main() {
   if (caller()) {
-    ++global_int;
+    global_int = 0;
   }
   caller2(0);
   return global_int;
