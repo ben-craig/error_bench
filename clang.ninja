@@ -35,7 +35,7 @@ rule link
     description = LINK $out
 
 rule measure_size
-    command = python3 measure_size.py $in $out
+    command = python3 clang_measure_size.py $in $out
     description = SIZE $out
 
 rule collect_sizes
