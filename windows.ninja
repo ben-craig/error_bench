@@ -100,5 +100,3 @@ rule asm_dump
 rule check_asm_padding
     command = python3 check_asm_alignment.py $in
     description = ASM_ALIGNMENT $in
-
-subninja generated_targets_from_gen.rb.ninja

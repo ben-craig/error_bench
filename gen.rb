@@ -162,8 +162,10 @@ def gen_config(file, test_case)
 end
 
 def main()
-    File.open("generated_targets_from_gen.rb.ninja", "w") do |h|
+    File.open("build.ninja", "w") do |h|
         h.print "ninja_required_version = 1.7\n\n"
+        h.print "include windows.ninja\n\n"
+
         each_case do |c|
             gen_config(h, c)
         end
