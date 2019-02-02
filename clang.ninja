@@ -12,14 +12,17 @@ CXXFLAGS= $
 -O2 $
 -ffunction-sections $
 -fdata-sections $
--static $
 -std=c++17 $
+-stdlib=libc++ $
+-static $
 -I"src" $
 
 LINK_FLAGS= $
--static-libstdc++ $
--static-libgcc $
+-pthread $
 -static $
+-static-libgcc $
+-stdlib=libc++ $
+
 
 rule compile
     command = $CXX $CXXFLAGS $EXTRA_FLAGS -o $out $in -MMD -MF $out.d
@@ -28,11 +31,11 @@ rule compile
     deps = gcc
 
 rule link
-    command = $LINK_PROG $LINK_FLAGS -o $out $in
+    command = $LINK_PROG $LINK_FLAGS -o $out $in ~/llvm/clang+llvm-7.0.0-x86_64-linux-gnu-ubuntu-14.04/lib/libc++abi.a
     description = LINK $out
 
 rule map_link
-    command = $LINK_PROG $LINK_FLAGS -Xlinker -Map=$out.map -o $out $in
+    command = $LINK_PROG $LINK_FLAGS -Xlinker -Map=$out.map -o $out $in ~/llvm/clang+llvm-7.0.0-x86_64-linux-gnu-ubuntu-14.04/lib/libc++abi.a
     description = MAP_LINK $out
 
 rule measure_size
