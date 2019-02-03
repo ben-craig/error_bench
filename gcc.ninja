@@ -1,0 +1,53 @@
+ninja_required_version = 1.7
+
+CXX=~/p4/perforce/build/targets/gcc/7.3/export/7.3/7.3.1f0/tools/linux/i386/usr/x86_64-redhat-linux/sysroot/usr/bin/g++
+LINK_PROG=$CXX
+DUMPBIN_PROG=objdump
+
+CXXFLAGS= $
+-c $
+-Wall $
+-Wextra $
+-Werror $
+-O2 $
+-ffunction-sections $
+-fdata-sections $
+-std=c++17 $
+-static $
+-I"src" $
+
+LINK_FLAGS= $
+-pthread $
+-static $
+-static-libgcc $
+-static-libstdc++ $
+
+rule compile
+    command = $CXX $CXXFLAGS $EXTRA_FLAGS -o $out $in -MMD -MF $out.d
+    description = CXX $out
+    depfile = $out.d
+    deps = gcc
+
+rule link
+    command = $LINK_PROG $LINK_FLAGS -o $out $in
+    description = LINK $out
+
+rule measure_size
+    command = python3 clang_measure_size.py $in $out
+    description = SIZE $out
+
+rule collect_sizes
+    command = python3 clang_concat_files.py $out $in
+    description = COLLECT_SIZES
+
+rule collect_benches
+    command = python3 concat_benches.py $out $in
+    description = COLLECT_BENCHES
+
+rule asm_dump
+    command = $DUMPBIN_PROG --headers --disassemble $in > $out
+    description = ASM_DUMP $out
+
+rule check_asm_padding
+    command = python3 check_asm_alignment.py $in
+    description = ASM_ALIGNMENT $in
