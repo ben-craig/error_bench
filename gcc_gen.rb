@@ -148,7 +148,8 @@ def gen_config(file, test_case)
     file.print "    #{dest_dir}/caller.obj $\n"
     file.print "    #{dest_dir}/callee.obj $\n"
     file.print "    #{dest_dir}/dtor.obj $\n"
-    file.print "    #{dest_dir}/LinuxTimeLogger.obj\n\n"
+    file.print "    #{dest_dir}/LinuxTimeLogger.obj\n"
+    file.print "    EXTRA_FLAGS = -lrt\n\n"
 
     file.print "build #{dest_dir}/main.exe.asm: asm_dump #{dest_dir}/main.exe\n"
     file.print "build #{dest_dir}/bench.exe.asm: asm_dump #{dest_dir}/bench.exe\n"
