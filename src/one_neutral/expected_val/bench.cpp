@@ -1,5 +1,4 @@
 #include "proto.h"
-#include <Windows.h>
 #include <common/TimeLogger.h>
 
 int main() {
