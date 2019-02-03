@@ -125,7 +125,7 @@ def gen_config(file, test_case)
     file.print "#===========================================================\n"
     file.print "build #{dest_dir}/dtor.obj: #{cc} src/common/dtor.cpp\n"
     file.print cc_flags
-    file.print "build #{dest_dir}/TimeLogger.obj: #{cc} src/common/TimeLogger.cpp\n"
+    file.print "build #{dest_dir}/LinuxTimeLogger.obj: #{cc} src/common/LinuxTimeLogger.cpp\n"
     file.print cc_flags
     file.print "build #{dest_dir}/caller.obj: #{cc} #{dir}/caller.cpp\n"
     file.print cc_flags
@@ -148,7 +148,7 @@ def gen_config(file, test_case)
     file.print "    #{dest_dir}/caller.obj $\n"
     file.print "    #{dest_dir}/callee.obj $\n"
     file.print "    #{dest_dir}/dtor.obj $\n"
-    file.print "    #{dest_dir}/TimeLogger.obj\n\n"
+    file.print "    #{dest_dir}/LinuxTimeLogger.obj\n\n"
 
     file.print "build #{dest_dir}/main.exe.asm: asm_dump #{dest_dir}/main.exe\n"
     file.print "build #{dest_dir}/bench.exe.asm: asm_dump #{dest_dir}/bench.exe\n"

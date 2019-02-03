@@ -1,5 +1,5 @@
 #pragma once
-#include <intrin.h>
+//#include <intrin.h>
 #include <stdint.h>
 
 static constexpr uint64_t ITERATIONS = 1ULL << 10;
@@ -13,6 +13,9 @@ struct TimeLogger {
 
 void Setup();
 
+#define NOP_SLED
+
+#if 0
 #define NOP_COUNT 0
 
 #ifndef NOP_COUNT
@@ -87,3 +90,4 @@ void Setup();
   CONDITIONAL_NOP(61);                                                         \
   CONDITIONAL_NOP(62);                                                         \
   CONDITIONAL_NOP(63)
+#endif

@@ -1,0 +1,22 @@
+#include "TimeLogger.h"
+#include <sched.h>
+#include <stdio.h>
+
+TimeLogger::TimeLogger() {
+  sched_yield(); // try to avoid time slicing in the middle of a run
+  timespec t;
+  clock_gettime(CLOCK_MONOTONIC, &t);
+  start = t.tv_sec * 1000000000 + t.tv_nsec;
+}
+
+TimeLogger::~TimeLogger() {
+  timespec t;
+  clock_gettime(CLOCK_MONOTONIC, &t);
+  uint64_t stop = t.tv_sec * 1000000000 + t.tv_nsec;
+
+  double count = (double)(stop - start);
+  count = count * 1e9 / freq.QuadPart;
+  printf("%.4f\n", count / ITERATIONS);
+}
+
+void Setup() {}
