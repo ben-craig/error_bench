@@ -1,60 +1,76 @@
 #!/usr/bin/env python3
 import sys
+import os
 
-HEADER_STR = \
-    "proc,flags,type,case_one,one_size,case_two,two_size,first_overhead,incr_cost,second_overhead\n"
+HEADER_STR = ",".join([
+    "plat",
+    "type",
+    "First Neutral",
+    "CmpTerm",
+    "Second Neutral",
+    "Cost2ndNeutral",
+    "First Error",
+    "Cost1stError",
+    "Second Error",
+    "Cost2ndError",
+    "First Catch",
+    "Cost1stCatch",
+    "Second Catch",
+    "Cost2ndCatch"
+])+"\n"
 
-def name_to_pivots(name):
-    return ",".join(name.split("\\")[0:2])
+def diff(fout, plat, error_type, test_cases, terminate_test_cases):
+    firstCatch = 0
+    if "one_catch" in test_cases:
+        firstCatch = test_cases["one_catch"]-test_cases["two_error"]
 
-def name_to_error_type(name):
-    return name.split("\\")[3]
+    string = ",".join([
+        plat,
+        error_type,
+        str(test_cases["one_neutral"]),
+        str(test_cases["one_neutral"] - terminate_test_cases["one_neutral"]),
+        str(test_cases["two_neutral"]),
+        str(test_cases["two_neutral"]-test_cases["one_neutral"]),
+        str(test_cases["one_error"]),
+        str(test_cases["one_error"]-test_cases["two_neutral"]),
+        str(test_cases["two_error"]),
+        str(test_cases["two_error"]-test_cases["one_error"]),
+        str(test_cases.get("one_catch", 0)),
+        str(firstCatch),
+        str(test_cases.get("two_catch", 0)),
+        str(test_cases.get("two_catch", 0)-test_cases.get("one_catch",0)),
+    ])
+    fout.write(string + "\n")
+
+def name_to_plat(name):
+    return "Windows/" + name.split(os.path.sep)[0]
 
 def name_to_case(name):
-    return name.split("\\")[2]
+    return name.split(os.path.sep)[1]
 
-def diff(fout, key, value, result_map, substr1, substr2):
-    two_key = key.replace(substr1, substr2)
-    if two_key not in result_map:
-        return
-    parts = key.split("\\")
-    parts[3] = "terminate"
-    wont_throw_first_key = "\\".join(parts)
-    wont_throw_second_key = wont_throw_first_key.replace(substr1, substr2)
-    base_first = int(result_map.get(wont_throw_first_key, 0))
-    base_second = int(result_map.get(wont_throw_second_key, 0))
-    second_value = int(result_map[two_key])
-    first_value = int(value)
-
-    first_overhead = first_value - base_first
-    second_cost = second_value - first_value
-    wont_throw_diff = base_second - base_first
-    second_overhead = second_cost - wont_throw_diff
-
-    out_str = name_to_pivots(key) + "," + name_to_error_type(key) + ","
-    out_str = out_str + name_to_case(key) + "," + value + ","
-    out_str = out_str + name_to_case(two_key) + "," + str(second_value) + ","
-    # calculated columns.
-    out_str = out_str + str(first_overhead) + ","
-    out_str = out_str + str(second_cost) + ","
-    out_str = out_str + str(second_overhead) + "\n"
-    fout.write(out_str)
+def name_to_error_type(name):
+    return name.split(os.path.sep)[2]
 
 def main():
-    result_map = {}
+    plat_map = {}
     for name in sys.argv[2:]:
         with open(name, 'r') as fin:
-            result_map[name] = fin.read()
+            value = int(fin.read())
+
+            plat =  name_to_plat(name)
+            error_type = name_to_error_type(name)
+            test_case = name_to_case(name)
+            if plat not in plat_map:
+                plat_map[plat] = {}
+            if error_type not in plat_map[plat]:
+                plat_map[plat][error_type] = {}
+            plat_map[plat][error_type][test_case] = int(value)
+
     with open(sys.argv[1], 'w') as fout:
         fout.write(HEADER_STR)
-        for key, value in result_map.items():
-            if "\\two_" in key:
-                if "\\two_neutral\\" in key:
-                    diff(fout, key, value, result_map, "\\two_neutral", "\\one_error")
-                if "\\two_error\\" in key:
-                    diff(fout, key, value, result_map, "\\two_error", "\\one_catch")
-                continue
-            diff(fout, key, value, result_map, "\\one_", "\\two_")
+        for plat, error_types in plat_map.items():
+            for error_type, test_cases in error_types.items():
+                diff(fout, plat, error_type, test_cases, error_types["terminate"])
 
 if __name__ == '__main__':
     if sys.version_info[0] < 3:

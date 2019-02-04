@@ -1,12 +1,4 @@
 TEST_DIRS = [
-#    {:dir => "simple/terminate", :cc_flags => "-fno-exceptions"},
-#    {:dir => "simple/throw", :cc_flags => ""},
-#    {:dir => "simple/tls_error_val", :cc_flags => "-fno-exceptions"},
-#    {:dir => "simple/tls_error_struct", :cc_flags => "-fno-exceptions"},
-#    {:dir => "simple/return_val", :cc_flags => "-fno-exceptions"},
-#    {:dir => "simple/return_struct", :cc_flags => "-fno-exceptions"},
-#    {:dir => "simple/ref_struct", :cc_flags => "-fno-exceptions"},
-#    {:dir => "simple/ref_val", :cc_flags => "-fno-exceptions"},
     {:dir => "one_catch/throw_val", :cc_flags => ""},
     {:dir => "one_catch/throw_struct", :cc_flags => ""},
     {:dir => "one_catch/throw_exception", :cc_flags => ""},
@@ -83,18 +75,12 @@ TEST_DIRS = [
     {:dir => "two_error/expected_val", :cc_flags => "-fno-exceptions"},
 ]
 
-def scrub_name(fname)
-    return fname.gsub(" ","_").gsub("/","")
-end
-
 class TestCase
-    def initialize(t, proc, flags)
+    def initialize(t, proc)
         @src_info = t
         @proc = proc
-        @scenario_cc_flags = flags
-        # TODO!!!
-        @dest = "#{@proc}/#{scrub_name(flags)}/#{@src_info[:dir]}"
-        @flags = "    EXTRA_FLAGS = " + @src_info[:cc_flags] + " " + @scenario_cc_flags + "\n"
+        @dest = "#{@proc}/#{@src_info[:dir]}"
+        @flags = "    EXTRA_FLAGS = " + @src_info[:cc_flags] + "\n"
         @cc = "compile"
         @dir = "src/#{@src_info[:dir]}"
     end
@@ -107,10 +93,8 @@ end
 
 def each_case
     ["x64"].each do |proc|
-        ["default"].each do |flags|
-            TEST_DIRS.each do |t|
-                yield TestCase.new(t, proc, "")
-            end
+        TEST_DIRS.each do |t|
+            yield TestCase.new(t, proc)
         end
     end
 end
