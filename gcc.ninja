@@ -31,7 +31,7 @@ rule compile
     deps = gcc
 
 rule link
-    command = $LINK_PROG $LINK_FLAGS -o $out $in
+    command = $LINK_PROG $LINK_FLAGS -o $out $in $EXTRA_FLAGS
     description = LINK $out
 
 rule measure_size
