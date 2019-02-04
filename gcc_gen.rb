@@ -94,7 +94,7 @@ end
 def each_case
     ["x64"].each do |proc|
         TEST_DIRS.each do |t|
-            yield TestCase.new(t, proc, "")
+            yield TestCase.new(t, proc)
         end
     end
 end
