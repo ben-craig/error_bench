@@ -4,4 +4,5 @@ int main() {
   error_struct e;
   caller(e);
   caller2(0, e);
+  return global_int;
 }

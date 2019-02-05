@@ -1,3 +1,3 @@
 #include "proto.h"
 
-int main() { caller(); }
+int main() { caller(); return global_int;}
