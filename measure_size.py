@@ -37,7 +37,7 @@ PAST_FUNC = 3
 
 def measure_asm_size(asm_file_name, sym_size_map):
     asm_loc = Scanner(r"^  ([0-9A-F]+):(.*)")
-    func = Scanner(r"^([^\s]+):$")
+    func = Scanner(r"^([^\s].*):$")
     state = BEFORE_BEGINNING
     addr = 0
     begin_addr_num = 0
@@ -53,21 +53,28 @@ def measure_asm_size(asm_file_name, sym_size_map):
                 if needs_addr_after_exit:
                     addr_after_exit = addr
                     needs_addr_after_exit = False
-                if state == BEGIN_FUNC and addr_after_exit != 0:
-                    if last_func != "strpbrk":
+                if state == BEGIN_FUNC:
+                    if addr_after_exit == 0:
+                        addr_after_exit = addr
+                    BLACK_LIST = ["_guard_dispatch_icall_nop", "strpbrk"]
+                    if last_func not in BLACK_LIST:
                         size = (addr_after_exit - begin_addr_num)
                         sym_size_map[last_func] = size
                         result = result + size
+                        needs_addr_after_exit = False
                     begin_addr_num = addr
                     addr_after_exit = 0
                 if begin_addr_num == 0:
                     begin_addr_num = addr
                 state = IN_FUNC
                 instructions = asm_loc.matches.group(2)
-                if instructions.endswith(" ret") or (" jmp " in instructions):
+                if instructions.endswith("call        dword ptr [__imp__ExitProcess@4]"):
+                    needs_addr_after_exit = True
+                if (" ret " in instructions) or (" jmp " in instructions) or instructions.endswith("__exit")  or instructions.endswith(" ret"):
                     needs_addr_after_exit = True
             if func.search(line):
-                state = BEGIN_FUNC
+                if state != BEFORE_BEGINNING:
+                    state = BEGIN_FUNC
                 last_func = cur_func
                 cur_func = func.matches.group(1)
             if line == "  Summary":
@@ -99,7 +106,7 @@ def diff(map_one, map_two, fname1, fname2, out_file_name):
     with open(out_file_name, 'w') as fout:
         fout.write(fname2 + " - " + fname1 + "\n")
         for key, value in sorted(diff_map.items()):
-            fout.write(key + ": " + str(value) + "\n")
+            fout.write(key + ": " + str(value) + "  before(" + str(map_one[key]) + ") after(" + str(map_two[key]) + ")\n")
         fout.write("\nadded in " + fname2 + "\n")
         for key, value in sorted(only_two.items()):
             fout.write(key + ": " + str(value) + "\n")
