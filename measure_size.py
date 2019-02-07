@@ -12,7 +12,7 @@ class Scanner(object):
         self.matches = self.cmpexpr.search(string)
         return self.matches is not None
 
-def measure_map_size(map_file_name):
+def measure_map_size(map_file_name, sym_size_map):
     scanner = Scanner(r"^ \d\d\d\d:[0-9a-f]+ ([0-9a-f]+)H\s+([^\s]+)")
     result = 0
     returnOnFailure = False
@@ -20,9 +20,11 @@ def measure_map_size(map_file_name):
         for line in fin:
             if scanner.search(line):
                 returnOnFailure = True
+                section_name = scanner.matches.group(2)
                 size_num = int(scanner.matches.group(1), 16)
-                if ".text$" in scanner.matches.group(2):
+                if ".text$" in section_name:
                     continue
+                sym_size_map[section_name] = size_num
                 result = result + size_num
             elif returnOnFailure:
                 return result
@@ -33,7 +35,7 @@ BEGIN_FUNC = 1
 IN_FUNC = 2
 PAST_FUNC = 3
 
-def measure_asm_size(asm_file_name):
+def measure_asm_size(asm_file_name, sym_size_map):
     asm_loc = Scanner(r"^  ([0-9A-F]+):(.*)")
     func = Scanner(r"^([^\s]+):$")
     state = BEFORE_BEGINNING
@@ -54,7 +56,7 @@ def measure_asm_size(asm_file_name):
                 if state == BEGIN_FUNC and addr_after_exit != 0:
                     if last_func != "strpbrk":
                         size = (addr_after_exit - begin_addr_num)
-                        #print(last_func, size)
+                        sym_size_map[last_func] = size
                         result = result + size
                     begin_addr_num = addr
                     addr_after_exit = 0
@@ -75,11 +77,35 @@ def measure_asm_size(asm_file_name):
                     else:
                         print ("Bias!", asm_file_name)
                         size = (addr - begin_addr_num)
-                    #print(cur_func, size)
+                    sym_size_map[cur_func] = size
                     result = result + size
                 return result
     return result
 
+def diff(map_one, map_two, fname1, fname2, out_file_name):
+    diff_map = {}
+    only_one = {}
+    only_two = {}
+    for key, value in map_one.items():
+        if key in map_two:
+            distance = map_two[key] - value
+            if distance != 0:
+                diff_map[key] = distance
+        else:
+            only_one[key] = value
+    for key, value in map_two.items():
+        if key not in map_one:
+            only_two[key] = value
+    with open(out_file_name, 'w') as fout:
+        fout.write(fname2 + " - " + fname1 + "\n")
+        for key, value in sorted(diff_map.items()):
+            fout.write(key + ": " + str(value) + "\n")
+        fout.write("\nadded in " + fname2 + "\n")
+        for key, value in sorted(only_two.items()):
+            fout.write(key + ": " + str(value) + "\n")
+        fout.write("\nremoved in " + fname2 + "\n")
+        for key, value in sorted(only_one.items()):
+            fout.write(key + ": " + str(value) + "\n")
 
 def main():
     import argparse
@@ -89,13 +115,28 @@ def main():
         'mapFile', help='name of a mapfile to analyze')
     parser.add_argument(
         'outputFile', help='output file to create that will hold size')
+    parser.add_argument(
+        '-d',
+        '--diff',
+        help="Name of second mapfile to diff against",
+        action="store",
+        dest="diffFile",
+        default="")
     args = parser.parse_args()
-    map_size = measure_map_size(args.mapFile)
+    first_sym_size_map = {}
+    map_size = measure_map_size(args.mapFile, first_sym_size_map)
     asm_name = args.mapFile.replace(".exe.map", ".exe.asm")
-    asm_size = measure_asm_size(asm_name)
+    asm_size = measure_asm_size(asm_name, first_sym_size_map)
     combined = map_size + asm_size
-    with open(args.outputFile, 'w') as fout:
-        fout.write(str(combined))
+    if args.diffFile == "":
+        with open(args.outputFile, 'w') as fout:
+            fout.write(str(combined))
+        return
+    second_sym_size_map = {}
+    measure_map_size(args.diffFile, second_sym_size_map)
+    asm_name = args.diffFile.replace(".exe.map", ".exe.asm")
+    asm_size = measure_asm_size(asm_name, second_sym_size_map)
+    diff(first_sym_size_map, second_sym_size_map, args.mapFile, args.diffFile, args.outputFile)
 
 if __name__ == '__main__':
     import sys
