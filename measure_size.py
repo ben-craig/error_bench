@@ -142,7 +142,7 @@ def main():
     second_sym_size_map = {}
     measure_map_size(args.diffFile, second_sym_size_map)
     asm_name = args.diffFile.replace(".exe.map", ".exe.asm")
-    asm_size = measure_asm_size(asm_name, second_sym_size_map)
+    measure_asm_size(asm_name, second_sym_size_map)
     diff(first_sym_size_map, second_sym_size_map, args.mapFile, args.diffFile, args.outputFile)
 
 if __name__ == '__main__':
