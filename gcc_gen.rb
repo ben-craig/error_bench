@@ -142,8 +142,11 @@ def main()
         h.print "ninja_required_version = 1.7\n\n"
         h.print "include gcc.ninja\n\n"
 
+        all_the_sizes = []
         each_case do |c|
             gen_config(h, c)
+            gen_cmp_retval_size_diffs(h, c, all_the_sizes)
+            gen_incr_size_diffs(h, c, all_the_sizes)
         end
 
         h.print "build totals/sizes.csv: collect_sizes"
@@ -166,7 +169,11 @@ def main()
 
         h.print "build bench: phony totals/times.csv\n\n"
 
-        h.print "default totals/sizes.csv\n"
+        h.print "default totals/sizes.csv $\n"
+        all_the_sizes.each do |s|
+            h.print "    #{s} $\n"
+        end
+        h.print "\n"
     end
 end
 
