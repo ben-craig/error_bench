@@ -1,89 +1,36 @@
-TEST_DIRS = [
-    {:dir => "one_catch/throw_val", :cc_flags => ""},
-    {:dir => "one_catch/throw_struct", :cc_flags => ""},
-    {:dir => "one_catch/throw_exception", :cc_flags => ""},
-    {:dir => "one_catch/tls_error_val", :cc_flags => "-fno-exceptions"},
-    {:dir => "one_catch/tls_error_struct", :cc_flags => "-fno-exceptions"},
-    {:dir => "one_catch/return_val", :cc_flags => "-fno-exceptions"},
-    {:dir => "one_catch/return_struct", :cc_flags => "-fno-exceptions"},
-    {:dir => "one_catch/ref_struct", :cc_flags => "-fno-exceptions"},
-    {:dir => "one_catch/ref_val", :cc_flags => "-fno-exceptions"},
-    {:dir => "one_catch/expected_struct", :cc_flags => "-fno-exceptions"},
-    {:dir => "one_catch/expected_val", :cc_flags => "-fno-exceptions"},
-    {:dir => "two_catch/throw_val", :cc_flags => ""},
-    {:dir => "two_catch/throw_struct", :cc_flags => ""},
-    {:dir => "two_catch/throw_exception", :cc_flags => ""},
-    {:dir => "two_catch/tls_error_val", :cc_flags => "-fno-exceptions"},
-    {:dir => "two_catch/tls_error_struct", :cc_flags => "-fno-exceptions"},
-    {:dir => "two_catch/return_val", :cc_flags => "-fno-exceptions"},
-    {:dir => "two_catch/return_struct", :cc_flags => "-fno-exceptions"},
-    {:dir => "two_catch/ref_struct", :cc_flags => "-fno-exceptions"},
-    {:dir => "two_catch/ref_val", :cc_flags => "-fno-exceptions"},
-    {:dir => "two_catch/expected_struct", :cc_flags => "-fno-exceptions"},
-    {:dir => "two_catch/expected_val", :cc_flags => "-fno-exceptions"},
-    {:dir => "one_neutral/terminate", :cc_flags => "-fno-exceptions"},
-    {:dir => "one_neutral/throw_val", :cc_flags => ""},
-    {:dir => "one_neutral/throw_struct", :cc_flags => ""},
-    {:dir => "one_neutral/throw_exception", :cc_flags => ""},
-    {:dir => "one_neutral/noexcept_terminate", :cc_flags => ""},
-    {:dir => "one_neutral/tls_error_val", :cc_flags => "-fno-exceptions"},
-    {:dir => "one_neutral/tls_error_struct", :cc_flags => "-fno-exceptions"},
-    {:dir => "one_neutral/return_val", :cc_flags => "-fno-exceptions"},
-    {:dir => "one_neutral/return_struct", :cc_flags => "-fno-exceptions"},
-    {:dir => "one_neutral/ref_struct", :cc_flags => "-fno-exceptions"},
-    {:dir => "one_neutral/ref_val", :cc_flags => "-fno-exceptions"},
-    {:dir => "one_neutral/expected_struct", :cc_flags => "-fno-exceptions"},
-    {:dir => "one_neutral/expected_val", :cc_flags => "-fno-exceptions"},
-    {:dir => "two_neutral/terminate", :cc_flags => "-fno-exceptions"},
-    {:dir => "two_neutral/throw_val", :cc_flags => ""},
-    {:dir => "two_neutral/throw_struct", :cc_flags => ""},
-    {:dir => "two_neutral/throw_exception", :cc_flags => ""},
-    {:dir => "two_neutral/noexcept_terminate", :cc_flags => ""},
-    {:dir => "two_neutral/tls_error_val", :cc_flags => "-fno-exceptions"},
-    {:dir => "two_neutral/tls_error_struct", :cc_flags => "-fno-exceptions"},
-    {:dir => "two_neutral/return_val", :cc_flags => "-fno-exceptions"},
-    {:dir => "two_neutral/return_struct", :cc_flags => "-fno-exceptions"},
-    {:dir => "two_neutral/ref_struct", :cc_flags => "-fno-exceptions"},
-    {:dir => "two_neutral/ref_val", :cc_flags => "-fno-exceptions"},
-    {:dir => "two_neutral/expected_struct", :cc_flags => "-fno-exceptions"},
-    {:dir => "two_neutral/expected_val", :cc_flags => "-fno-exceptions"},
-    {:dir => "one_error/terminate", :cc_flags => "-fno-exceptions"},
-    {:dir => "one_error/throw_val", :cc_flags => ""},
-    {:dir => "one_error/throw_struct", :cc_flags => ""},
-    {:dir => "one_error/throw_exception", :cc_flags => ""},
-    {:dir => "one_error/noexcept_terminate", :cc_flags => ""},
-    {:dir => "one_error/tls_error_val", :cc_flags => "-fno-exceptions"},
-    {:dir => "one_error/tls_error_struct", :cc_flags => "-fno-exceptions"},
-    {:dir => "one_error/return_val", :cc_flags => "-fno-exceptions"},
-    {:dir => "one_error/return_struct", :cc_flags => "-fno-exceptions"},
-    {:dir => "one_error/ref_struct", :cc_flags => "-fno-exceptions"},
-    {:dir => "one_error/ref_val", :cc_flags => "-fno-exceptions"},
-    {:dir => "one_error/expected_struct", :cc_flags => "-fno-exceptions"},
-    {:dir => "one_error/expected_val", :cc_flags => "-fno-exceptions"},
-    {:dir => "two_error/terminate", :cc_flags => "-fno-exceptions"},
-    {:dir => "two_error/throw_val", :cc_flags => ""},
-    {:dir => "two_error/throw_struct", :cc_flags => ""},
-    {:dir => "two_error/throw_exception", :cc_flags => ""},
-    {:dir => "two_error/noexcept_terminate", :cc_flags => ""},
-    {:dir => "two_error/tls_error_val", :cc_flags => "-fno-exceptions"},
-    {:dir => "two_error/tls_error_struct", :cc_flags => "-fno-exceptions"},
-    {:dir => "two_error/return_val", :cc_flags => "-fno-exceptions"},
-    {:dir => "two_error/return_struct", :cc_flags => "-fno-exceptions"},
-    {:dir => "two_error/ref_struct", :cc_flags => "-fno-exceptions"},
-    {:dir => "two_error/ref_val", :cc_flags => "-fno-exceptions"},
-    {:dir => "two_error/expected_struct", :cc_flags => "-fno-exceptions"},
-    {:dir => "two_error/expected_val", :cc_flags => "-fno-exceptions"},
+TERM_TYPES = [
+    {:dir => "terminate_________", :cc_flags => "-fno-exceptions"},
+    {:dir => "noexcept_terminate", :cc_flags => ""},
 ]
+ERROR_TYPES = [
+    {:dir => "throw_val_________", :cc_flags => ""},
+    {:dir => "throw_struct______", :cc_flags => ""},
+    {:dir => "throw_exception___", :cc_flags => ""},
+    {:dir => "tls_error_val_____", :cc_flags => "-fno-exceptions"},
+    {:dir => "tls_error_struct__", :cc_flags => "-fno-exceptions"},
+    {:dir => "return_val________", :cc_flags => "-fno-exceptions"},
+    {:dir => "return_struct_____", :cc_flags => "-fno-exceptions"},
+    {:dir => "ref_struct________", :cc_flags => "-fno-exceptions"},
+    {:dir => "ref_val___________", :cc_flags => "-fno-exceptions"},
+    {:dir => "expected_struct___", :cc_flags => "-fno-exceptions"},
+    {:dir => "expected_val______", :cc_flags => "-fno-exceptions"},
+]
+FULL_CASE_NAMES =   ["one_neutral", "two_neutral", "one_error__", "two_error__"]
+NO_TERM_CASE_NAME = ["one_catch__", "two_catch__"]
 
 class TestCase
-    def initialize(t, proc)
-        @src_info = t
+    def initialize(error_case, error_type, proc)
+        @error_case = error_case
+        @error_type = error_type
+        dir_part = @error_case + "/" + @error_type[:dir]
         @proc = proc
-        @dest = "#{@proc}/#{@src_info[:dir]}"
-        @flags = "    EXTRA_FLAGS = " + @src_info[:cc_flags] + "\n"
-        @cc = "compile"
-        @dir = "src/#{@src_info[:dir]}"
+        @dest = "#{@proc}/#{dir_part}"
+        @flags = "    EXTRA_FLAGS = " + @error_type[:cc_flags] + "\n"
+        @cc = "#{@proc}_compile"
+        @dir = "src/#{dir_part}"
     end
+    def error_case; @error_case; end
+    def error_type; @error_type; end
     def dir; @dir; end
     def proc; @proc; end
     def dest; @dest; end
@@ -93,10 +40,55 @@ end
 
 def each_case
     ["x64"].each do |proc|
-        TEST_DIRS.each do |t|
-            yield TestCase.new(t, proc)
+        FULL_CASE_NAMES.each do |c|
+            (TERM_TYPES + ERROR_TYPES).each do |t|
+                yield TestCase.new(c, t, proc)
+            end
+        end
+        NO_TERM_CASE_NAME.each do |c|
+            ERROR_TYPES.each do |t|
+                yield TestCase.new(c, t, proc)
+            end
         end
     end
+end
+
+def prev_case(cur_case)
+    last_case = "one_neutral"
+    (FULL_CASE_NAMES + NO_TERM_CASE_NAME).each do |c|
+        if c == cur_case
+            return last_case
+        end
+        last_case = c
+    end
+    raise "Missing case #{cur_case}\n"
+end
+
+def gen_incr_size_diffs(file, test_case, all_the_sizes)
+    return if test_case.error_case == "one_neutral"
+
+    prev_dir = test_case.dest.sub(test_case.error_case, prev_case(test_case.error_case))
+    cur_dir = test_case.dest
+
+    all_the_sizes << "#{cur_dir}/incr_diff.size"
+    file.print "build #{cur_dir}/incr_diff.size: diff_size #{prev_dir}/main.exe.asm | $\n"
+    file.print "        #{cur_dir}/main.exe.asm $\n"
+    file.print "        clang_measure_size.py\n"
+    file.print "    DIFF_FILE=#{cur_dir}/main.exe.asm\n"
+end
+
+def gen_cmp_retval_size_diffs(file, test_case, all_the_sizes)
+    # don't compare to self
+    return if test_case.error_type[:dir] == "return_val________"
+
+    retval_dir = test_case.dest.sub(test_case.error_type[:dir], "return_val________")
+    cur_dir = test_case.dest
+
+    all_the_sizes << "#{cur_dir}/retval_diff.size"
+    file.print "build #{cur_dir}/retval_diff.size: diff_size #{retval_dir}/main.exe.asm | $\n"
+    file.print "        #{cur_dir}/main.exe.asm $\n"
+    file.print "        clang_measure_size.py\n"
+    file.print "    DIFF_FILE=#{cur_dir}/main.exe.asm\n"
 end
 
 def gen_config(file, test_case)
@@ -157,7 +149,7 @@ def main()
         each_case do |c|
             h.print " #{c.dest}/main.size"
         end
-        h.print " | clang_concat_files.py\n\n"
+        h.print " | concat_files.py\n\n"
 
         h.print "build totals/times.csv: collect_benches"
         each_case do |c|
