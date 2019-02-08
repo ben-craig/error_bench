@@ -38,6 +38,10 @@ rule measure_size
     command = python3 clang_measure_size.py $in $out
     description = SIZE $out
 
+rule diff_size
+    command = python3 clang_measure_size.py $in $out --diff $DIFF_FILE
+    description = DIFF $out
+
 rule collect_sizes
     command = python3 concat_files.py $out $in
     description = COLLECT_SIZES
