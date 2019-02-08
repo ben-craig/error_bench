@@ -26,7 +26,7 @@ class TestCase
         @proc = proc
         @dest = "#{@proc}/#{dir_part}"
         @flags = "    EXTRA_FLAGS = " + @error_type[:cc_flags] + "\n"
-        @cc = "#{@proc}_compile"
+        @cc = "compile"
         @dir = "src/#{dir_part}"
     end
     def error_case; @error_case; end
