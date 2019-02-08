@@ -21,8 +21,8 @@ HEADER_STR = ",".join([
 
 def diff(fout, plat, error_type, test_cases, terminate_test_cases):
     firstCatch = 0
-    if "one_catch" in test_cases:
-        firstCatch = test_cases["one_catch"]-test_cases["two_error"]
+    if "one_catch__" in test_cases:
+        firstCatch = test_cases["one_catch__"]-test_cases["two_error__"]
 
     string = ",".join([
         plat,
@@ -31,14 +31,14 @@ def diff(fout, plat, error_type, test_cases, terminate_test_cases):
         str(test_cases["one_neutral"] - terminate_test_cases["one_neutral"]),
         str(test_cases["two_neutral"]),
         str(test_cases["two_neutral"]-test_cases["one_neutral"]),
-        str(test_cases["one_error"]),
-        str(test_cases["one_error"]-test_cases["two_neutral"]),
-        str(test_cases["two_error"]),
-        str(test_cases["two_error"]-test_cases["one_error"]),
-        str(test_cases.get("one_catch", 0)),
+        str(test_cases["one_error__"]),
+        str(test_cases["one_error__"]-test_cases["two_neutral"]),
+        str(test_cases["two_error__"]),
+        str(test_cases["two_error__"]-test_cases["one_error__"]),
+        str(test_cases.get("one_catch__", 0)),
         str(firstCatch),
-        str(test_cases.get("two_catch", 0)),
-        str(test_cases.get("two_catch", 0)-test_cases.get("one_catch",0)),
+        str(test_cases.get("two_catch__", 0)),
+        str(test_cases.get("two_catch__", 0)-test_cases.get("one_catch__",0)),
     ])
     fout.write(string + "\n")
 
@@ -70,7 +70,7 @@ def main():
         fout.write(HEADER_STR)
         for plat, error_types in plat_map.items():
             for error_type, test_cases in error_types.items():
-                diff(fout, plat, error_type, test_cases, error_types["terminate"])
+                diff(fout, plat, error_type, test_cases, error_types["terminate_________"])
 
 if __name__ == '__main__':
     if sys.version_info[0] < 3:

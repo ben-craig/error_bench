@@ -1,22 +1,22 @@
 TERM_TYPES = [
-    {:dir => "terminate", :cc_flags => ""},
+    {:dir => "terminate_________", :cc_flags => ""},
     {:dir => "noexcept_terminate", :cc_flags => "/EHs"},
 ]
 ERROR_TYPES = [
-    {:dir => "throw_val", :cc_flags => "/EHs"},
-    {:dir => "throw_struct", :cc_flags => "/EHs"},
-    {:dir => "throw_exception", :cc_flags => "/EHs"},
-    {:dir => "tls_error_val", :cc_flags => ""},
-    {:dir => "tls_error_struct", :cc_flags => ""},
-    {:dir => "return_val", :cc_flags => ""},
-    {:dir => "return_struct", :cc_flags => ""},
-    {:dir => "ref_struct", :cc_flags => ""},
-    {:dir => "ref_val", :cc_flags => ""},
-    {:dir => "expected_struct", :cc_flags => ""},
-    {:dir => "expected_val", :cc_flags => ""},
+    {:dir => "throw_val_________", :cc_flags => "/EHs"},
+    {:dir => "throw_struct______", :cc_flags => "/EHs"},
+    {:dir => "throw_exception___", :cc_flags => "/EHs"},
+    {:dir => "tls_error_val_____", :cc_flags => ""},
+    {:dir => "tls_error_struct__", :cc_flags => ""},
+    {:dir => "return_val________", :cc_flags => ""},
+    {:dir => "return_struct_____", :cc_flags => ""},
+    {:dir => "ref_struct________", :cc_flags => ""},
+    {:dir => "ref_val___________", :cc_flags => ""},
+    {:dir => "expected_struct___", :cc_flags => ""},
+    {:dir => "expected_val______", :cc_flags => ""},
 ]
-FULL_CASE_NAMES = ["one_neutral", "two_neutral", "one_error", "two_error"]
-NO_TERM_CASE_NAME = ["one_catch", "two_catch"]
+FULL_CASE_NAMES =   ["one_neutral", "two_neutral", "one_error__", "two_error__"]
+NO_TERM_CASE_NAME = ["one_catch__", "two_catch__"]
 
 class TestCase
     def initialize(error_case, error_type, proc)
@@ -81,9 +81,9 @@ end
 
 def gen_cmp_retval_size_diffs(file, test_case, all_the_sizes)
     # don't compare to self
-    return if test_case.error_type[:dir] == "return_val"
+    return if test_case.error_type[:dir] == "return_val________"
 
-    retval_dir = test_case.dest.sub(test_case.error_type[:dir], "return_val")
+    retval_dir = test_case.dest.sub(test_case.error_type[:dir], "return_val________")
     cur_dir = test_case.dest
 
     all_the_sizes << "#{cur_dir}\\retval_diff.size"
