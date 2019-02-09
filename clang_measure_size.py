@@ -43,6 +43,7 @@ def measure_asm_size(asm_file_name, sym_size_map):
     state = BEFORE_BEGINNING
     addr = 0
     begin_addr_num = 0
+    next_begin_addr_num = 0
     cur_func = "???"
     last_func = "???"
     addr_after_exit = 0
@@ -62,25 +63,23 @@ def measure_asm_size(asm_file_name, sym_size_map):
                     sym_size_map[last_func] = size
                     result = result + size
                     needs_addr_after_exit = False
-                    begin_addr_num = addr
                     addr_after_exit = 0
-                if begin_addr_num == 0:
-                    begin_addr_num = addr
                 state = IN_FUNC
                 instructions = asm_loc.matches.group(3)
-                if (" retq " in instructions) or (" jmpq " in instructions) or instructions.endswith(" retq"):
+                if ("retq " in instructions) or ("jmpq " in instructions):
                     needs_addr_after_exit = True
             if func.search(line):
                 if state != BEFORE_BEGINNING:
                     state = BEGIN_FUNC
                 last_func = cur_func
-                cur_func = func.matches.group(1)
+                begin_addr_num = next_begin_addr_num
+                next_begin_addr_num = int(func.matches.group(1), 16)
+                cur_func = func.matches.group(2)
 
         if state == IN_FUNC:
             if addr_after_exit != 0:
                 size = (addr_after_exit - begin_addr_num)
             else:
-                print ("Bias!", asm_file_name)
                 size = (addr - begin_addr_num)
             sym_size_map[cur_func] = size
             result = result + size
