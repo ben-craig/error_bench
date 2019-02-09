@@ -122,7 +122,7 @@ def main():
     parser.add_argument(
         '-d',
         '--diff',
-        help="Name of second assembly file to diff against"
+        help="Name of second assembly file to diff against",
         action="store",
         dest="diffFile",
         default="")
@@ -138,7 +138,7 @@ def main():
     second_sym_size_map = {}
     measure_map_size(args.diffFile, second_sym_size_map)
     measure_asm_size(args.diffFile, second_sym_size_map)
-    diff(first_sym_size_map, second_sym_size_map, args.mapFile, args.diffFile, args.outputFile)
+    diff(first_sym_size_map, second_sym_size_map, args.asmFile, args.diffFile, args.outputFile)
 
 if __name__ == '__main__':
     import sys
