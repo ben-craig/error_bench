@@ -33,31 +33,57 @@ def measure_map_size(map_file_name, sym_size_map):
                 cur_size = 0
     return result
 
+BEFORE_BEGINNING = 0
+BEGIN_FUNC = 1
+IN_FUNC = 2
+
 def measure_asm_size(asm_file_name, sym_size_map):
-    asm_loc = Scanner(r"^  ([0-9a-f]+):\s+((?:[0-9a-f]{2} ))+")
+    asm_loc = Scanner(r"^  ([0-9a-f]+):\s+((?:[0-9a-f]{2} ))+(.*)")
     func = Scanner(r"^([0-9a-f]+)\s+\<([^>]*)\>:$")
-    addr_end = 0
+    state = BEFORE_BEGINNING
+    addr = 0
     begin_addr_num = 0
     cur_func = "???"
+    last_func = "???"
+    addr_after_exit = 0
+    needs_addr_after_exit = False
     result = 0
     with open(asm_file_name, 'r') as fin:
         for line in fin:
             if asm_loc.search(line):
                 addr = int(asm_loc.matches.group(1), 16)
-                instrs = asm_loc.matches.group(2)
-                addr_end = int(len(instrs)/3 + addr)
+                if needs_addr_after_exit:
+                    addr_after_exit = addr
+                    needs_addr_after_exit = False
+                if state == BEGIN_FUNC:
+                    if addr_after_exit == 0:
+                        addr_after_exit = addr
+                    size = (addr_after_exit - begin_addr_num)
+                    sym_size_map[last_func] = size
+                    result = result + size
+                    needs_addr_after_exit = False
+                    begin_addr_num = addr
+                    addr_after_exit = 0
+                if begin_addr_num == 0:
+                    begin_addr_num = addr
+                state = IN_FUNC
+                instructions = asm_loc.matches.group(3)
+                if (" retq " in instructions) or (" jmpq " in instructions) or instructions.endswith(" retq"):
+                    needs_addr_after_exit = True
             if func.search(line):
-                last_size = (addr_end - begin_addr_num)
-                sym_size_map[cur_func] = last_size
-                result = result + last_size
-                begin_addr_num = int(func.matches.group(1), 16)
-                addr_end = begin_addr_num
-                cur_func = func.matches.group(2)
+                if state != BEFORE_BEGINNING:
+                    state = BEGIN_FUNC
+                last_func = cur_func
+                cur_func = func.matches.group(1)
 
-    # report the very last function as well
-    last_size = (addr_end - begin_addr_num)
-    sym_size_map[cur_func] = last_size
-    result = result + last_size
+        if state == IN_FUNC:
+            if addr_after_exit != 0:
+                size = (addr_after_exit - begin_addr_num)
+            else:
+                print ("Bias!", asm_file_name)
+                size = (addr - begin_addr_num)
+            sym_size_map[cur_func] = size
+            result = result + size
     return result
 
 def diff(map_one, map_two, fname1, fname2, out_file_name):

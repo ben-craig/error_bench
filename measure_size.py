@@ -33,7 +33,6 @@ def measure_map_size(map_file_name, sym_size_map):
 BEFORE_BEGINNING = 0
 BEGIN_FUNC = 1
 IN_FUNC = 2
-PAST_FUNC = 3
 
 def measure_asm_size(asm_file_name, sym_size_map):
     asm_loc = Scanner(r"^  ([0-9A-F]+):(.*)")
