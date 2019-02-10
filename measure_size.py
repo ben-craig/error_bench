@@ -76,6 +76,8 @@ def measure_asm_size(asm_file_name, sym_size_map):
                 instructions = asm_loc.matches.group(2)
                 if instructions.endswith("call        dword ptr [__imp__ExitProcess@4]"):
                     needs_addr_after_exit = True
+                if "_CxxThrowException" in instructions:
+                    needs_addr_after_exit = True
                 if (" ret " in instructions) or (" jmp " in instructions) or instructions.endswith("__exit")  or instructions.endswith(" ret"):
                     needs_addr_after_exit = True
             if func.search(line):
