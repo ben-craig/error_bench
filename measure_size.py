@@ -12,7 +12,12 @@ class Scanner(object):
         self.matches = self.cmpexpr.search(string)
         return self.matches is not None
 
-def measure_map_size(map_file_name, sym_size_map):
+EXCEPTION_SECTIONS = [
+    ".pdata",
+    ".xdata"
+]
+
+def measure_map_size(omit_except, map_file_name, sym_size_map):
     scanner = Scanner(r"^ \d\d\d\d:[0-9a-f]+ ([0-9a-f]+)H\s+([^\s]+)")
     result = 0
     returnOnFailure = False
@@ -22,6 +27,8 @@ def measure_map_size(map_file_name, sym_size_map):
                 returnOnFailure = True
                 section_name = scanner.matches.group(2)
                 size_num = int(scanner.matches.group(1), 16)
+                if omit_except and section_name in EXCEPTION_SECTIONS:
+                    continue
                 if ".text$" in section_name:
                     continue
                 sym_size_map[section_name] = size_num
@@ -122,6 +129,12 @@ def main():
     parser.add_argument(
         'outputFile', help='output file to create that will hold size')
     parser.add_argument(
+        '--noexcept',
+        help="Omit exception sections",
+        action="store",
+        dest="noexcept",
+        default=False)
+    parser.add_argument(
         '-d',
         '--diff',
         help="Name of second mapfile to diff against",
@@ -130,7 +143,7 @@ def main():
         default="")
     args = parser.parse_args()
     first_sym_size_map = {}
-    map_size = measure_map_size(args.mapFile, first_sym_size_map)
+    map_size = measure_map_size(args.noexcept, args.mapFile, first_sym_size_map)
     asm_name = args.mapFile.replace(".exe.map", ".exe.asm")
     asm_size = measure_asm_size(asm_name, first_sym_size_map)
     combined = map_size + asm_size
@@ -139,7 +152,7 @@ def main():
             fout.write(str(combined))
         return
     second_sym_size_map = {}
-    measure_map_size(args.diffFile, second_sym_size_map)
+    measure_map_size(args.noexcept, args.diffFile, second_sym_size_map)
     asm_name = args.diffFile.replace(".exe.map", ".exe.asm")
     measure_asm_size(asm_name, second_sym_size_map)
     diff(first_sym_size_map, second_sym_size_map, args.mapFile, args.diffFile, args.outputFile)
