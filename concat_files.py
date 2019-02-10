@@ -49,6 +49,8 @@ def name_to_case(name):
     return name.split(os.path.sep)[1]
 
 def name_to_error_type(name):
+    if (os.path.sep + "noexcept.") in name:
+        return "stripped." + name.split(os.path.sep)[2]
     return name.split(os.path.sep)[2]
 
 def main():
@@ -70,7 +72,7 @@ def main():
         fout.write(HEADER_STR)
         for plat, error_types in plat_map.items():
             for error_type, test_cases in error_types.items():
-                diff(fout, plat, error_type, test_cases, error_types["terminate_________"])
+                diff(fout, plat, error_type, test_cases, error_types["stripped.terminate_________"])
 
 if __name__ == '__main__':
     if sys.version_info[0] < 3:

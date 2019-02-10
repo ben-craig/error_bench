@@ -75,6 +75,15 @@ def gen_incr_size_diffs(file, test_case, all_the_sizes)
     file.print "        #{cur_dir}/main.exe.asm $\n"
     file.print "        clang_measure_size.py\n"
     file.print "    DIFF_FILE=#{cur_dir}/main.exe.asm\n"
+
+    if test_case.flags.include? "except"
+        all_the_sizes << "#{cur_dir}/except_incr_diff.size"
+        file.print "build #{cur_dir}/except_incr_diff.size: diff_size #{prev_dir}/main.exe.asm | $\n"
+        file.print "        #{cur_dir}/main.exe.asm $\n"
+        file.print "        clang_measure_size.py\n"
+        file.print "    DIFF_FILE=#{cur_dir}/main.exe.asm\n"
+        file.print "    FLAGS=--noexcept=True\n"
+    end
 end
 
 def gen_cmp_retval_size_diffs(file, test_case, all_the_sizes)
@@ -132,6 +141,12 @@ def gen_config(file, test_case)
     file.print "build #{dest_dir}/main.size: measure_size #{dest_dir}/main.exe.asm | $\n"
     file.print "    clang_measure_size.py\n"
 
+    if cc_flags.include? "except"
+        file.print "build #{dest_dir}/noexcept.main.size: measure_size #{dest_dir}/main.exe.asm | $\n"
+        file.print "    clang_measure_size.py\n"
+        file.print "    FLAGS=--noexcept=True\n"
+    end
+
     file.print "build #{dest_dir}/bench_padding: check_asm_padding #{dest_dir}/bench.exe.asm | $\n"
     file.print "    check_asm_alignment.py\n"
 end
@@ -151,6 +166,9 @@ def main()
         h.print "build totals/sizes.csv: collect_sizes"
         each_case do |c|
             h.print " #{c.dest}/main.size"
+            if c.flags.include? "except"
+                h.print " #{c.dest}/noexcept.main.size"
+            end
         end
         h.print " | concat_files.py\n\n"
 

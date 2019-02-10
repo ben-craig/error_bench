@@ -35,11 +35,11 @@ rule link
     description = LINK $out
 
 rule measure_size
-    command = python3 clang_measure_size.py $in $out
+    command = python3 clang_measure_size.py $FLAGS $in $out
     description = SIZE $out
 
 rule diff_size
-    command = python3 clang_measure_size.py $in $out --diff $DIFF_FILE
+    command = python3 clang_measure_size.py $FLAGS $in $out --diff $DIFF_FILE
     description = DIFF $out
 
 rule collect_sizes

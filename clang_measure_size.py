@@ -12,7 +12,12 @@ class Scanner(object):
         self.matches = self.cmpexpr.search(string)
         return self.matches is not None
 
-def measure_map_size(map_file_name, sym_size_map):
+EXCEPTION_SECTIONS = [
+    ".eh_frame_hdr",
+    ".eh_frame"
+]
+
+def measure_map_size(omit_except, map_file_name, sym_size_map):
     scanner = Scanner(r"^\s*\d+\s+([^\s]+)\s+([a-f0-9]+)\s+")
     typeScanner = Scanner(r"^[A-Z\s,]+$")
     result = 0
@@ -27,6 +32,15 @@ def measure_map_size(map_file_name, sym_size_map):
                 continue
             if cur_size and typeScanner.search(line):
                 if " CODE" in line:
+                    continue
+                if omit_except and cur_name in EXCEPTION_SECTIONS:
+                    continue
+                # the only meaningful .bss change seems to
+                # be comparing exceptions to no exceptions.
+                # gcc randomly adds or subtracts 32 bytes
+                # from .bss though, so we will omit it in
+                # order to reduce noise
+                if cur_name == ".bss":
                     continue
                 sym_size_map[cur_name] = cur_size
                 result = result + cur_size
@@ -119,6 +133,12 @@ def main():
     parser.add_argument(
         'outputFile', help='output file to create that will hold size')
     parser.add_argument(
+        '--noexcept',
+        help="Omit exception sections",
+        action="store",
+        dest="noexcept",
+        default=False)
+    parser.add_argument(
         '-d',
         '--diff',
         help="Name of second assembly file to diff against",
@@ -127,7 +147,7 @@ def main():
         default="")
     args = parser.parse_args()
     first_sym_size_map = {}
-    map_size = measure_map_size(args.asmFile, first_sym_size_map)
+    map_size = measure_map_size(args.noexcept, args.asmFile, first_sym_size_map)
     asm_size = measure_asm_size(args.asmFile, first_sym_size_map)
     combined = map_size + asm_size
     if args.diffFile == "":
@@ -135,7 +155,7 @@ def main():
             fout.write(str(combined))
         return
     second_sym_size_map = {}
-    measure_map_size(args.diffFile, second_sym_size_map)
+    measure_map_size(args.noexcept, args.diffFile, second_sym_size_map)
     measure_asm_size(args.diffFile, second_sym_size_map)
     diff(first_sym_size_map, second_sym_size_map, args.asmFile, args.diffFile, args.outputFile)
 
