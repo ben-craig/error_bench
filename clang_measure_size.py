@@ -80,7 +80,7 @@ def measure_asm_size(asm_file_name, sym_size_map):
                     addr_after_exit = 0
                 state = IN_FUNC
                 instructions = asm_loc.matches.group(3)
-                if ("retq " in instructions) or ("jmpq " in instructions):
+                if ("retq " in instructions) or ("jmpq " in instructions) or ("<abort>" in instructions) or ("jmp " in instructions) or ("<__cxa_throw>" in instructions):
                     needs_addr_after_exit = True
             if func.search(line):
                 if state != BEFORE_BEGINNING:
