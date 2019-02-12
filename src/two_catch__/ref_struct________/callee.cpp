@@ -14,6 +14,7 @@ void callee2(int amount, error_struct &e) {
   if (global_int + amount == INT_MAX) {
     e.error = &error_info;
     e.domain = &error_domain;
+    return;
   }
   global_int += amount;
 }
