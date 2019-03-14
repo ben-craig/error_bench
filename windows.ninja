@@ -1,7 +1,8 @@
 ninja_required_version = 1.7
 
 #MY_VC_DIR=C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Tools\MSVC\14.14.26428
-MY_VC_DIR=C:\Program Files (x86)\Microsoft Visual Studio\2017\Professional\VC\Tools\MSVC\14.16.27023
+#MY_VC_DIR=C:\Program Files (x86)\Microsoft Visual Studio\2017\Professional\VC\Tools\MSVC\14.16.27023
+MY_VC_DIR=C:\Program Files (x86)\Microsoft Visual Studio\2019\Preview\VC\Tools\MSVC\14.20.27404
 x64_MY_VC_BIN_DIR=$MY_VC_DIR\bin\Hostx64\x64
 x86_MY_VC_BIN_DIR=$MY_VC_DIR\bin\Hostx86\x86
 MY_DDK_VER=10.0.17763.0
@@ -23,7 +24,7 @@ CCFLAGS= $
 /GR $
 /Gy $
 /Gw $
-/O2 $
+/O1 $
 /MT $
 /std:c++latest $
 /permissive- $
@@ -85,19 +86,19 @@ rule x86_map_link
     description = x86_MAP_LINK $out
 
 rule measure_size
-    command = python3 measure_size.py $FLAGS $in $out
+    command = python measure_size.py $FLAGS $in $out
     description = SIZE $out
 
 rule diff_size
-    command = python3 measure_size.py $FLAGS $in $out --diff $DIFF_FILE
+    command = python measure_size.py $FLAGS $in $out --diff $DIFF_FILE
     description = DIFF $out
 
 rule collect_sizes
-    command = python3 concat_files.py $out $in
+    command = python concat_files.py $out $in
     description = COLLECT_SIZES
 
 rule collect_benches
-    command = python3 concat_benches.py $out $in
+    command = python concat_benches.py $out $in
     description = COLLECT_BENCHES
 
 rule asm_dump
@@ -105,5 +106,5 @@ rule asm_dump
     description = ASM_DUMP $out
 
 rule check_asm_padding
-    command = python3 check_asm_alignment.py $in
+    command = python check_asm_alignment.py $in
     description = ASM_ALIGNMENT $in
