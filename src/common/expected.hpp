@@ -224,10 +224,10 @@ template<typename E>
 #ifdef TL_EXPECTED_EXCEPTIONS_ENABLED
     throw std::forward<E>(e);
 #else
+  (void)e;
   #ifdef _MSC_VER
     __assume(0);
   #else
-    (void)e;
     __builtin_unreachable();
   #endif
 #endif
@@ -765,7 +765,7 @@ struct expected_operations_base : expected_storage_base<T, E> {
   }
 #endif
 
-  constexpr void destroy_val() {
+  TL_EXPECTED_11_CONSTEXPR void destroy_val() {
 	get().~T();
   }
 };
@@ -820,7 +820,7 @@ struct expected_operations_base<void, E> : expected_storage_base<void, E> {
   }
 #endif
 
-  constexpr void destroy_val() {
+  TL_EXPECTED_11_CONSTEXPR void destroy_val() {
 	  //no-op
   }
 };
@@ -1910,7 +1910,7 @@ constexpr auto and_then_impl(Exp &&exp, F &&f) {
 
   return exp.has_value()
              ? detail::invoke(std::forward<F>(f), *std::forward<Exp>(exp))
-             : Ret(unexpect, exp.error());
+             : Ret(unexpect, std::forward<Exp>(exp).error());
 }
 
 template <class Exp, class F,
@@ -1920,7 +1920,7 @@ constexpr auto and_then_impl(Exp &&exp, F &&f) {
   static_assert(detail::is_expected<Ret>::value, "F must return an expected");
 
   return exp.has_value() ? detail::invoke(std::forward<F>(f))
-                         : Ret(unexpect, exp.error());
+                         : Ret(unexpect, std::forward<Exp>(exp).error());
 }
 #else
 template <class> struct TC;
@@ -1933,7 +1933,7 @@ auto and_then_impl(Exp &&exp, F &&f) -> Ret {
 
   return exp.has_value()
              ? detail::invoke(std::forward<F>(f), *std::forward<Exp>(exp))
-             : Ret(unexpect, exp.error());
+             : Ret(unexpect, std::forward<Exp>(exp).error());
 }
 
 template <class Exp, class F,
@@ -1943,7 +1943,7 @@ constexpr auto and_then_impl(Exp &&exp, F &&f) -> Ret {
   static_assert(detail::is_expected<Ret>::value, "F must return an expected");
 
   return exp.has_value() ? detail::invoke(std::forward<F>(f))
-                         : Ret(unexpect, exp.error());
+                         : Ret(unexpect, std::forward<Exp>(exp).error());
 }
 #endif
 
