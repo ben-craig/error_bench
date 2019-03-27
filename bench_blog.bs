@@ -1,0 +1,1519 @@
+<pre class='metadata'>
+Title: Error size benchmarking
+Shortname: Dxxxx
+Revision: 0.0
+Audience: SG14, SG10, SG1, EWG, LEWG
+Status: D
+Group: WG21
+URL: https://wg21.link/P1105R1
+!Source: <a href="https://github.com/ben-craig/freestanding_proposal/blob/master/core/optional_exceptions.bs">github.com/ben-craig/freestanding_proposal/blob/master/core/optional_exceptions.bs</a>
+Editor: Ben Craig, National Instruments, ben.craig@gmail.com
+Abstract: Measuring size costs of error handling approaches.  Exceptions are big, <code>std::abort</code> and integer error codes are small, and <code>expected</code> is somewhere in between.
+Markup Shorthands: markdown yes
+</pre>
+<script src="echarts.js"></script>
+<script type="text/javascript">
+function addCommas(x) {
+  x = (x + '').split('.');
+  return x[0].replace(/(\d{1,3})(?=(?:\d{3})+(?!\d))/g,'$1,')
+          + (x.length > 1 ? ('.' + x[1]) : '');
+}
+function myFormatter(params, ticket, callback) {
+  colorText = '<span style="display:inline-block;margin-right:5px;border-radius:10px;width:10px;height:10px;background-color:' + 
+    params.color + 
+    ';"></span>';
+
+  return params.seriesName + "<br />" + colorText + params.name + ": " + addCommas(params.value) + " bytes";
+}
+</script>
+<style>
+blockquote.book {
+  display: block;
+  border-width: 2px 0;
+  border-style: solid;
+  border-color: #eee;
+  padding: 1.5em 5em 0.5em 5em;
+  margin: 1.5em 0;
+  position: relative;
+  text-align: justify;
+}
+blockquote.book:before {
+  content: '\201C';
+  position: absolute;
+  top: 0em;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: #fff;
+  width: 3rem;
+  height: 2rem;
+  font: 6em/1.08em 'PT Sans', sans-serif;
+  color: #666;
+  text-align: center;
+}
+blockquote.book:after {
+  content: '\201D';
+  position: absolute;
+  bottom: -0.25em;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: #fff;
+  width: 3rem;
+  height: 2rem;
+  font: 6em/1.08em 'PT Sans', sans-serif;
+  color: #666;
+  text-align: center;
+}
+cite {
+  display: block;
+  text-align: right;
+  color: #e74c3c;
+  margin: 0 -5em 1em 0;
+}
+</style>
+
+<blockquote class="book">
+To make progress, we need better data on costs and performance to evaluate the - often simplistic and narrowly focused - solutions suggested.
+<cite>— Direction for ISO C++ <sup>[[P0939R2]]</sup></cite>
+</blockquote>
+
+Introduction {#intro}
+====================================
+Error handling is never free.  In C++, reacting to an error condition always bears some cost.  It may be a speed cost from checks spread everywhere, or it may be a size cost for error handling cost, but costs are inevitable.
+
+One may try to avoid all the costs by calling `std::abort` or something similar, but even that has costs.  The only cost-free option is to ignore the errors entirely and expose yourself to the wrath of UB.
+
+So great, there are costs, but how should we measure the costs, and which error handling mechanisms exhibit what kinds of costs?
+
+In this post, we will look at the *size* costs of error handling.  We'll break things down into one-time costs and incremental costs, and subdivide by costs paid for error neutral functions, raising an error, and handling an error.
+
+Exception implementation {#exception_impl}
+==========================================
+In GCC, Clang, and MSVC x64, exceptions are implemented using the "table-based exceptions" strategy.  When an exception is thrown, the instruction pointer is used to look in a constant, global table to determine how to restore registers, which destructors to call, and how to get to the next frame.  This approach has the advantage that minimal extra code is required to be executed in the success path.
+
+In MSVC x86, exceptions are implemented with a variant of the "setjmp/longjmp" method.  Bookkeeping information is emitted anytime a try block is entered, or anytime an object with a non-trivial destructor has been constructed.  This information is linked together into a list.  When an exception is thrown, the list is traversed, destructors and catch blocks are executed.  This approach has the advantage that throwing an exception has a much more deterministic cost than the table-based approach.
+
+In Clang and GCC, exception objects are allocated on the heap.  Both implementations have an emergency buffer they fall back to if allocations fail.
+
+With MSVC, exception objects are allocated from a large stack based buffer.  This consumes roughly 2,100 bytes of stack on 32-bit windows, and 9,700 bytes of stack on 64-bit windows.
+
+The heap is often not present in freestanding environments.  Stack space is often tightly constrained in freestanding environments as well.
+
+[[RenwickLowCost]] describes a way to implement exceptions by passing in exception information though a hidden function parameter.  Currently, this approach can't be used for a conforming C++ implementation, but it will come close enough for many applications.  The author does not have access to a compiler with this implementation of exceptions, so it has not been benchmarked.
+
+[[P0709]] describes a way to implement a new kind of exceptions, where the error information is packaged with the return value in a discriminated union.  The author does not have access to a compiler that can use this kind of exception handling mechanism, so it has not been benchmarked.  Readers should _not_ assume that the costs will be the same as those for `expected` or returning a struct, as the code to test and the code to set the discriminator could cause substantial size differences from what was measured for existing cases.  This style of exceptions requires that values of specific types be thrown, rather than allowing any type to be thrown.
+
+Conforming C++ exceptions need to be able to support some tricky use cases.
+* Transporting information across noexcept barriers.
+* `uncaught_exceptions()`
+* `current_exception()`
+* Re-throwing exceptions in distant functions, for example, in a "Lippincott" function [[Guillemot]].
+* Multiple in-flight exceptions at the same time.
+
+In addition, for exceptions to be acceptable in the market, there is also the requirement that C++ be source and link compatible with C.
+
+In general, supporting these difficult use cases requires some kind of storage that is local to a thread.  In single threaded environments, "storage that is local to a thread" can be implemented with a simple global.  In multi-threaded environments, something more invasive or sophisticated is required.  In practice, the "more invasive or sophisticated" facilities are often not available in freestanding environments.  Getting those features into freestanding environments often requires substantial runtime cost, cooperation from vendors other than the compiler vendor, or both runtime cost and vendor cooperation.
+
+It may be possible to support useful, but non-conforming exceptions in freestanding environments.  This paper should help quantify some of the size costs.  The larger the size cost, the less utility the facility provides.
+
+Measuring methodology {#methodology}
+====================================
+All benchmarks lie.  It's important to know how a benchmark is set up so that the useful parts can be distinguished from the misleading parts.
+
+MSVC 2019 Preview 3 was used for MSVC x86 and MSVC x64 builds.  The /d2FH4 flag described in [[MoFH4]] was used, and /EHs was used when exceptions exceptions were on.
+
+GCC 7.3.1 from the Red Hat Developer Toolset 7.1 was used for my GCC builds.  The Linux x64 platform was targeted.
+
+Clang 7.0.0 and libc++ was used for my Clang builds.  The Linux x64 platform was targeted.  The system linker and C library leaked in to this build.  The system GCC was GCC 4.8.4 from Ubuntu 14.04.3.
+
+All the binaries are built with static runtimes, so that we can also see the costs of the error handling runtime machinery.  For many people, this is a sunk cost.  If the cost of the runtime machinery isn't of interest, then don't pay attention to the one-time costs, and just look at the incremental costs.  Sizes were not calculated by just doing the "easy" thing and comparing the on-disk sizes of the resulting programs.  Programs have lots and lots of padding internal to them due to alignment constraints, and that padding can mask or inflate small cost changes.  So instead, the size is calculated by summing the size of all the non-code sections, and by summing the size of each function in the code sections.  Measuring the size of a function is a little tricky, as the compiler doesn't emit that information directly.  There are often padding instructions between consecutive functions.  My measurements omit the padding instructions so that we can see code size differences as small as one byte.
+
+Measurements are also included where the size of some data sections related to unwinding are omitted.  On x64 Linux, programs can have an .eh_frame and .eh_frame_hdr section that can help with emitting back traces.  x64 Windows has similar sections named .xdata and .pdata.  These sections aren't sufficient to implement C++ exception handling, and they don't go away when exceptions are turned off.  On Linux and Windows, these sections should be considered a sunk cost, but on more exotic platforms, it is reasonable to omit those sections, as stack trace costs may not be tolerable.  These measurements are all labeled as "stripped".  x86 Windows doesn't have these sections, so the "stripped" measurements are the same as the unstripped measurements.
+
+Note that on Linux, the entire user mode program can be statically linked.  This is the program under test, the C++ runtime, the C runtime, and any OS support.  On Windows, the program, the C++ runtime, and the C runtime can be statically linked, but the OS support (kernel32.dll) is still distinct.  With this in mind, refrain from comparing the one-time MSVC sizes to the Clang and GCC sizes, as it isn't comparing the same set of functionality.
+
+These benchmarks are run on very small programs.  On larger programs, various code and data deduplication optimizations could substantially change the application-level costs of error handling.  [[MoFH4]] documents the kinds of deduplication that MSVC 2019 performs.
+
+The specific build flags can be found in [Appendix B](#build_flags).
+
+Starter test cases {#starter_case}
+=====================
+To start with, we will look at code similar to the following:
+```
+struct Dtor {~Dtor() {}};
+int global_int = 0;
+void callee() {/* will raise an error one day*/}
+void caller() {
+  Dtor d;
+  callee();
+  global_int = 0;
+}
+int main() { 
+  caller();
+  return global_int;
+}
+```
+This code has some important properties for future comparisons.
+* `callee()` will eventually raise errors.
+* `caller()` needs to clean up the `d` object in error and non-error conditions.
+* `caller()` should only set `global_int` in success cases.
+* The code doesn't have any error cases yet.  So we can see the cost of error handling machinery when no errors are involved.
+
+In the actual tests all the function bodies are in separate .cpp files, and link-time / whole-program optimizations aren't used.  If they had been used, the entire program would get optimized away, removing our ability to measure error handling differences.
+
+The above program is a useful template when using exceptions or `std::abort` as an error handling mechanism, but it won't work as well for error codes.  So we mutate the program like so...
+```
+int callee() {return 0;}
+int caller() {
+  Dtor d;
+  int e = callee();
+  if (e)
+    return e;
+  global_int = 0;
+  return e;
+}
+```
+This is pretty typical integer return value code, without any macro niceties.
+
+Most of the programs were built with exceptions turned off, but the throw_* cases and noexcept_abort all had exceptions turned on in the program.
+* abort: When an error is encountered, kill the program with `std::abort`.
+* noexcept_abort: Same as abort, except exceptions are turned on, and all the functions declared in user source are marked as `noexcept`.
+* return_struct: Return an `error_struct` object (described below) rather than an integer error code.
+* ref_val and ref_struct: Rather than returning integers and `error_struct`s, construct them in main and pass them in by mutable reference.
+* expected_val and expected_struct: Use tl::expected [[BrandExpected]] wrapping either an integer or an error_struct, accordingly.
+* tls_val and tls_struct: Use thread_local variables to communicate error conditions.
+* throw_val and throw_struct: Throw an integer or error_struct as an exception.  This is to allow a direct comparison to the other error handling strategies in terms of information transmitted from error site to handling site.
+* throw_exception: Throw an exception deriving from std::exception, that contains only an int.  This should represent more typical use cases.
+
+Expository code for all the cases can be found in [Appendix C](#code).  The actual code used for the benchmark can be found [on my github](https://github.com/ben-craig/error_bench/tree/8807ec200b7992294490e8754847dce648a3eadb/src).
+
+Measurements {#measurements}
+============================
+
+Initial error neutral cost {#neutral1}
+-----------------------
+My first batch of measurements is comparing each of the mechanisms to the abort test case that has no unwind information.  This lets us focus on the incremental costs of the other mechanisms.
+<p align="center"><i>Warning! Logarithmic axis!</i></p>
+<div id="CmpTerm" style="width: 100%;height:600px;"></div>
+<script type="text/javascript">
+  // based on prepared DOM, initialize echarts instance
+  var myChart = echarts.init(document.getElementById('CmpTerm'));
+
+  // specify chart configuration item and data
+  var option = {
+    tooltip: { formatter: myFormatter },
+    calculable : true,
+    legend: {
+      type: 'scroll',
+      right: 0,
+      top: 30,
+      orient: 'vertical',
+    },
+    xAxis: [{
+      type: 'log',
+      logBase: '400000'
+    }],
+    yAxis: [{
+      type: 'category',
+      data: ['Clang','GCC','MSVC x64','MSVC x86']
+    }],
+    grid: {
+      top: 0,
+      left: 65,
+      right: 200
+    },
+    toolbox: {
+      show : true,
+      feature : {
+        dataView : {show: true, readOnly: false},
+        restore : {show: true},
+        saveAsImage : {show: true}
+      }
+    },
+    series: [
+      {
+        type: 'bar',
+        name: 'stripped.abort',
+        data: [0,0,0,0]
+      }, {
+        type: 'bar',
+        name: 'stripped.return_val',
+        data: [20,14,13,9]
+      }, {
+        type: 'bar',
+        name: 'stripped.return_struct',
+        data: [30,27,58,29]
+      }, {
+        type: 'bar',
+        name: 'stripped.ref_val',
+        data: [29,26,21,31]
+      }, {
+        type: 'bar',
+        name: 'stripped.ref_struct',
+        data: [36,34,27,36]
+      }, {
+        type: 'bar',
+        name: 'stripped.expected_val',
+        data: [41,77,59,61]
+      }, {
+        type: 'bar',
+        name: 'stripped.expected_struct',
+        data: [54,37,61,63]
+      }, {
+        type: 'bar',
+        name: 'stripped.tls_error_val',
+        data: [28,28,214,215]
+      }, {
+        type: 'bar',
+        name: 'stripped.tls_error_struct',
+        data: [29,29,481,510]
+      }, {
+        type: 'bar',
+        name: 'abort',
+        data: [57376,42732,6360,0]
+      }, {
+        type: 'bar',
+        name: 'noexcept_abort',
+        data: [57376,42732,6360,0]
+      }, {
+        type: 'bar',
+        name: 'return_val',
+        data: [57404,42746,6373,9]
+      }, {
+        type: 'bar',
+        name: 'return_struct',
+        data: [57422,42759,6434,29]
+      }, {
+        type: 'bar',
+        name: 'ref_val',
+        data: [57413,42766,6381,31]
+      }, {
+        type: 'bar',
+        name: 'ref_struct',
+        data: [57420,42774,6387,36]
+      }, {
+        type: 'bar',
+        name: 'expected_val',
+        data: [57425,42809,6419,61]
+      }, {
+        type: 'bar',
+        name: 'expected_struct',
+        data: [57438,42777,6421,63]
+      }, {
+        type: 'bar',
+        name: 'tls_error_val',
+        data: [57404,42760,6574,215]
+      }, {
+        type: 'bar',
+        name: 'tls_error_struct',
+        data: [57405,42761,6885,510]
+      }, {
+        type: 'bar',
+        name: 'throw_val',
+        data: [384163,102620,19990,6140]
+      }, {
+        type: 'bar',
+        name: 'throw_struct',
+        data: [384163,102620,19990,6140]
+      }, {
+        type: 'bar',
+        name: 'throw_exception',
+        barCategoryGap: '10%',
+        data: [384163,102620,19990,6140]
+      }
+    ]
+  };
+
+  // use configuration item and data specified to show chart
+  myChart.setOption(option);
+</script>
+<p align="center"><i>Warning! Logarithmic axis!</i></p>
+
+So these tables show us that the one-time cost for exceptions is really high (6KB on MSVC x86, 384KB on Clang x64), and the one time cost for unwind information is pretty high too (6KB on MSVC x64, 57KB on Clang).  Once we ignore unwind information, we can see that the one-time cost for TLS on Windows is small compared to unwind information, but high compared to the other error mechanisms (214 bytes - 510 bytes).  All the other one-time overheads are 77 bytes or less.  Remember that this code doesn't currently have any throw statements in the program.  This is the one-time cost of error neutral functions when exceptions are turned on.
+
+Note that noexcept_abort has the same cost as regular abort right now.  If everything is `noexcept`, the exception machinery costs are not incurred.
+
+Incremental error neutral cost {#neutral2}
+---------------------------------------------
+To measure the incremental cost of error neutral code, the code will be updated as follows:
+```
+void callee2(int amount) {
+  global_int += amount;
+  // will error one day
+}
+void caller2(int amount) {
+  Dtor d;
+  callee2(amount);
+  global_int += amount;
+}
+int main() { 
+  caller();
+  caller2(0);
+  return global_int;
+}
+```
+The "2" versions of these functions are slightly different than the original versions in order to avoid optimization where identical code is de-duplicated (COMDAT folding).  Each error handling case was updated to the idiomatic form that had the same semantics as this error neutral form.  Here are the incremental numbers:
+
+<div id="SecondNeutral" style="width: 100%;height:600px;"></div>
+<script type="text/javascript">
+  // based on prepared DOM, initialize echarts instance
+  var myChart = echarts.init(document.getElementById('SecondNeutral'));
+
+  // specify chart configuration item and data
+  var option = {
+    tooltip: { formatter: myFormatter },
+    calculable : true,
+    legend: {
+      type: 'scroll',
+      right: 0,
+      top: 30,
+      orient: 'vertical',
+    },
+    xAxis: [{
+      type: 'value',
+    }],
+    yAxis: [{
+      type: 'category',
+      data: ['Clang','GCC','MSVC x64','MSVC x86']
+    }],
+    grid: {
+      top: 0,
+      left: 65,
+      right: 200
+    },
+    dataZoom: [
+      {
+        show: true
+      }
+    ],
+    toolbox: {
+      show : true,
+      feature : {
+        dataView : {show: true, readOnly: false},
+        restore : {show: true},
+        saveAsImage : {show: true}
+      }
+    },
+    series: [
+      {
+        type: 'bar',
+        name: 'stripped.abort',
+        data: [48,48,49,49]
+      }, {
+        type: 'bar',
+        name: 'stripped.return_val',
+        data: [55,62,68,63]
+      }, {
+        type: 'bar',
+        name: 'stripped.return_struct',
+        data: [75,75,113,71]
+      }, {
+        type: 'bar',
+        name: 'stripped.ref_val',
+        data: [67,64,71,66]
+      }, {
+        type: 'bar',
+        name: 'stripped.ref_struct',
+        data: [62,63,72,66]
+      }, {
+        type: 'bar',
+        name: 'stripped.expected_val',
+        data: [76,122,113,104]
+      }, {
+        type: 'bar',
+        name: 'stripped.expected_struct',
+        data: [83,82,115,106]
+      }, {
+        type: 'bar',
+        name: 'stripped.tls_error_val',
+        data: [76,76,79,75]
+      }, {
+        type: 'bar',
+        name: 'stripped.tls_error_struct',
+        data: [77,77,80,75]
+      }, {
+        type: 'bar',
+        name: 'abort',
+        data: [120,104,61,49]
+      }, {
+        type: 'bar',
+        name: 'noexcept_abort',
+        data: [120,104,61,49]
+      }, {
+        type: 'bar',
+        name: 'return_val',
+        data: [135,118,80,63]
+      }, {
+        type: 'bar',
+        name: 'return_struct',
+        data: [163,131,141,71]
+      }, {
+        type: 'bar',
+        name: 'ref_val',
+        data: [155,128,83,66]
+      }, {
+        type: 'bar',
+        name: 'ref_struct',
+        data: [150,127,84,66]
+      }, {
+        type: 'bar',
+        name: 'expected_val',
+        data: [156,178,141,104]
+      }, {
+        type: 'bar',
+        name: 'expected_struct',
+        data: [163,146,127,106]
+      }, {
+        type: 'bar',
+        name: 'tls_error_val',
+        data: [148,132,91,75]
+      }, {
+        type: 'bar',
+        name: 'tls_error_struct',
+        data: [149,133,92,75]
+      }, {
+        type: 'bar',
+        name: 'throw_val',
+        data: [140,124,85,105]
+      }, {
+        type: 'bar',
+        name: 'throw_struct',
+        data: [140,124,85,105]
+      }, {
+        type: 'bar',
+        name: 'throw_exception',
+        barCategoryGap: '10%',
+        data: [140,124,85,105]
+      }
+    ]
+  };
+
+  // use configuration item and data specified to show chart
+  myChart.setOption(option);
+</script>
+
+The delta between the best and the worst is much smaller in the incremental error neutral measurements than in the one-time cost measurements.  The largest incremental cost is GCC/x64 expected_struct (178 bytes), and the smallest is a tie between GCC/x64 and Clang/x64 stripped.abort with 48 bytes.  There are many spurs in these graphs, and many of them can be attributed to codegen that is either low quality, or just code that isn't trying to be as small as possible.  Many of the struct cases resulted in the compiler generating vectorization code, which is almost always larger than the equivalent scalar code.  All of the exception cases had higher incremental costs than all of the stripped cases.  abort and return values were always cheaper than exceptions as well, even with included unwind information.
+
+Initial cost of signaling an error {#error1}
+------------------------------------
+So what happens when an error is signaled first time?  What's the one-time cost of that first error?
+```
+void callee() {
+  if (global_int == INT_MAX)
+    throw 1;
+}
+```
+<p align="center"><i>Warning! Logarithmic axis!</i></p>
+<div id="FirstError" style="width: 100%;height:600px;"></div>
+<script type="text/javascript">
+  // based on prepared DOM, initialize echarts instance
+  var myChart = echarts.init(document.getElementById('FirstError'));
+
+  // specify chart configuration item and data
+  var option = {
+    tooltip: { formatter: myFormatter },
+    calculable : true,
+    legend: {
+      type: 'scroll',
+      right: 0,
+      top: 30,
+      orient: 'vertical',
+    },
+    xAxis: [{
+      type: 'log',
+      logBase: '15000'
+    }],
+    yAxis: [{
+      type: 'category',
+      data: ['Clang','GCC','MSVC x64','MSVC x86']
+    }],
+    grid: {
+      top: 0,
+      left: 65,
+      right: 200
+    },
+    toolbox: {
+      show : true,
+      feature : {
+        dataView : {show: true, readOnly: false},
+        restore : {show: true},
+        saveAsImage : {show: true}
+      }
+    },
+    series: [
+      {
+        type: 'bar',
+        name: 'stripped.abort',
+        data: [18,21,21,17]
+      }, {
+        type: 'bar',
+        name: 'stripped.return_val',
+        data: [13,13,13,16]
+      }, {
+        type: 'bar',
+        name: 'stripped.return_struct',
+        data: [26,26,51,23]
+      }, {
+        type: 'bar',
+        name: 'stripped.ref_val',
+        data: [18,18,19,23]
+      }, {
+        type: 'bar',
+        name: 'stripped.ref_struct',
+        data: [40,27,50,30]
+      }, {
+        type: 'bar',
+        name: 'stripped.expected_val',
+        data: [17,29,24,24]
+      }, {
+        type: 'bar',
+        name: 'stripped.expected_struct',
+        data: [45,32,73,31]
+      }, {
+        type: 'bar',
+        name: 'stripped.tls_error_val',
+        data: [24,24,44,38]
+      }, {
+        type: 'bar',
+        name: 'stripped.tls_error_struct',
+        data: [46,38,61,64]
+      }, {
+        type: 'bar',
+        name: 'abort',
+        data: [18,21,33,17]
+      }, {
+        type: 'bar',
+        name: 'noexcept_abort',
+        data: [18,21,13647,6100]
+      }, {
+        type: 'bar',
+        name: 'return_val',
+        data: [13,13,13,16]
+      }, {
+        type: 'bar',
+        name: 'return_struct',
+        data: [26,26,51,23]
+      }, {
+        type: 'bar',
+        name: 'ref_val',
+        data: [18,18,19,23]
+      }, {
+        type: 'bar',
+        name: 'ref_struct',
+        data: [40,27,50,30]
+      }, {
+        type: 'bar',
+        name: 'expected_val',
+        data: [17,29,24,24]
+      }, {
+        type: 'bar',
+        name: 'expected_struct',
+        data: [45,32,93,31]
+      }, {
+        type: 'bar',
+        name: 'tls_error_val',
+        data: [24,24,44,38]
+      }, {
+        type: 'bar',
+        name: 'tls_error_struct',
+        data: [46,38,61,64]
+      }, {
+        type: 'bar',
+        name: 'throw_val',
+        data: [246,3080,178,103]
+      }, {
+        type: 'bar',
+        name: 'throw_struct',
+        data: [107,2746,226,161]
+      }, {
+        type: 'bar',
+        name: 'throw_exception',
+        barCategoryGap: '10%',
+        data: [224,2933,827,633]
+      }
+    ]
+  };
+
+  // use configuration item and data specified to show chart
+  myChart.setOption(option);
+</script>
+<p align="center"><i>Warning! Logarithmic axis!</i></p>
+
+On MSVC, there are multiple ways to build with exceptions "on".  This experiment was built with `/EHs`, which turns on exceptions in a C++ conforming manner.  The Microsoft recommended flag is `/EHsc`, which turns on exceptions for all C++ functions, but assumes that `extern "C"` functions won't throw.  This is a useful, though non-conforming option.  The trick is that the noexcept_abort `callee()` implementation calls `abort()`, and that's an `extern "C"` function that isn't marked as `noexcept`, so we suddenly need to pay for all the exception handling costs that we had been avoiding by making everything `noexcept`.  We can't easily make the C runtime, or other people's code noexcept.  We don't see this on GCC and Clang because the C library they are calling marks abort as `**attribute** ((**nothrow**))`, and that lets them avoid generating the exception machinery.
+
+GCC's first throw costs look worse than Clang's because Clang paid a lot of those costs even before there was a throw.
+
+Incremental cost of signaling an error {#error2}
+----------------------------------------------
+```
+void callee2(int amount) {
+  if (global_int + amount == INT_MAX)
+    throw 1;
+  global_int += amount;
+}
+```
+<div id="SecondError" style="width: 100%;height:600px;"></div>
+<script type="text/javascript">
+  // based on prepared DOM, initialize echarts instance
+  var myChart = echarts.init(document.getElementById('SecondError'));
+
+  // specify chart configuration item and data
+  var option = {
+    tooltip: { formatter: myFormatter },
+    calculable : true,
+    legend: {
+      type: 'scroll',
+      right: 0,
+      top: 30,
+      orient: 'vertical',
+    },
+    xAxis: [{
+      type: 'value',
+    }],
+    yAxis: [{
+      type: 'category',
+      data: ['Clang','GCC','MSVC x64','MSVC x86']
+    }],
+    grid: {
+      top: 0,
+      left: 65,
+      right: 200
+    },
+    dataZoom: [
+      {
+        show: true
+      }
+    ],
+    toolbox: {
+      show : true,
+      feature : {
+        dataView : {show: true, readOnly: false},
+        restore : {show: true},
+        saveAsImage : {show: true}
+      }
+    },
+    series: [
+      {
+        type: 'bar',
+        name: 'stripped.abort',
+        data: [20,23,24,15]
+      }, {
+        type: 'bar',
+        name: 'stripped.return_val',
+        data: [19,19,22,15]
+      }, {
+        type: 'bar',
+        name: 'stripped.return_struct',
+        data: [25,25,43,22]
+      }, {
+        type: 'bar',
+        name: 'stripped.ref_val',
+        data: [21,21,27,22]
+      }, {
+        type: 'bar',
+        name: 'stripped.ref_struct',
+        data: [43,30,42,30]
+      }, {
+        type: 'bar',
+        name: 'stripped.expected_val',
+        data: [28,31,32,23]
+      }, {
+        type: 'bar',
+        name: 'stripped.expected_struct',
+        data: [47,34,65,30]
+      }, {
+        type: 'bar',
+        name: 'stripped.tls_error_val',
+        data: [27,27,48,37]
+      }, {
+        type: 'bar',
+        name: 'stripped.tls_error_struct',
+        data: [49,41,65,47]
+      }, {
+        type: 'bar',
+        name: 'abort',
+        data: [20,23,36,15]
+      }, {
+        type: 'bar',
+        name: 'noexcept_abort',
+        data: [20,23,60,56]
+      }, {
+        type: 'bar',
+        name: 'return_val',
+        data: [19,19,22,15]
+      }, {
+        type: 'bar',
+        name: 'return_struct',
+        data: [25,25,43,22]
+      }, {
+        type: 'bar',
+        name: 'ref_val',
+        data: [21,21,27,22]
+      }, {
+        type: 'bar',
+        name: 'ref_struct',
+        data: [43,30,42,30]
+      }, {
+        type: 'bar',
+        name: 'expected_val',
+        data: [28,31,32,23]
+      }, {
+        type: 'bar',
+        name: 'expected_struct',
+        data: [47,34,77,30]
+      }, {
+        type: 'bar',
+        name: 'tls_error_val',
+        data: [27,27,48,37]
+      }, {
+        type: 'bar',
+        name: 'tls_error_struct',
+        data: [49,41,65,47]
+      }, {
+        type: 'bar',
+        name: 'throw_val',
+        data: [55,49,61,35]
+      }, {
+        type: 'bar',
+        name: 'throw_struct',
+        data: [77,58,77,52]
+      }, {
+        type: 'bar',
+        name: 'throw_exception',
+        barCategoryGap: '10%',
+        data: [66,60,68,41]
+      }
+    ]
+  };
+
+  // use configuration item and data specified to show chart
+  myChart.setOption(option);
+</script>
+
+These numbers are all over the place.  Here are some highlights:
+* On GCC and Clang, all the throwing variants are more incrementally expensive than all the non-throwing variants.
+* On MSVC, it isn't just the first non-noexcept function that is expensive in noexcept_abort, but the later calls are expensive too.
+* MSVC and Clang have somewhat inflated costs for struct errors.  Both compilers emit vectorized instructions in many cases, and vectorized instructions are large.
+
+Initial cost for handling an error {#handle1}
+---------------------------------------------
+To get the initial handling costs, we'll rewrite main to look something like this...
+```
+int main() {
+  try {
+    caller();
+  } catch (int) {
+    global_int = 0;
+  }
+  caller2(0);
+  return global_int;
+}
+```
+`abort` results won't be included here, because there is no "handling" of an `abort` call in C++.  The environment needs to handle it and restart the process, reboot the system, or relaunch the rocket.
+
+<div id="FirstCatch" style="width: 100%;height:600px;"></div>
+<script type="text/javascript">
+  // based on prepared DOM, initialize echarts instance
+  var myChart = echarts.init(document.getElementById('FirstCatch'));
+
+  // specify chart configuration item and data
+  var option = {
+    tooltip: { formatter: myFormatter },
+    calculable : true,
+    legend: {
+      type: 'scroll',
+      right: 0,
+      top: 30,
+      orient: 'vertical',
+    },
+    xAxis: [{
+      type: 'value',
+    }],
+    yAxis: [{
+      type: 'category',
+      data: ['Clang','GCC','MSVC x64','MSVC x86']
+    }],
+    grid: {
+      top: 0,
+      left: 65,
+      right: 200
+    },
+    dataZoom: [
+      {
+        show: true
+      }
+    ],
+    toolbox: {
+      show : true,
+      feature : {
+        dataView : {show: true, readOnly: false},
+        restore : {show: true},
+        saveAsImage : {show: true}
+      }
+    },
+    series: [
+      {
+        type: 'bar',
+        name: 'stripped.return_val',
+        data: [14,14,19,18]
+      }, {
+        type: 'bar',
+        name: 'stripped.return_struct',
+        data: [15,15,21,18]
+      }, {
+        type: 'bar',
+        name: 'stripped.ref_val',
+        data: [13,25,19,16]
+      }, {
+        type: 'bar',
+        name: 'stripped.ref_struct',
+        data: [25,34,25,18]
+      }, {
+        type: 'bar',
+        name: 'stripped.expected_val',
+        data: [18,22,13,19]
+      }, {
+        type: 'bar',
+        name: 'stripped.expected_struct',
+        data: [25,17,13,19]
+      }, {
+        type: 'bar',
+        name: 'stripped.tls_error_val',
+        data: [54,57,43,36]
+      }, {
+        type: 'bar',
+        name: 'stripped.tls_error_struct',
+        data: [63,68,48,42]
+      }, {
+        type: 'bar',
+        name: 'return_val',
+        data: [14,14,19,18]
+      }, {
+        type: 'bar',
+        name: 'return_struct',
+        data: [15,15,21,18]
+      }, {
+        type: 'bar',
+        name: 'ref_val',
+        data: [21,25,19,16]
+      }, {
+        type: 'bar',
+        name: 'ref_struct',
+        data: [25,34,25,18]
+      }, {
+        type: 'bar',
+        name: 'expected_val',
+        data: [18,22,13,19]
+      }, {
+        type: 'bar',
+        name: 'expected_struct',
+        data: [33,17,13,19]
+      }, {
+        type: 'bar',
+        name: 'tls_error_val',
+        data: [62,65,43,36]
+      }, {
+        type: 'bar',
+        name: 'tls_error_struct',
+        data: [71,76,48,42]
+      }, {
+        type: 'bar',
+        name: 'throw_val',
+        data: [53,63,77,134]
+      }, {
+        type: 'bar',
+        name: 'throw_struct',
+        data: [53,63,85,134]
+      }, {
+        type: 'bar',
+        name: 'throw_exception',
+        barCategoryGap: '10%',
+        data: [53,63,77,126]
+      }
+    ]
+  };
+
+  // use configuration item and data specified to show chart
+  myChart.setOption(option);
+</script>
+
+Here we see that the initial catch cost of TLS and exceptions is universally high compared to the alternatives.
+
+Incremental cost for handling an error {#handle2}
+-------------------------------------------------
+Now for the incremental code, and the associated costs.
+```
+int main() {
+  try {
+    caller();
+  } catch (int) {
+    global_int = 0;
+  }
+  try {
+    caller2(0);
+  } catch (int) {
+    global_int = 0;
+  }
+  return global_int;
+}
+```
+<div id="SecondCatch" style="width: 100%;height:600px;"></div>
+<script type="text/javascript">
+  // based on prepared DOM, initialize echarts instance
+  var myChart = echarts.init(document.getElementById('SecondCatch'));
+
+  // specify chart configuration item and data
+  var option = {
+    tooltip: { formatter: myFormatter },
+    calculable : true,
+    legend: {
+      type: 'scroll',
+      right: 0,
+      top: 30,
+      orient: 'vertical',
+    },
+    xAxis: [{
+      type: 'value',
+    }],
+    yAxis: [{
+      type: 'category',
+      data: ['Clang','GCC','MSVC x64','MSVC x86']
+    }],
+    grid: {
+      top: 0,
+      left: 65,
+      right: 200
+    },
+    dataZoom: [
+      {
+        show: true
+      }
+    ],
+    toolbox: {
+      show : true,
+      feature : {
+        dataView : {show: true, readOnly: false},
+        restore : {show: true},
+        saveAsImage : {show: true}
+      }
+    },
+    series: [
+      {
+        type: 'bar',
+        name: 'stripped.return_val',
+        data: [20,14,16,16]
+      }, {
+        type: 'bar',
+        name: 'stripped.return_struct',
+        data: [21,15,25,16]
+      }, {
+        type: 'bar',
+        name: 'stripped.ref_val',
+        data: [32,17,14,13]
+      }, {
+        type: 'bar',
+        name: 'stripped.ref_struct',
+        data: [38,17,17,13]
+      }, {
+        type: 'bar',
+        name: 'stripped.expected_val',
+        data: [24,22,13,17]
+      }, {
+        type: 'bar',
+        name: 'stripped.expected_struct',
+        data: [26,17,13,17]
+      }, {
+        type: 'bar',
+        name: 'stripped.tls_error_val',
+        data: [49,53,37,29]
+      }, {
+        type: 'bar',
+        name: 'stripped.tls_error_struct',
+        data: [60,64,60,35]
+      }, {
+        type: 'bar',
+        name: 'return_val',
+        data: [28,14,16,16]
+      }, {
+        type: 'bar',
+        name: 'return_struct',
+        data: [29,15,25,16]
+      }, {
+        type: 'bar',
+        name: 'ref_val',
+        data: [40,17,14,13]
+      }, {
+        type: 'bar',
+        name: 'ref_struct',
+        data: [46,17,17,13]
+      }, {
+        type: 'bar',
+        name: 'expected_val',
+        data: [32,22,13,17]
+      }, {
+        type: 'bar',
+        name: 'expected_struct',
+        data: [34,17,13,17]
+      }, {
+        type: 'bar',
+        name: 'tls_error_val',
+        data: [49,53,37,29]
+      }, {
+        type: 'bar',
+        name: 'tls_error_struct',
+        data: [60,64,68,35]
+      }, {
+        type: 'bar',
+        name: 'throw_val',
+        data: [29,34,25,64]
+      }, {
+        type: 'bar',
+        name: 'throw_struct',
+        data: [29,34,17,64]
+      }, {
+        type: 'bar',
+        name: 'throw_exception',
+        barCategoryGap: '10%',
+        data: [29,34,25,64]
+      }
+    ]
+  };
+
+  // use configuration item and data specified to show chart
+  myChart.setOption(option);
+</script>
+
+Things of note in this graph:
+* Clang seems to generate the smallest incremental catch statements.
+* Clang also generates some of the worst non-catch statements.  This appears to be mostly a case of generating too much unwind information.
+
+Acknowledgments {#ack}
+======================
+TBD
+
+Appendix A: Why no speed measurements? {#speed}
+=======================================
+Gathering representative timings for very small pieces of code is difficult on modern hardware.  In the [initial-error-neutral-function return_val benchmark](#code_neutral1); `main()`, `caller()`, `callee()`, and `Dtor::~Dtor()` add up to just 21 instructions when compiled with MSVC 2019 x64.  There are no system calls, no atomic operations, no divisions, or any other highly expensive operations being performed.  The code easily fits into caches.  This means that micro-architectural stalls can have drastic effects on performance.
+
+One type of micro-architectural quirk that makes these measurements very painful is code alignment [[Bakhvalov]].  Each call and each branch can introduce stalls if jumping to a poorly aligned location.  These stalls can dominate the timings.  With poor alignment, the error neutral noexcept_terminate MSVC x86 case (12 instructions) can run slower than the error neutral throw_val MSVC x86 case (28 instructions, including TLS manipulation).
+
+In order to get representative timings, a benchmark needs to sample a representative set of alignments of all jumps.  Gathering such a sampling is challenging, especially if one does not have access to the source of the compiler.
+
+This isn't just a problem that can be solved by increasing the number of loop iterations in a performance test.  Increasing loop iterations just gets a more accurate measurement of a single alignment.
+
+The author is hoping to gather representative speed measurements in a future paper.
+
+Appendix B: The build flags {#build_flags}
+============================
+
+Appendix C: The code {#code}
+============================
+As stated before, this isn't the exact code that was benchmarked.  In the benchmarked code, functions were placed in distinct translation units in order to avoid inlining.  The following code is provided to demonstrate what the error handling code looks like.
+
+Common support code {#code_support}
+---------------------------------------
+**All cases**
+```
+struct Dtor {~Dtor() {}};
+int global_int = 0;
+```
+
+**Error struct cases**
+```
+struct error_struct {
+  void *error = nullptr;
+  void *domain = nullptr;
+};
+```
+
+**throw_exception**
+```
+class err_exception : public std::exception {
+public:
+  int val;
+  explicit err_exception(int e) : val(e) {}
+  const char *what() const noexcept override { return ""; }
+};
+```
+
+Initial error neutral functions  {#code_neutral1}
+---------------------------------------
+This section lays the groundwork for future comparisons.  All of these cases are capable of transporting error information from a future signaling site (`callee`) to a future catching site (`main`).  No errors are signaled here, but the plumbing is in place.
+
+**Default main function
+All of the `main` functions in this section look the same, except for the ref_struct and ref_val `main` functions.  To avoid repetition, I will show the most common main function here.  The ref_struct and ref_val cases will still show their `main functions`.
+```
+int main() {
+  caller();
+  return global_int;
+}
+```
+**abort, throw_value, throw_struct, throw_exception**
+```
+void callee() {/* will raise an error one day*/}
+void caller() {
+  Dtor d;
+  callee();
+  global_int = 0;
+}
+```
+**noexcept_abort**
+```
+void callee() noexcept {/* will raise an error one day*/}
+void caller() noexcept {
+  Dtor d;
+  callee();
+  global_int = 0;
+}
+```
+**return_val**
+```
+int callee() noexcept {return 0;}
+int caller() noexcept {
+  Dtor d;
+  int e = callee();
+  if (e)
+    return e;
+  global_int = 0;
+  return e;
+}
+```
+**return_struct**
+```
+error_struct callee() noexcept {return error_struct{};}
+error_struct caller() noexcept {
+  Dtor d;
+  error_struct e = callee();
+  if (e.error)
+    return e;
+  global_int = 0;
+  return e;
+}
+```
+**ref_val**
+```
+void callee(int &) {}
+void caller(int &e) {
+  Dtor d;
+  callee(e);
+  if (e)
+    return;
+  global_int = 0;
+}
+int main() {
+  int e = 0;
+  caller(e);
+  return global_int;
+}
+```
+**ref_struct**
+```
+void callee(error_struct &) {}
+void caller(error_struct &e) {
+  Dtor d;
+  callee(e);
+  if (e.error)
+    return;
+  global_int = 0;
+}
+int main() {
+  error_struct e;
+  caller(e);
+  return global_int;
+}
+```
+**tls_error_val**
+```
+thread_local int tls_error_val_var = 0;
+void callee() {}
+void caller() {
+  Dtor d;
+  callee();
+  if (tls_error_val_var)
+    return;
+  global_int = 0;
+}
+```
+**tls_error_struct**
+```
+thread_local error_struct tls_error_struct_var{};
+void callee() {}
+void caller() {
+  Dtor d;
+  callee();
+  if (tls_error_struct_var.error)
+    return;
+  global_int = 0;
+}
+```
+**expected_val**
+```
+tl::expected<void, int> callee() { return {}; }
+tl::expected<void, int> caller() {
+  Dtor d;
+  tl::expected<void, int> e = callee();
+  if (!e)
+    return e;
+  global_int = 0;
+  return e;
+}
+```
+**expected_struct**
+```
+tl::expected<void, error_struct> callee() { return {}; }
+tl::expected<void, error_struct> caller() {
+  Dtor d;
+  tl::expected<void, error_struct> e = callee();
+  if (!e)
+    return e;
+  global_int = 0;
+  return e;
+}
+```
+Incremental error neutral functions {#code_neutral2}
+---------------------------------------
+Here, we add an extra two functions with error transporting capabilities so that we can measure the incremental cost of error neutral functions.  These functions need to be slightly different than the old functions in order to avoid deduplication optimizations.
+
+In order to save on text length, the only functions that will be listed here are the functions were added or changed compared to the previous section.
+
+**Default main function**
+All of the `main` functions in this section look the same, except for the ref_struct and ref_val `main` functions.  To avoid repetition, I will show the most common main function here.  The ref_struct and ref_val cases will still show their `main functions`.
+```
+int main() {
+  caller();
+  caller2(0);
+  return global_int;
+}
+```
+**abort, throw_value, throw_struct, throw_exception**
+```
+void callee2(int amount) { global_int += amount; }
+void caller2(int amount) {
+  Dtor d;
+  callee2(amount);
+  global_int += amount;
+}
+```
+**noexcept_abort**
+```
+void callee2(int amount) noexcept { global_int += amount; }
+void caller2(int amount) noexcept {
+  Dtor d;
+  callee2(amount);
+  global_int += amount;
+}
+```
+**return_val**
+```
+int callee2(int amount) {
+  global_int += amount;
+  return 0;
+}
+int caller2(int amount) {
+  Dtor d;
+  int e = callee2(amount);
+  if (e)
+    return e;
+  global_int += amount;
+  return e;
+}
+```
+**return_struct**
+```
+error_struct callee2(int amount) {
+  global_int += amount;
+  return error_struct{};
+}
+error_struct caller2(int amount) {
+  Dtor d;
+  error_struct e = callee2(amount);
+  if (e.error)
+    return e;
+  global_int += amount;
+  return e;
+}
+```
+**ref_val**
+```
+void callee2(int amount, int &) { global_int += amount; }
+void caller2(int amount, int &e) {
+  Dtor d;
+  callee2(amount, e);
+  if (e)
+    return;
+  global_int += amount;
+}
+int main() {
+  int e = 0;
+  caller(e);
+  caller2(0, e);
+  return global_int;
+}
+```
+**ref_struct**
+```
+void callee2(int amount, error_struct &) { global_int += amount; }
+void caller2(int amount, error_struct &e) {
+  Dtor d;
+  callee2(amount, e);
+  if (e.error)
+    return;
+  global_int += amount;
+}
+int main() {
+  error_struct e;
+  caller(e);
+  caller2(0, e);
+  return global_int;
+}
+```
+**tls_error_val**
+```
+void callee2(int amount) { global_int += amount; }
+void caller2(int amount) {
+  Dtor d;
+  callee2(amount);
+  if (tls_error_val_var)
+    return;
+  global_int += amount;
+}
+```
+**tls_error_struct**
+```
+void callee2(int amount) { global_int += amount; }
+void caller2(int amount) {
+  Dtor d;
+  callee2(amount);
+  if (tls_error_struct_var.error)
+    return;
+  global_int += amount;
+}
+```
+**expected_val**
+```
+tl::expected<void, int> callee2(int amount) {
+  global_int += amount;
+  return {};
+}
+tl::expected<void, int> caller2(int amount) {
+  Dtor d;
+  tl::expected<void, int> e = callee2(amount);
+  if (!e)
+    return e;
+  global_int += amount;
+  return e;
+}
+```
+**expected_struct**
+```
+tl::expected<void, error_struct> callee2(int amount) {
+  global_int += amount;
+  return {};
+}
+tl::expected<void, error_struct> caller2(int amount) {
+  Dtor d;
+  tl::expected<void, error_struct> e = callee2(amount);
+  if (!e)
+    return e;
+  global_int += amount;
+  return e;
+}
+```
+Initial signaling of an error {#code_error1}
+---------------------------------------
+**abort**
+**noexcept_abort**
+**return_val**
+**return_struct**
+**ref_val**
+**ref_struct**
+**tls_error_val**
+**tls_error_struct**
+**expected_val**
+**expected_struct**
+**throw_value**
+**throw_struct**
+**throw_exception**
+
+Incremental signaling of an error {#code_error2}
+---------------------------------------
+**abort**
+**noexcept_abort**
+**return_val**
+**return_struct**
+**ref_val**
+**ref_struct**
+**tls_error_val**
+**tls_error_struct**
+**expected_val**
+**expected_struct**
+**throw_value**
+**throw_struct**
+**throw_exception**
+
+Initial handling of an error {#code_catch1}
+---------------------------------------
+**return_val**
+**return_struct**
+**ref_val**
+**ref_struct**
+**tls_error_val**
+**tls_error_struct**
+**expected_val**
+**expected_struct**
+**throw_value**
+**throw_struct**
+**throw_exception**
+
+Incremental handling of an error {#code_catch2}
+---------------------------------------
+**return_val**
+**return_struct**
+**ref_val**
+**ref_struct**
+**tls_error_val**
+**tls_error_struct**
+**expected_val**
+**expected_struct**
+**throw_value**
+**throw_struct**
+**throw_exception**
+
+<pre class=biblio>
+{
+    "MoFH4": {
+        "authors": ["Modi Mo"],
+        "href": "https://devblogs.microsoft.com/cppblog/making-cpp-exception-handling-smaller-x64/",
+        "title": "Making C++ Exception Handling Smaller On x64"
+    },
+    "P0709": {
+        "authors": ["Herb Sutter"],
+        "href": "http://wg21.link/P0709",
+        "title": "Zero-overhead deterministic exceptions: Throw values"
+    },
+    "P0939R2": {
+        "authors": ["H. Hinnant", "R. Orr", "B. Stroustrup", "D. Vandevoorde", "M. Wong"],
+        "href": "http://wg21.link/P0939R2",
+        "title": "Direction for ISO C++"
+    },
+    "RenwickLowCost": {
+        "authors": ["James Renwick", "Tom Spink", "Bjoern Franke"],
+        "href": "https://www.research.ed.ac.uk/portal/en/publications/lowcost-deterministic-c-exceptions-for-embedded-systems(2cfc59d5-fa95-45e0-83b2-46e51098cf1f).html",
+        "title": "Low-cost Deterministic C++ Exceptions for Embedded Systems"
+    },
+    "BrandExpected": {
+        "authors": ["Simon Brand"],
+        "href": "https://github.com/TartanLlama/expected",
+        "title": "expected"
+    },
+    "Guillemot": {
+        "authors": ["Nicolas Guillemot"],
+        "href": "http://cppsecrets.blogspot.com/2013/12/using-lippincott-function-for.html",
+        "title": "Using a Lippincott Function for Centralized Exception Handling"
+    },
+    "Bakhvalov": {
+        "authors": ["Denis Bakhvalov"],
+        "href": "https://dendibakh.github.io/blog/2018/01/18/Code_alignment_issues",
+        "title": "Code alignment issues."
+    }
+}
+</pre>
