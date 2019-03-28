@@ -330,6 +330,8 @@ My first batch of measurements is comparing each of the mechanisms to the abort 
 
 So these tables show us that the one-time cost for exceptions is really high (6KB on MSVC x86, 384KB on Clang x64), and the one time cost for unwind information is pretty high too (6KB on MSVC x64, 57KB on Clang).  Once we ignore unwind information, we can see that the one-time cost for TLS on Windows is small compared to unwind information, but high compared to the other error mechanisms (214 bytes - 510 bytes).  All the other one-time overheads are 77 bytes or less.  Remember that this code doesn't currently have any throw statements in the program.  This is the one-time cost of error neutral functions when exceptions are turned on.
 
+[[BatyievEmbedded]] claims to be able to get the cost of the exception machinery down to 6,760 bytes on a bare metal ARMv4t system in Thumb mode with GCC 5.3.0.
+
 Note that noexcept_abort has the same cost as regular abort right now.  If everything is `noexcept`, the exception machinery costs are not incurred.
 
 Incremental error neutral cost {#neutral2}
@@ -1104,6 +1106,43 @@ The author is hoping to gather representative speed measurements in a future pap
 
 Appendix B: The build flags {#build_flags}
 ============================
+MSVC {#msvc}
+--------------------
+The compiler and flags are the same for 32-bit and 64-bit builds, except that the 32-bit linker uses /machine:x86 and the 64-bit linker uses /machine:x64
+
+Compiler marketing version: Visual Studio 2019 Preview 3
+
+Compiler toolkit version: 14.20.27404
+
+cl.exe version: 19.20.27404
+
+Compiler codegen flags (no exceptions): /GR /Gy /Gw /O1 /MT /d2FH4 /std:c++latest
+
+Compiler codegen flags (with exceptions): /EHs /GR /Gy /Gw /O1 /MT /d2FH4 /std:c++latest
+
+Linker flags: /OPT:REF /release /subsystem:CONSOLE /incremental:no /OPT:ICF /NXCOMPAT /DYNAMICBASE /DEBUG 
+
+Clang x64 {#clang_x64}
+----------------------
+Toolchains used:
+* Clang 7.0.0 and libc++
+* System linker from Ubuntu 14.04.3's GCC 4.8.4 installation
+
+Compiler codegen flags (no exceptions): -fno-exceptions -Os -march=native -ffunction-sections -fdata-sections -std=c++17 -stdlib=libc++ -static
+
+Compiler codegen flags (exceptions): -Os -march=native -ffunction-sections -fdata-sections -std=c++17 -stdlib=libc++ -static
+
+Linking flags: -Wl,--gc-sections -pthread -static -static-libgcc -stdlib=libc++
+
+GCC x64 {#gcc_x64}
+------------------
+Toolchain used: GCC 7.3.1 from the Red Hat Developer Toolset 7.1
+
+Compiler codegen flags (no exceptions): -fno-exceptions -Os -march=native -ffunction-sections -fdata-sections -std=c++17 -static
+
+Compiler codegen flags (exceptions): -Os -march=native -ffunction-sections -fdata-sections -std=c++17 -static
+
+Linking flags: -Wl,--gc-sections -pthread -static -static-libgcc -static-libstdc++
 
 Appendix C: The code {#code}
 ============================
@@ -1119,6 +1158,8 @@ int global_int = 0;
 
 **Error struct cases**
 ```
+int error_info = 1;
+int error_domain = 99;
 struct error_struct {
   void *error = nullptr;
   void *domain = nullptr;
@@ -1139,7 +1180,8 @@ Initial error neutral functions  {#code_neutral1}
 ---------------------------------------
 This section lays the groundwork for future comparisons.  All of these cases are capable of transporting error information from a future signaling site (`callee`) to a future catching site (`main`).  No errors are signaled here, but the plumbing is in place.
 
-**Default main function
+**Default main function**
+
 All of the `main` functions in this section look the same, except for the ref_struct and ref_val `main` functions.  To avoid repetition, I will show the most common main function here.  The ref_struct and ref_val cases will still show their `main functions`.
 ```
 int main() {
@@ -1221,30 +1263,6 @@ int main() {
   return global_int;
 }
 ```
-**tls_error_val**
-```
-thread_local int tls_error_val_var = 0;
-void callee() {}
-void caller() {
-  Dtor d;
-  callee();
-  if (tls_error_val_var)
-    return;
-  global_int = 0;
-}
-```
-**tls_error_struct**
-```
-thread_local error_struct tls_error_struct_var{};
-void callee() {}
-void caller() {
-  Dtor d;
-  callee();
-  if (tls_error_struct_var.error)
-    return;
-  global_int = 0;
-}
-```
 **expected_val**
 ```
 tl::expected<void, int> callee() { return {}; }
@@ -1269,6 +1287,30 @@ tl::expected<void, error_struct> caller() {
   return e;
 }
 ```
+**tls_error_val**
+```
+thread_local int tls_error_val_var = 0;
+void callee() {}
+void caller() {
+  Dtor d;
+  callee();
+  if (tls_error_val_var)
+    return;
+  global_int = 0;
+}
+```
+**tls_error_struct**
+```
+thread_local error_struct tls_error_struct_var{};
+void callee() {}
+void caller() {
+  Dtor d;
+  callee();
+  if (tls_error_struct_var.error)
+    return;
+  global_int = 0;
+}
+```
 Incremental error neutral functions {#code_neutral2}
 ---------------------------------------
 Here, we add an extra two functions with error transporting capabilities so that we can measure the incremental cost of error neutral functions.  These functions need to be slightly different than the old functions in order to avoid deduplication optimizations.
@@ -1276,6 +1318,7 @@ Here, we add an extra two functions with error transporting capabilities so that
 In order to save on text length, the only functions that will be listed here are the functions were added or changed compared to the previous section.
 
 **Default main function**
+
 All of the `main` functions in this section look the same, except for the ref_struct and ref_val `main` functions.  To avoid repetition, I will show the most common main function here.  The ref_struct and ref_val cases will still show their `main functions`.
 ```
 int main() {
@@ -1366,28 +1409,6 @@ int main() {
   return global_int;
 }
 ```
-**tls_error_val**
-```
-void callee2(int amount) { global_int += amount; }
-void caller2(int amount) {
-  Dtor d;
-  callee2(amount);
-  if (tls_error_val_var)
-    return;
-  global_int += amount;
-}
-```
-**tls_error_struct**
-```
-void callee2(int amount) { global_int += amount; }
-void caller2(int amount) {
-  Dtor d;
-  callee2(amount);
-  if (tls_error_struct_var.error)
-    return;
-  global_int += amount;
-}
-```
 **expected_val**
 ```
 tl::expected<void, int> callee2(int amount) {
@@ -1418,21 +1439,148 @@ tl::expected<void, error_struct> caller2(int amount) {
   return e;
 }
 ```
+**tls_error_val**
+```
+void callee2(int amount) { global_int += amount; }
+void caller2(int amount) {
+  Dtor d;
+  callee2(amount);
+  if (tls_error_val_var)
+    return;
+  global_int += amount;
+}
+```
+**tls_error_struct**
+```
+void callee2(int amount) { global_int += amount; }
+void caller2(int amount) {
+  Dtor d;
+  callee2(amount);
+  if (tls_error_struct_var.error)
+    return;
+  global_int += amount;
+}
+```
 Initial signaling of an error {#code_error1}
 ---------------------------------------
 **abort**
+```
+void callee() {
+  if (global_int == INT_MAX)
+    abort();
+}
+```
 **noexcept_abort**
+```
+void callee() noexcept {
+  if (global_int == INT_MAX)
+    abort();
+}
+```
 **return_val**
+```
+int callee() {
+  if (global_int == INT_MAX) {
+    return 1;
+  }
+  return 0;
+}
+```
 **return_struct**
+```
+error_struct callee() {
+  if (global_int == INT_MAX) {
+    error_struct e;
+    e.error = &error_info;
+    e.domain = &error_domain;
+    return e;
+  }
+  return error_struct{};
+}
+```
 **ref_val**
+```
+void callee(int &e) {
+  if (global_int == INT_MAX) {
+    e = 1;
+    return;
+  }
+}
+```
 **ref_struct**
-**tls_error_val**
-**tls_error_struct**
+```
+void callee(error_struct &e) {
+  if (global_int == INT_MAX) {
+    e.error = &error_info;
+    e.domain = &error_domain;
+  }
+}
+```
 **expected_val**
+```
+tl::expected<void, int> callee() {
+  if (global_int == INT_MAX) {
+    return tl::unexpected<int>{1};
+  }
+  return {};
+}
+```
 **expected_struct**
+```
+tl::expected<void, error_struct> callee() {
+  if (global_int == INT_MAX) {
+    error_struct e;
+    e.error = &error_info;
+    e.domain = &error_domain;
+    return tl::unexpected<error_struct>{e};
+  }
+  return {};
+}
+```
+**tls_error_val**
+```
+void callee() {
+  if (global_int == INT_MAX) {
+    tls_error_val_var = 1;
+    return;
+  }
+}
+```
+**tls_error_struct**
+```
+void callee() {
+  if (global_int == INT_MAX) {
+    tls_error_struct_var.error = &error_info;
+    tls_error_struct_var.domain = &error_domain;
+    return;
+  }
+}
+```
 **throw_value**
+```
+void callee() {
+  if (global_int == INT_MAX)
+    throw 1;
+}
+```
 **throw_struct**
+```
+void callee() {
+  if (global_int == INT_MAX) {
+    error_struct e;
+    e.error = &error_info;
+    e.domain = &error_domain;
+    throw e;
+  }
+}
+```
 **throw_exception**
+```
+void callee() {
+  if (global_int == INT_MAX)
+    throw err_exception(1);
+}
+```
 
 Incremental signaling of an error {#code_error2}
 ---------------------------------------
@@ -1514,6 +1662,11 @@ Incremental handling of an error {#code_catch2}
         "authors": ["Denis Bakhvalov"],
         "href": "https://dendibakh.github.io/blog/2018/01/18/Code_alignment_issues",
         "title": "Code alignment issues."
+    },
+    "BatyievEmbedded": {
+      "authors": ["Andrii Batyiev"],
+      "href": "https://andriidevel.blogspot.com/2016/05/size-cost-of-c-exception-handling-on.html",
+      "title": "Size cost of C++ exception handling on embedded platform"
     }
 }
 </pre>
