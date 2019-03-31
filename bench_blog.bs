@@ -1585,47 +1585,388 @@ void callee() {
 Incremental signaling of an error {#code_error2}
 ---------------------------------------
 **abort**
+```
+void callee2(int amount) {
+  if (global_int + amount == INT_MAX)
+    abort();
+  global_int += amount;
+}
+```
 **noexcept_abort**
+```
+void callee2(int amount) noexcept {
+  if (global_int + amount == INT_MAX)
+    abort();
+  global_int += amount;
+}
+```
 **return_val**
+```
+int callee2(int amount) {
+  if (global_int + amount == INT_MAX) {
+    return 1;
+  }
+  global_int += amount;
+  return 0;
+}
+```
 **return_struct**
+```
+error_struct callee2(int amount) {
+  if (global_int + amount == INT_MAX) {
+    error_struct e;
+    e.error = &error_info;
+    e.domain = &error_domain;
+    return e;
+  }
+  global_int += amount;
+  return error_struct{};
+}
+```
 **ref_val**
+```
+void callee2(int amount, int &e) {
+  if (global_int + amount == INT_MAX) {
+    e = 1;
+    return;
+  }
+  global_int += amount;
+}
+```
 **ref_struct**
+```
+void callee2(int amount, error_struct &e) {
+  if (global_int + amount == INT_MAX) {
+    e.error = &error_info;
+    e.domain = &error_domain;
+    return;
+  }
+  global_int += amount;
+}
+```
 **tls_error_val**
+```
+void callee2(int amount) {
+  if (global_int + amount == INT_MAX) {
+    tls_error_val_var = 1;
+    return;
+  }
+  global_int += amount;
+}
+```
 **tls_error_struct**
+```
+void callee2(int amount) {
+  if (global_int + amount == INT_MAX) {
+    tls_error_struct_var.error = &error_info;
+    tls_error_struct_var.domain = &error_domain;
+    return;
+  }
+  global_int += amount;
+}
+```
 **expected_val**
+```
+tl::expected<void, int> callee2(int amount) {
+  if (global_int + amount == INT_MAX) {
+    return tl::unexpected<int>{1};
+  }
+  global_int += amount;
+  return {};
+}
+```
 **expected_struct**
+```
+tl::expected<void, error_struct> callee2(int amount) {
+  if (global_int + amount == INT_MAX) {
+    error_struct e;
+    e.error = &error_info;
+    e.domain = &error_domain;
+    return tl::unexpected<error_struct>{e};
+  }
+  global_int += amount;
+  return {};
+}
+```
 **throw_value**
+```
+void callee2(int amount) {
+  if (global_int + amount == INT_MAX)
+    throw 1;
+  global_int += amount;
+}
+```
 **throw_struct**
+```
+void callee2(int amount) {
+  if (global_int + amount == INT_MAX) {
+    error_struct e;
+    e.error = &error_info;
+    e.domain = &error_domain;
+    throw e;
+  }
+  global_int += amount;
+}
+```
 **throw_exception**
-
+```
+void callee2(int amount) {
+  if (global_int + amount == INT_MAX)
+    throw err_exception(1);
+  global_int += amount;
+}
+```
 Initial handling of an error {#code_catch1}
 ---------------------------------------
 **return_val**
+```
+int main() {
+  if (caller()) {
+    global_int = 0;
+  }
+  caller2(0);
+  return global_int;
+}
+```
 **return_struct**
+```
+int main() {
+  if (caller().error) {
+    global_int = 0;
+  }
+  caller2(0);
+  return global_int;
+}
+```
 **ref_val**
+```
+int main() {
+  int e = 0;
+  caller(e);
+  if (e) {
+    global_int = 0;
+    e = 0;
+  }
+  caller2(0, e);
+  return global_int;
+}
+```
 **ref_struct**
+```
+int main() {
+  error_struct e;
+  caller(e);
+  if (e.error) {
+    global_int = 0;
+    e = error_struct{};
+  }
+  caller2(0, e);
+  return global_int;
+}
+```
 **tls_error_val**
+```
+int main() {
+  caller();
+  if (tls_error_val_var) {
+    tls_error_val_var = 0;
+    global_int = 0;
+  }
+  caller2(0);
+  return global_int;
+}
+```
 **tls_error_struct**
-**expected_val**
-**expected_struct**
+```
+int main() {
+  caller();
+  if (tls_error_struct_var.error) {
+    tls_error_struct_var = error_struct{};
+    global_int = 0;
+  }
+  caller2(0);
+  return global_int;
+}
+```
+**expected_struct and expected_val**
+```
+int main() {
+  if (!caller()) {
+    global_int = 0;
+  }
+  caller2(0);
+  return global_int;
+}
+```
 **throw_value**
+```
+int main() {
+  try { caller(); }
+  catch (int) { global_int = 0; }
+  caller2(0);
+  return global_int;
+}
+```
 **throw_struct**
+```
+int main() {
+  try { caller(); }
+  catch (const error_struct &) {
+    global_int = 0;
+  }
+  caller2(0);
+  return global_int;
+}
+```
 **throw_exception**
-
+```
+int main() {
+  try { caller(); }
+  catch (const std::exception &) {
+    global_int = 0;
+  }
+  caller2(0);
+  return global_int;
+}
+```
 Incremental handling of an error {#code_catch2}
 ---------------------------------------
 **return_val**
+```
+int main() {
+  if (caller()) {
+    global_int = 0;
+  }
+  if (caller2(0)) {
+    global_int = 0;
+  }
+  return global_int;
+}
+```
 **return_struct**
+```
+int main() {
+  if (caller().error) {
+    global_int = 0;
+  }
+  if (caller2(0).error) {
+    global_int = 0;
+  }
+  return global_int;
+}
+```
 **ref_val**
+```
+int main() {
+  int e = 0;
+  caller(e);
+  if (e) {
+    global_int = 0;
+    e = 0;
+  }
+  caller2(0, e);
+  if (e) {
+    global_int = 0;
+    e = 0;
+  }
+  return global_int;
+}
+```
 **ref_struct**
+```
+int main() {
+  error_struct e;
+  caller(e);
+  if (e.error) {
+    global_int = 0;
+    e = error_struct{};
+  }
+  caller2(0, e);
+  if (e.error) {
+    global_int = 0;
+    e = error_struct{};
+  }
+  return global_int;
+}
+```
 **tls_error_val**
+```
+int main() {
+  caller();
+  if (tls_error_val_var) {
+    tls_error_val_var = 0;
+    global_int = 0;
+  }
+  caller2(0);
+  if (tls_error_val_var) {
+    tls_error_val_var = 0;
+    global_int = 0;
+  }
+  return global_int;
+}
+```
 **tls_error_struct**
-**expected_val**
-**expected_struct**
+```
+int main() {
+  caller();
+  if (tls_error_struct_var.error) {
+    tls_error_struct_var = error_struct{};
+    global_int = 0;
+  }
+  caller2(0);
+  if (tls_error_struct_var.error) {
+    tls_error_struct_var = error_struct{};
+    global_int = 0;
+  }
+  return global_int;
+}
+```
+**expected_struct and expected_val**
+```
+int main() {
+  if (!caller()) { global_int = 0; }
+  if (!caller2(0)) { global_int = 0; }
+  return global_int;
+}
+```
 **throw_value**
+```
+int main() {
+  try { caller(); }
+  catch (int) { global_int = 0; }
+  try { caller2(0); }
+  catch (int) { global_int = 0; }
+  return global_int;
+}
+```
 **throw_struct**
+```
+int main() {
+  try { caller(); }
+  catch (const error_struct &) {
+    global_int = 0;
+  }
+  try { caller2(0); }
+  catch (const error_struct &) {
+    global_int = 0;
+  }
+  return global_int;
+}
+```
 **throw_exception**
-
+```
+int main() {
+  try { caller(); }
+  catch (const std::exception &) {
+    global_int = 0;
+  }
+  try { caller2(0); }
+  catch (const std::exception &) {
+    global_int = 0;
+  }
+  return global_int;
+}
+```
 <pre class=biblio>
 {
     "MoFH4": {
