@@ -388,9 +388,9 @@ struct expected_storage_base {
     }
   }
   union {
-    char m_no_init;
     T m_val;
     unexpected<E> m_unexpect;
+    char m_no_init;
   };
   bool m_has_val;
 };
@@ -429,9 +429,9 @@ template <class T, class E> struct expected_storage_base<T, E, true, true> {
 
   ~expected_storage_base() = default;
   union {
-    char m_no_init;
     T m_val;
     unexpected<E> m_unexpect;
+    char m_no_init;
   };
   bool m_has_val;
 };
@@ -475,9 +475,9 @@ template <class T, class E> struct expected_storage_base<T, E, true, false> {
   }
 
   union {
-    char m_no_init;
     T m_val;
     unexpected<E> m_unexpect;
+    char m_no_init;
   };
   bool m_has_val;
 };
@@ -519,9 +519,9 @@ template <class T, class E> struct expected_storage_base<T, E, false, true> {
     }
   }
   union {
-    char m_no_init;
     T m_val;
     unexpected<E> m_unexpect;
+    char m_no_init;
   };
   bool m_has_val;
 };
@@ -550,8 +550,8 @@ template <class E> struct expected_storage_base<void, E, false, true> {
   ~expected_storage_base() = default;
   struct dummy {};
   union {
-    dummy m_val;
     unexpected<E> m_unexpect;
+    dummy m_val;
   };
   bool m_has_val;
 };
@@ -584,8 +584,8 @@ template <class E> struct expected_storage_base<void, E, false, false> {
   }
 
   union {
-    char m_dummy;
     unexpected<E> m_unexpect;
+    char m_dummy;
   };
   bool m_has_val;
 };
@@ -733,7 +733,7 @@ struct expected_operations_base : expected_storage_base<T, E> {
       if (rhs.m_has_val) {
         get() = std::forward<Rhs>(rhs).get();
       } else {
-		destroy_val();
+        destroy_val();
         construct_error(std::forward<Rhs>(rhs).geterr());
       }
     } else {
@@ -766,7 +766,7 @@ struct expected_operations_base : expected_storage_base<T, E> {
 #endif
 
   TL_EXPECTED_11_CONSTEXPR void destroy_val() {
-	get().~T();
+    get().~T();
   }
 };
 
@@ -821,7 +821,7 @@ struct expected_operations_base<void, E> : expected_storage_base<void, E> {
 #endif
 
   TL_EXPECTED_11_CONSTEXPR void destroy_val() {
-	  //no-op
+      //no-op
   }
 };
 
@@ -1224,7 +1224,7 @@ public:
   /// \synopsis template <class F>\nconstexpr auto and_then(F &&f) &;
   template <class F>
   TL_EXPECTED_11_CONSTEXPR auto
-  and_then(F &&f) & -> decltype(and_then_impl(*this, std::forward<F>(f))) {
+  and_then(F &&f) & -> decltype(and_then_impl(std::declval<expected&>(), std::forward<F>(f))) {
     return and_then_impl(*this, std::forward<F>(f));
   }
 
@@ -1232,7 +1232,7 @@ public:
   /// \synopsis template <class F>\nconstexpr auto and_then(F &&f) &&;
   template <class F>
   TL_EXPECTED_11_CONSTEXPR auto and_then(F &&f) && -> decltype(
-      and_then_impl(std::move(*this), std::forward<F>(f))) {
+      and_then_impl(std::declval<expected&&>(), std::forward<F>(f))) {
     return and_then_impl(std::move(*this), std::forward<F>(f));
   }
 
@@ -1240,7 +1240,7 @@ public:
   /// \synopsis template <class F>\nconstexpr auto and_then(F &&f) const &;
   template <class F>
   constexpr auto and_then(F &&f) const & -> decltype(
-      and_then_impl(*this, std::forward<F>(f))) {
+      and_then_impl(std::declval<expected const&>(), std::forward<F>(f))) {
     return and_then_impl(*this, std::forward<F>(f));
   }
 
@@ -1249,7 +1249,7 @@ public:
   /// \synopsis template <class F>\nconstexpr auto and_then(F &&f) const &&;
   template <class F>
   constexpr auto and_then(F &&f) const && -> decltype(
-      and_then_impl(std::move(*this), std::forward<F>(f))) {
+      and_then_impl(std::declval<expected const&&>(), std::forward<F>(f))) {
     return and_then_impl(std::move(*this), std::forward<F>(f));
   }
 #endif
