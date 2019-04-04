@@ -14,6 +14,8 @@ ERROR_TYPES = [
     {:dir => "ref_val___________", :cc_flags => ""},
     {:dir => "expected_struct___", :cc_flags => ""},
     {:dir => "expected_val______", :cc_flags => ""},
+    {:dir => "outcome_struct____", :cc_flags => ""},
+    {:dir => "outcome_val_______", :cc_flags => ""},
 ]
 FULL_CASE_NAMES =   ["one_neutral", "two_neutral", "one_error__", "two_error__"]
 NO_TERM_CASE_NAME = ["one_catch__", "two_catch__"]

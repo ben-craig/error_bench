@@ -27,6 +27,7 @@ CCFLAGS= $
 /O1 $
 /MT $
 /d2FH4 $
+/wd4530 $
 /std:c++latest $
 /permissive- $
 /I"src" $
