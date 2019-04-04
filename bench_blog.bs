@@ -11,6 +11,656 @@ Editor: Ben Craig, National Instruments, ben.craig@gmail.com
 Abstract: Measuring size costs of error handling approaches.  Exceptions are big, <code>std::abort</code> and integer error codes are small, and <code>expected</code> is somewhere in between.
 Markup Shorthands: markdown yes
 </pre>
+<script type="text/javascript">
+var data_CmpTerm = [
+  {
+    type: 'bar',
+    name: 'stripped.return_val',
+    data: [20,14,13,9]
+  },
+  {
+    type: 'bar',
+    name: 'stripped.return_struct',
+    data: [30,27,58,29]
+  },
+  {
+    type: 'bar',
+    name: 'stripped.ref_val',
+    data: [29,26,21,31]
+  },
+  {
+    type: 'bar',
+    name: 'stripped.ref_struct',
+    data: [34,34,27,36]
+  },
+  {
+    type: 'bar',
+    name: 'stripped.expected_val',
+    data: [41,51,59,61]
+  },
+  {
+    type: 'bar',
+    name: 'stripped.expected_struct',
+    data: [52,29,61,63]
+  },
+  {
+    type: 'bar',
+    name: 'stripped.tls_error_val',
+    data: [28,28,214,215]
+  },
+  {
+    type: 'bar',
+    name: 'stripped.tls_error_struct',
+    data: [29,29,481,510]
+  },
+  {
+    type: 'bar',
+    name: 'abort',
+    data: [57376,42732,6360,0]
+  },
+  {
+    type: 'bar',
+    name: 'noexcept_abort',
+    data: [57376,42732,6360,0]
+  },
+  {
+    type: 'bar',
+    name: 'return_val',
+    data: [57404,42746,6373,9]
+  },
+  {
+    type: 'bar',
+    name: 'return_struct',
+    data: [57422,42759,6434,29]
+  },
+  {
+    type: 'bar',
+    name: 'ref_val',
+    data: [57413,42766,6381,31]
+  },
+  {
+    type: 'bar',
+    name: 'ref_struct',
+    data: [57418,42774,6387,36]
+  },
+  {
+    type: 'bar',
+    name: 'expected_val',
+    data: [57425,42783,6419,61]
+  },
+  {
+    type: 'bar',
+    name: 'expected_struct',
+    data: [57436,42769,6421,63]
+  },
+  {
+    type: 'bar',
+    name: 'tls_error_val',
+    data: [57404,42760,6574,215]
+  },
+  {
+    type: 'bar',
+    name: 'tls_error_struct',
+    data: [57405,42761,6885,510]
+  },
+  {
+    type: 'bar',
+    name: 'throw_val',
+    data: [384208,102620,19990,6140]
+  },
+  {
+    type: 'bar',
+    name: 'throw_struct',
+    data: [384208,102620,19990,6140]
+  },
+  {
+    type: 'bar',
+    name: 'throw_exception',
+    barCategoryGap: '10%',
+    data: [384208,102620,19990,6140]
+  }
+];
+
+var data_Cost2ndNeutral = [
+  {
+    type: 'bar',
+    name: 'stripped.abort',
+    data: [48,48,49,49]
+  },
+  {
+    type: 'bar',
+    name: 'stripped.return_val',
+    data: [55,62,68,63]
+  },
+  {
+    type: 'bar',
+    name: 'stripped.return_struct',
+    data: [75,75,113,71]
+  },
+  {
+    type: 'bar',
+    name: 'stripped.ref_val',
+    data: [67,64,71,66]
+  },
+  {
+    type: 'bar',
+    name: 'stripped.ref_struct',
+    data: [62,63,72,66]
+  },
+  {
+    type: 'bar',
+    name: 'stripped.expected_val',
+    data: [76,96,113,104]
+  },
+  {
+    type: 'bar',
+    name: 'stripped.expected_struct',
+    data: [81,74,115,106]
+  },
+  {
+    type: 'bar',
+    name: 'stripped.tls_error_val',
+    data: [76,76,79,75]
+  },
+  {
+    type: 'bar',
+    name: 'stripped.tls_error_struct',
+    data: [77,77,80,75]
+  },
+  {
+    type: 'bar',
+    name: 'abort',
+    data: [120,104,61,49]
+  },
+  {
+    type: 'bar',
+    name: 'noexcept_abort',
+    data: [120,104,61,49]
+  },
+  {
+    type: 'bar',
+    name: 'return_val',
+    data: [135,118,80,63]
+  },
+  {
+    type: 'bar',
+    name: 'return_struct',
+    data: [163,131,141,71]
+  },
+  {
+    type: 'bar',
+    name: 'ref_val',
+    data: [155,128,83,66]
+  },
+  {
+    type: 'bar',
+    name: 'ref_struct',
+    data: [150,127,84,66]
+  },
+  {
+    type: 'bar',
+    name: 'expected_val',
+    data: [156,152,141,104]
+  },
+  {
+    type: 'bar',
+    name: 'expected_struct',
+    data: [161,138,127,106]
+  },
+  {
+    type: 'bar',
+    name: 'tls_error_val',
+    data: [148,132,91,75]
+  },
+  {
+    type: 'bar',
+    name: 'tls_error_struct',
+    data: [149,133,92,75]
+  },
+  {
+    type: 'bar',
+    name: 'throw_val',
+    data: [140,124,85,105]
+  },
+  {
+    type: 'bar',
+    name: 'throw_struct',
+    data: [140,124,85,105]
+  },
+  {
+    type: 'bar',
+    name: 'throw_exception',
+    barCategoryGap: '10%',
+    data: [140,124,85,105]
+  }
+];
+
+var data_Cost1stError = [
+  {
+    type: 'bar',
+    name: 'stripped.abort',
+    data: [18,21,21,17]
+  },
+  {
+    type: 'bar',
+    name: 'stripped.return_val',
+    data: [13,13,13,16]
+  },
+  {
+    type: 'bar',
+    name: 'stripped.return_struct',
+    data: [26,26,51,23]
+  },
+  {
+    type: 'bar',
+    name: 'stripped.ref_val',
+    data: [18,18,19,23]
+  },
+  {
+    type: 'bar',
+    name: 'stripped.ref_struct',
+    data: [40,27,50,30]
+  },
+  {
+    type: 'bar',
+    name: 'stripped.expected_val',
+    data: [17,45,24,24]
+  },
+  {
+    type: 'bar',
+    name: 'stripped.expected_struct',
+    data: [47,32,73,31]
+  },
+  {
+    type: 'bar',
+    name: 'stripped.tls_error_val',
+    data: [24,24,44,38]
+  },
+  {
+    type: 'bar',
+    name: 'stripped.tls_error_struct',
+    data: [46,38,61,64]
+  },
+  {
+    type: 'bar',
+    name: 'abort',
+    data: [18,21,33,17]
+  },
+  {
+    type: 'bar',
+    name: 'noexcept_abort',
+    data: [18,21,13647,6100]
+  },
+  {
+    type: 'bar',
+    name: 'return_val',
+    data: [13,13,13,16]
+  },
+  {
+    type: 'bar',
+    name: 'return_struct',
+    data: [26,26,51,23]
+  },
+  {
+    type: 'bar',
+    name: 'ref_val',
+    data: [18,18,19,23]
+  },
+  {
+    type: 'bar',
+    name: 'ref_struct',
+    data: [40,27,50,30]
+  },
+  {
+    type: 'bar',
+    name: 'expected_val',
+    data: [17,45,24,24]
+  },
+  {
+    type: 'bar',
+    name: 'expected_struct',
+    data: [47,32,93,31]
+  },
+  {
+    type: 'bar',
+    name: 'tls_error_val',
+    data: [24,24,44,38]
+  },
+  {
+    type: 'bar',
+    name: 'tls_error_struct',
+    data: [46,38,61,64]
+  },
+  {
+    type: 'bar',
+    name: 'throw_val',
+    data: [246,3080,178,103]
+  },
+  {
+    type: 'bar',
+    name: 'throw_struct',
+    data: [107,2746,226,161]
+  },
+  {
+    type: 'bar',
+    name: 'throw_exception',
+    barCategoryGap: '10%',
+    data: [224,2933,827,633]
+  }
+];
+
+var data_Cost2ndError = [
+  {
+    type: 'bar',
+    name: 'stripped.abort',
+    data: [20,23,24,15]
+  },
+  {
+    type: 'bar',
+    name: 'stripped.return_val',
+    data: [19,19,22,15]
+  },
+  {
+    type: 'bar',
+    name: 'stripped.return_struct',
+    data: [25,25,43,22]
+  },
+  {
+    type: 'bar',
+    name: 'stripped.ref_val',
+    data: [21,21,27,22]
+  },
+  {
+    type: 'bar',
+    name: 'stripped.ref_struct',
+    data: [43,30,42,30]
+  },
+  {
+    type: 'bar',
+    name: 'stripped.expected_val',
+    data: [28,47,32,23]
+  },
+  {
+    type: 'bar',
+    name: 'stripped.expected_struct',
+    data: [49,34,65,30]
+  },
+  {
+    type: 'bar',
+    name: 'stripped.tls_error_val',
+    data: [27,27,48,37]
+  },
+  {
+    type: 'bar',
+    name: 'stripped.tls_error_struct',
+    data: [49,41,65,47]
+  },
+  {
+    type: 'bar',
+    name: 'abort',
+    data: [20,23,36,15]
+  },
+  {
+    type: 'bar',
+    name: 'noexcept_abort',
+    data: [20,23,60,56]
+  },
+  {
+    type: 'bar',
+    name: 'return_val',
+    data: [19,19,22,15]
+  },
+  {
+    type: 'bar',
+    name: 'return_struct',
+    data: [25,25,43,22]
+  },
+  {
+    type: 'bar',
+    name: 'ref_val',
+    data: [21,21,27,22]
+  },
+  {
+    type: 'bar',
+    name: 'ref_struct',
+    data: [43,30,42,30]
+  },
+  {
+    type: 'bar',
+    name: 'expected_val',
+    data: [28,47,32,23]
+  },
+  {
+    type: 'bar',
+    name: 'expected_struct',
+    data: [49,34,77,30]
+  },
+  {
+    type: 'bar',
+    name: 'tls_error_val',
+    data: [27,27,48,37]
+  },
+  {
+    type: 'bar',
+    name: 'tls_error_struct',
+    data: [49,41,65,47]
+  },
+  {
+    type: 'bar',
+    name: 'throw_val',
+    data: [55,49,61,35]
+  },
+  {
+    type: 'bar',
+    name: 'throw_struct',
+    data: [77,58,77,52]
+  },
+  {
+    type: 'bar',
+    name: 'throw_exception',
+    barCategoryGap: '10%',
+    data: [66,60,68,41]
+  }
+];
+
+var data_Cost1stCatch = [
+  {
+    type: 'bar',
+    name: 'stripped.return_val',
+    data: [14,14,19,18]
+  },
+  {
+    type: 'bar',
+    name: 'stripped.return_struct',
+    data: [15,15,21,18]
+  },
+  {
+    type: 'bar',
+    name: 'stripped.ref_val',
+    data: [13,25,19,16]
+  },
+  {
+    type: 'bar',
+    name: 'stripped.ref_struct',
+    data: [23,34,25,18]
+  },
+  {
+    type: 'bar',
+    name: 'stripped.expected_val',
+    data: [18,22,13,19]
+  },
+  {
+    type: 'bar',
+    name: 'stripped.expected_struct',
+    data: [25,17,13,19]
+  },
+  {
+    type: 'bar',
+    name: 'stripped.tls_error_val',
+    data: [54,57,43,36]
+  },
+  {
+    type: 'bar',
+    name: 'stripped.tls_error_struct',
+    data: [61,68,48,42]
+  },
+  {
+    type: 'bar',
+    name: 'return_val',
+    data: [14,14,19,18]
+  },
+  {
+    type: 'bar',
+    name: 'return_struct',
+    data: [15,15,21,18]
+  },
+  {
+    type: 'bar',
+    name: 'ref_val',
+    data: [21,25,19,16]
+  },
+  {
+    type: 'bar',
+    name: 'ref_struct',
+    data: [23,34,25,18]
+  },
+  {
+    type: 'bar',
+    name: 'expected_val',
+    data: [18,22,13,19]
+  },
+  {
+    type: 'bar',
+    name: 'expected_struct',
+    data: [33,17,13,19]
+  },
+  {
+    type: 'bar',
+    name: 'tls_error_val',
+    data: [62,65,43,36]
+  },
+  {
+    type: 'bar',
+    name: 'tls_error_struct',
+    data: [69,76,48,42]
+  },
+  {
+    type: 'bar',
+    name: 'throw_val',
+    data: [53,63,77,134]
+  },
+  {
+    type: 'bar',
+    name: 'throw_struct',
+    data: [53,63,85,134]
+  },
+  {
+    type: 'bar',
+    name: 'throw_exception',
+    barCategoryGap: '10%',
+    data: [53,63,77,126]
+  }
+];
+
+var data_Cost2ndCatch = [
+  {
+    type: 'bar',
+    name: 'stripped.return_val',
+    data: [20,14,16,16]
+  },
+  {
+    type: 'bar',
+    name: 'stripped.return_struct',
+    data: [21,15,25,16]
+  },
+  {
+    type: 'bar',
+    name: 'stripped.ref_val',
+    data: [32,17,14,13]
+  },
+  {
+    type: 'bar',
+    name: 'stripped.ref_struct',
+    data: [36,17,17,13]
+  },
+  {
+    type: 'bar',
+    name: 'stripped.expected_val',
+    data: [24,22,13,17]
+  },
+  {
+    type: 'bar',
+    name: 'stripped.expected_struct',
+    data: [26,17,13,17]
+  },
+  {
+    type: 'bar',
+    name: 'stripped.tls_error_val',
+    data: [49,53,37,29]
+  },
+  {
+    type: 'bar',
+    name: 'stripped.tls_error_struct',
+    data: [58,64,60,35]
+  },
+  {
+    type: 'bar',
+    name: 'return_val',
+    data: [28,14,16,16]
+  },
+  {
+    type: 'bar',
+    name: 'return_struct',
+    data: [29,15,25,16]
+  },
+  {
+    type: 'bar',
+    name: 'ref_val',
+    data: [40,17,14,13]
+  },
+  {
+    type: 'bar',
+    name: 'ref_struct',
+    data: [44,17,17,13]
+  },
+  {
+    type: 'bar',
+    name: 'expected_val',
+    data: [32,22,13,17]
+  },
+  {
+    type: 'bar',
+    name: 'expected_struct',
+    data: [34,17,13,17]
+  },
+  {
+    type: 'bar',
+    name: 'tls_error_val',
+    data: [49,53,37,29]
+  },
+  {
+    type: 'bar',
+    name: 'tls_error_struct',
+    data: [58,64,68,35]
+  },
+  {
+    type: 'bar',
+    name: 'throw_val',
+    data: [29,34,25,64]
+  },
+  {
+    type: 'bar',
+    name: 'throw_struct',
+    data: [29,34,17,64]
+  },
+  {
+    type: 'bar',
+    name: 'throw_exception',
+    barCategoryGap: '10%',
+    data: [29,34,25,64]
+  }
+];
+</script>
 <script src="echarts.js"></script>
 <script type="text/javascript">
 function addCommas(x) {
@@ -123,7 +773,7 @@ MSVC 2019 Preview 3 was used for MSVC x86 and MSVC x64 builds.  The /d2FH4 flag 
 
 GCC 7.3.1 from the Red Hat Developer Toolset 7.1 was used for my GCC builds.  The Linux x64 platform was targeted.
 
-Clang 7.0.0 and libc++ was used for my Clang builds.  The Linux x64 platform was targeted.  The system linker and C library leaked in to this build.  The system GCC was GCC 4.8.4 from Ubuntu 14.04.3.
+Clang 8.0.0 and libc++ was used for my Clang builds.  The Linux x64 platform was targeted.  The system linker and C library leaked in to this build.  The system GCC was GCC 4.8.4 from Ubuntu 14.04.3.
 
 All the binaries are built with static runtimes, so that we can also see the costs of the error handling runtime machinery.  For many people, this is a sunk cost.  If the cost of the runtime machinery isn't of interest, then don't pay attention to the one-time costs, and just look at the incremental costs.  Sizes were not calculated by just doing the "easy" thing and comparing the on-disk sizes of the resulting programs.  Programs have lots and lots of padding internal to them due to alignment constraints, and that padding can mask or inflate small cost changes.  So instead, the size is calculated by summing the size of all the non-code sections, and by summing the size of each function in the code sections.  Measuring the size of a function is a little tricky, as the compiler doesn't emit that information directly.  There are often padding instructions between consecutive functions.  My measurements omit the padding instructions so that we can see code size differences as small as one byte.
 
@@ -229,98 +879,7 @@ My first batch of measurements is comparing each of the mechanisms to the abort 
         saveAsImage : {show: true}
       }
     },
-    series: [
-      {
-        type: 'bar',
-        name: 'stripped.abort',
-        data: [0,0,0,0]
-      }, {
-        type: 'bar',
-        name: 'stripped.return_val',
-        data: [20,14,13,9]
-      }, {
-        type: 'bar',
-        name: 'stripped.return_struct',
-        data: [30,27,58,29]
-      }, {
-        type: 'bar',
-        name: 'stripped.ref_val',
-        data: [29,26,21,31]
-      }, {
-        type: 'bar',
-        name: 'stripped.ref_struct',
-        data: [36,34,27,36]
-      }, {
-        type: 'bar',
-        name: 'stripped.expected_val',
-        data: [41,77,59,61]
-      }, {
-        type: 'bar',
-        name: 'stripped.expected_struct',
-        data: [54,37,61,63]
-      }, {
-        type: 'bar',
-        name: 'stripped.tls_error_val',
-        data: [28,28,214,215]
-      }, {
-        type: 'bar',
-        name: 'stripped.tls_error_struct',
-        data: [29,29,481,510]
-      }, {
-        type: 'bar',
-        name: 'abort',
-        data: [57376,42732,6360,0]
-      }, {
-        type: 'bar',
-        name: 'noexcept_abort',
-        data: [57376,42732,6360,0]
-      }, {
-        type: 'bar',
-        name: 'return_val',
-        data: [57404,42746,6373,9]
-      }, {
-        type: 'bar',
-        name: 'return_struct',
-        data: [57422,42759,6434,29]
-      }, {
-        type: 'bar',
-        name: 'ref_val',
-        data: [57413,42766,6381,31]
-      }, {
-        type: 'bar',
-        name: 'ref_struct',
-        data: [57420,42774,6387,36]
-      }, {
-        type: 'bar',
-        name: 'expected_val',
-        data: [57425,42809,6419,61]
-      }, {
-        type: 'bar',
-        name: 'expected_struct',
-        data: [57438,42777,6421,63]
-      }, {
-        type: 'bar',
-        name: 'tls_error_val',
-        data: [57404,42760,6574,215]
-      }, {
-        type: 'bar',
-        name: 'tls_error_struct',
-        data: [57405,42761,6885,510]
-      }, {
-        type: 'bar',
-        name: 'throw_val',
-        data: [384163,102620,19990,6140]
-      }, {
-        type: 'bar',
-        name: 'throw_struct',
-        data: [384163,102620,19990,6140]
-      }, {
-        type: 'bar',
-        name: 'throw_exception',
-        barCategoryGap: '10%',
-        data: [384163,102620,19990,6140]
-      }
-    ]
+    series: data_CmpTerm
   };
 
   // use configuration item and data specified to show chart
@@ -395,98 +954,7 @@ The "2" versions of these functions are slightly different than the original ver
         saveAsImage : {show: true}
       }
     },
-    series: [
-      {
-        type: 'bar',
-        name: 'stripped.abort',
-        data: [48,48,49,49]
-      }, {
-        type: 'bar',
-        name: 'stripped.return_val',
-        data: [55,62,68,63]
-      }, {
-        type: 'bar',
-        name: 'stripped.return_struct',
-        data: [75,75,113,71]
-      }, {
-        type: 'bar',
-        name: 'stripped.ref_val',
-        data: [67,64,71,66]
-      }, {
-        type: 'bar',
-        name: 'stripped.ref_struct',
-        data: [62,63,72,66]
-      }, {
-        type: 'bar',
-        name: 'stripped.expected_val',
-        data: [76,122,113,104]
-      }, {
-        type: 'bar',
-        name: 'stripped.expected_struct',
-        data: [83,82,115,106]
-      }, {
-        type: 'bar',
-        name: 'stripped.tls_error_val',
-        data: [76,76,79,75]
-      }, {
-        type: 'bar',
-        name: 'stripped.tls_error_struct',
-        data: [77,77,80,75]
-      }, {
-        type: 'bar',
-        name: 'abort',
-        data: [120,104,61,49]
-      }, {
-        type: 'bar',
-        name: 'noexcept_abort',
-        data: [120,104,61,49]
-      }, {
-        type: 'bar',
-        name: 'return_val',
-        data: [135,118,80,63]
-      }, {
-        type: 'bar',
-        name: 'return_struct',
-        data: [163,131,141,71]
-      }, {
-        type: 'bar',
-        name: 'ref_val',
-        data: [155,128,83,66]
-      }, {
-        type: 'bar',
-        name: 'ref_struct',
-        data: [150,127,84,66]
-      }, {
-        type: 'bar',
-        name: 'expected_val',
-        data: [156,178,141,104]
-      }, {
-        type: 'bar',
-        name: 'expected_struct',
-        data: [163,146,127,106]
-      }, {
-        type: 'bar',
-        name: 'tls_error_val',
-        data: [148,132,91,75]
-      }, {
-        type: 'bar',
-        name: 'tls_error_struct',
-        data: [149,133,92,75]
-      }, {
-        type: 'bar',
-        name: 'throw_val',
-        data: [140,124,85,105]
-      }, {
-        type: 'bar',
-        name: 'throw_struct',
-        data: [140,124,85,105]
-      }, {
-        type: 'bar',
-        name: 'throw_exception',
-        barCategoryGap: '10%',
-        data: [140,124,85,105]
-      }
-    ]
+    series: data_Cost2ndNeutral
   };
 
   // use configuration item and data specified to show chart
@@ -541,98 +1009,7 @@ void callee() {
         saveAsImage : {show: true}
       }
     },
-    series: [
-      {
-        type: 'bar',
-        name: 'stripped.abort',
-        data: [18,21,21,17]
-      }, {
-        type: 'bar',
-        name: 'stripped.return_val',
-        data: [13,13,13,16]
-      }, {
-        type: 'bar',
-        name: 'stripped.return_struct',
-        data: [26,26,51,23]
-      }, {
-        type: 'bar',
-        name: 'stripped.ref_val',
-        data: [18,18,19,23]
-      }, {
-        type: 'bar',
-        name: 'stripped.ref_struct',
-        data: [40,27,50,30]
-      }, {
-        type: 'bar',
-        name: 'stripped.expected_val',
-        data: [17,29,24,24]
-      }, {
-        type: 'bar',
-        name: 'stripped.expected_struct',
-        data: [45,32,73,31]
-      }, {
-        type: 'bar',
-        name: 'stripped.tls_error_val',
-        data: [24,24,44,38]
-      }, {
-        type: 'bar',
-        name: 'stripped.tls_error_struct',
-        data: [46,38,61,64]
-      }, {
-        type: 'bar',
-        name: 'abort',
-        data: [18,21,33,17]
-      }, {
-        type: 'bar',
-        name: 'noexcept_abort',
-        data: [18,21,13647,6100]
-      }, {
-        type: 'bar',
-        name: 'return_val',
-        data: [13,13,13,16]
-      }, {
-        type: 'bar',
-        name: 'return_struct',
-        data: [26,26,51,23]
-      }, {
-        type: 'bar',
-        name: 'ref_val',
-        data: [18,18,19,23]
-      }, {
-        type: 'bar',
-        name: 'ref_struct',
-        data: [40,27,50,30]
-      }, {
-        type: 'bar',
-        name: 'expected_val',
-        data: [17,29,24,24]
-      }, {
-        type: 'bar',
-        name: 'expected_struct',
-        data: [45,32,93,31]
-      }, {
-        type: 'bar',
-        name: 'tls_error_val',
-        data: [24,24,44,38]
-      }, {
-        type: 'bar',
-        name: 'tls_error_struct',
-        data: [46,38,61,64]
-      }, {
-        type: 'bar',
-        name: 'throw_val',
-        data: [246,3080,178,103]
-      }, {
-        type: 'bar',
-        name: 'throw_struct',
-        data: [107,2746,226,161]
-      }, {
-        type: 'bar',
-        name: 'throw_exception',
-        barCategoryGap: '10%',
-        data: [224,2933,827,633]
-      }
-    ]
+    series: data_Cost1stError
   };
 
   // use configuration item and data specified to show chart
@@ -693,98 +1070,7 @@ void callee2(int amount) {
         saveAsImage : {show: true}
       }
     },
-    series: [
-      {
-        type: 'bar',
-        name: 'stripped.abort',
-        data: [20,23,24,15]
-      }, {
-        type: 'bar',
-        name: 'stripped.return_val',
-        data: [19,19,22,15]
-      }, {
-        type: 'bar',
-        name: 'stripped.return_struct',
-        data: [25,25,43,22]
-      }, {
-        type: 'bar',
-        name: 'stripped.ref_val',
-        data: [21,21,27,22]
-      }, {
-        type: 'bar',
-        name: 'stripped.ref_struct',
-        data: [43,30,42,30]
-      }, {
-        type: 'bar',
-        name: 'stripped.expected_val',
-        data: [28,31,32,23]
-      }, {
-        type: 'bar',
-        name: 'stripped.expected_struct',
-        data: [47,34,65,30]
-      }, {
-        type: 'bar',
-        name: 'stripped.tls_error_val',
-        data: [27,27,48,37]
-      }, {
-        type: 'bar',
-        name: 'stripped.tls_error_struct',
-        data: [49,41,65,47]
-      }, {
-        type: 'bar',
-        name: 'abort',
-        data: [20,23,36,15]
-      }, {
-        type: 'bar',
-        name: 'noexcept_abort',
-        data: [20,23,60,56]
-      }, {
-        type: 'bar',
-        name: 'return_val',
-        data: [19,19,22,15]
-      }, {
-        type: 'bar',
-        name: 'return_struct',
-        data: [25,25,43,22]
-      }, {
-        type: 'bar',
-        name: 'ref_val',
-        data: [21,21,27,22]
-      }, {
-        type: 'bar',
-        name: 'ref_struct',
-        data: [43,30,42,30]
-      }, {
-        type: 'bar',
-        name: 'expected_val',
-        data: [28,31,32,23]
-      }, {
-        type: 'bar',
-        name: 'expected_struct',
-        data: [47,34,77,30]
-      }, {
-        type: 'bar',
-        name: 'tls_error_val',
-        data: [27,27,48,37]
-      }, {
-        type: 'bar',
-        name: 'tls_error_struct',
-        data: [49,41,65,47]
-      }, {
-        type: 'bar',
-        name: 'throw_val',
-        data: [55,49,61,35]
-      }, {
-        type: 'bar',
-        name: 'throw_struct',
-        data: [77,58,77,52]
-      }, {
-        type: 'bar',
-        name: 'throw_exception',
-        barCategoryGap: '10%',
-        data: [66,60,68,41]
-      }
-    ]
+    series: data_Cost2ndError
   };
 
   // use configuration item and data specified to show chart
@@ -852,86 +1138,7 @@ int main() {
         saveAsImage : {show: true}
       }
     },
-    series: [
-      {
-        type: 'bar',
-        name: 'stripped.return_val',
-        data: [14,14,19,18]
-      }, {
-        type: 'bar',
-        name: 'stripped.return_struct',
-        data: [15,15,21,18]
-      }, {
-        type: 'bar',
-        name: 'stripped.ref_val',
-        data: [13,25,19,16]
-      }, {
-        type: 'bar',
-        name: 'stripped.ref_struct',
-        data: [25,34,25,18]
-      }, {
-        type: 'bar',
-        name: 'stripped.expected_val',
-        data: [18,22,13,19]
-      }, {
-        type: 'bar',
-        name: 'stripped.expected_struct',
-        data: [25,17,13,19]
-      }, {
-        type: 'bar',
-        name: 'stripped.tls_error_val',
-        data: [54,57,43,36]
-      }, {
-        type: 'bar',
-        name: 'stripped.tls_error_struct',
-        data: [63,68,48,42]
-      }, {
-        type: 'bar',
-        name: 'return_val',
-        data: [14,14,19,18]
-      }, {
-        type: 'bar',
-        name: 'return_struct',
-        data: [15,15,21,18]
-      }, {
-        type: 'bar',
-        name: 'ref_val',
-        data: [21,25,19,16]
-      }, {
-        type: 'bar',
-        name: 'ref_struct',
-        data: [25,34,25,18]
-      }, {
-        type: 'bar',
-        name: 'expected_val',
-        data: [18,22,13,19]
-      }, {
-        type: 'bar',
-        name: 'expected_struct',
-        data: [33,17,13,19]
-      }, {
-        type: 'bar',
-        name: 'tls_error_val',
-        data: [62,65,43,36]
-      }, {
-        type: 'bar',
-        name: 'tls_error_struct',
-        data: [71,76,48,42]
-      }, {
-        type: 'bar',
-        name: 'throw_val',
-        data: [53,63,77,134]
-      }, {
-        type: 'bar',
-        name: 'throw_struct',
-        data: [53,63,85,134]
-      }, {
-        type: 'bar',
-        name: 'throw_exception',
-        barCategoryGap: '10%',
-        data: [53,63,77,126]
-      }
-    ]
+    series: data_Cost1stCatch
   };
 
   // use configuration item and data specified to show chart
@@ -998,86 +1205,7 @@ int main() {
         saveAsImage : {show: true}
       }
     },
-    series: [
-      {
-        type: 'bar',
-        name: 'stripped.return_val',
-        data: [20,14,16,16]
-      }, {
-        type: 'bar',
-        name: 'stripped.return_struct',
-        data: [21,15,25,16]
-      }, {
-        type: 'bar',
-        name: 'stripped.ref_val',
-        data: [32,17,14,13]
-      }, {
-        type: 'bar',
-        name: 'stripped.ref_struct',
-        data: [38,17,17,13]
-      }, {
-        type: 'bar',
-        name: 'stripped.expected_val',
-        data: [24,22,13,17]
-      }, {
-        type: 'bar',
-        name: 'stripped.expected_struct',
-        data: [26,17,13,17]
-      }, {
-        type: 'bar',
-        name: 'stripped.tls_error_val',
-        data: [49,53,37,29]
-      }, {
-        type: 'bar',
-        name: 'stripped.tls_error_struct',
-        data: [60,64,60,35]
-      }, {
-        type: 'bar',
-        name: 'return_val',
-        data: [28,14,16,16]
-      }, {
-        type: 'bar',
-        name: 'return_struct',
-        data: [29,15,25,16]
-      }, {
-        type: 'bar',
-        name: 'ref_val',
-        data: [40,17,14,13]
-      }, {
-        type: 'bar',
-        name: 'ref_struct',
-        data: [46,17,17,13]
-      }, {
-        type: 'bar',
-        name: 'expected_val',
-        data: [32,22,13,17]
-      }, {
-        type: 'bar',
-        name: 'expected_struct',
-        data: [34,17,13,17]
-      }, {
-        type: 'bar',
-        name: 'tls_error_val',
-        data: [49,53,37,29]
-      }, {
-        type: 'bar',
-        name: 'tls_error_struct',
-        data: [60,64,68,35]
-      }, {
-        type: 'bar',
-        name: 'throw_val',
-        data: [29,34,25,64]
-      }, {
-        type: 'bar',
-        name: 'throw_struct',
-        data: [29,34,17,64]
-      }, {
-        type: 'bar',
-        name: 'throw_exception',
-        barCategoryGap: '10%',
-        data: [29,34,25,64]
-      }
-    ]
+    series: data_Cost2ndCatch
   };
 
   // use configuration item and data specified to show chart
@@ -1090,7 +1218,7 @@ Things of note in this graph:
 
 Acknowledgments {#ack}
 ======================
-TBD
+TBD: Simon Brand, Niall Douglas
 
 Appendix A: Why no speed measurements? {#speed}
 =======================================
@@ -1116,21 +1244,21 @@ Compiler toolkit version: 14.20.27404
 
 cl.exe version: 19.20.27404
 
-Compiler codegen flags (no exceptions): /GR /Gy /Gw /O1 /MT /d2FH4 /std:c++latest
+Compiler codegen flags (no exceptions): /GR /Gy /Gw /O1 /MT /d2FH4 /std:c++latest /permissive-
 
-Compiler codegen flags (with exceptions): /EHs /GR /Gy /Gw /O1 /MT /d2FH4 /std:c++latest
+Compiler codegen flags (with exceptions): /EHs /GR /Gy /Gw /O1 /MT /d2FH4 /std:c++latest /permissive-
 
 Linker flags: /OPT:REF /release /subsystem:CONSOLE /incremental:no /OPT:ICF /NXCOMPAT /DYNAMICBASE /DEBUG 
 
 Clang x64 {#clang_x64}
 ----------------------
 Toolchains used:
-* Clang 7.0.0 and libc++
+* Clang 8.0.0 and libc++
 * System linker from Ubuntu 14.04.3's GCC 4.8.4 installation
 
-Compiler codegen flags (no exceptions): -fno-exceptions -Os -march=native -ffunction-sections -fdata-sections -std=c++17 -stdlib=libc++ -static
+Compiler codegen flags (no exceptions): -fno-exceptions -Os -ffunction-sections -fdata-sections -std=c++17 -stdlib=libc++ -static
 
-Compiler codegen flags (exceptions): -Os -march=native -ffunction-sections -fdata-sections -std=c++17 -stdlib=libc++ -static
+Compiler codegen flags (exceptions): -Os -ffunction-sections -fdata-sections -std=c++17 -stdlib=libc++ -static
 
 Linking flags: -Wl,--gc-sections -pthread -static -static-libgcc -stdlib=libc++
 
@@ -1138,9 +1266,9 @@ GCC x64 {#gcc_x64}
 ------------------
 Toolchain used: GCC 7.3.1 from the Red Hat Developer Toolset 7.1
 
-Compiler codegen flags (no exceptions): -fno-exceptions -Os -march=native -ffunction-sections -fdata-sections -std=c++17 -static
+Compiler codegen flags (no exceptions): -fno-exceptions -Os -ffunction-sections -fdata-sections -std=c++17 -static
 
-Compiler codegen flags (exceptions): -Os -march=native -ffunction-sections -fdata-sections -std=c++17 -static
+Compiler codegen flags (exceptions): -Os -ffunction-sections -fdata-sections -std=c++17 -static
 
 Linking flags: -Wl,--gc-sections -pthread -static -static-libgcc -static-libstdc++
 
