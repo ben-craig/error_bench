@@ -10,7 +10,6 @@ CXXFLAGS= $
 -Wextra $
 -Werror $
 -Os $
--march=native $
 -ffunction-sections $
 -fdata-sections $
 -std=c++17 $
