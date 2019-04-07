@@ -1275,7 +1275,7 @@ My first batch of measurements is comparing each of the mechanisms to the abort 
     legend: {
       type: 'scroll',
       right: 0,
-      top: 30,
+      top: 0,
       orient: 'vertical',
     },
     xAxis: [{
@@ -1290,14 +1290,6 @@ My first batch of measurements is comparing each of the mechanisms to the abort 
       top: 0,
       left: 65,
       right: 200
-    },
-    toolbox: {
-      show : true,
-      feature : {
-        dataView : {show: true, readOnly: false},
-        restore : {show: true},
-        saveAsImage : {show: true}
-      }
     },
     series: data_CmpTerm
   };
@@ -1346,7 +1338,7 @@ The "2" versions of these functions are slightly different than the original ver
     legend: {
       type: 'scroll',
       right: 0,
-      top: 30,
+      top: 0,
       orient: 'vertical',
     },
     xAxis: [{
@@ -1366,14 +1358,6 @@ The "2" versions of these functions are slightly different than the original ver
         show: true
       }
     ],
-    toolbox: {
-      show : true,
-      feature : {
-        dataView : {show: true, readOnly: false},
-        restore : {show: true},
-        saveAsImage : {show: true}
-      }
-    },
     series: data_Cost2ndNeutral
   };
 
@@ -1405,7 +1389,7 @@ void callee() {
     legend: {
       type: 'scroll',
       right: 0,
-      top: 30,
+      top: 0,
       orient: 'vertical',
     },
     xAxis: [{
@@ -1420,14 +1404,6 @@ void callee() {
       top: 0,
       left: 65,
       right: 200
-    },
-    toolbox: {
-      show : true,
-      feature : {
-        dataView : {show: true, readOnly: false},
-        restore : {show: true},
-        saveAsImage : {show: true}
-      }
     },
     series: data_Cost1stError
   };
@@ -1462,7 +1438,7 @@ void callee2(int amount) {
     legend: {
       type: 'scroll',
       right: 0,
-      top: 30,
+      top: 0,
       orient: 'vertical',
     },
     xAxis: [{
@@ -1482,14 +1458,6 @@ void callee2(int amount) {
         show: true
       }
     ],
-    toolbox: {
-      show : true,
-      feature : {
-        dataView : {show: true, readOnly: false},
-        restore : {show: true},
-        saveAsImage : {show: true}
-      }
-    },
     series: data_Cost2ndError
   };
 
@@ -1530,7 +1498,7 @@ int main() {
     legend: {
       type: 'scroll',
       right: 0,
-      top: 30,
+      top: 0,
       orient: 'vertical',
     },
     xAxis: [{
@@ -1550,14 +1518,6 @@ int main() {
         show: true
       }
     ],
-    toolbox: {
-      show : true,
-      feature : {
-        dataView : {show: true, readOnly: false},
-        restore : {show: true},
-        saveAsImage : {show: true}
-      }
-    },
     series: data_Cost1stCatch
   };
 
@@ -1597,7 +1557,7 @@ int main() {
     legend: {
       type: 'scroll',
       right: 0,
-      top: 30,
+      top: 0,
       orient: 'vertical',
     },
     xAxis: [{
@@ -1617,14 +1577,6 @@ int main() {
         show: true
       }
     ],
-    toolbox: {
-      show : true,
-      feature : {
-        dataView : {show: true, readOnly: false},
-        restore : {show: true},
-        saveAsImage : {show: true}
-      }
-    },
     series: data_Cost2ndCatch
   };
 
