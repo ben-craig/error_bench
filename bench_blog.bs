@@ -1,12 +1,12 @@
 <pre class='metadata'>
 Title: Error size benchmarking
 Shortname: Dxxxx
-Revision: 0.0
+Revision: 0.2
 Audience: SG14, SG10, SG1, EWG, LEWG
 Status: D
 Group: WG21
-URL: https://wg21.link/P1105R1
-!Source: <a href="https://github.com/ben-craig/freestanding_proposal/blob/master/core/optional_exceptions.bs">github.com/ben-craig/freestanding_proposal/blob/master/core/optional_exceptions.bs</a>
+URL: TODO
+!Source: <a href="https://github.com/ben-craig/error_bench/blob/master/bench_blog.bs">github.com/ben-craig/error_bench/blob/master/bench_blog.bs</a>
 Editor: Ben Craig, National Instruments, ben.craig@gmail.com
 Abstract: Measuring size costs of error handling approaches.  Exceptions are big, <code>std::abort</code> and integer error codes are small, and <code>expected</code> is somewhere in between.
 Markup Shorthands: markdown yes
@@ -15,649 +15,1116 @@ Markup Shorthands: markdown yes
 var data_CmpTerm = [
   {
     type: 'bar',
-    name: 'stripped.return_val',
-    data: [20,14,13,9]
-  },
-  {
-    type: 'bar',
-    name: 'stripped.return_struct',
-    data: [30,27,58,29]
-  },
-  {
-    type: 'bar',
-    name: 'stripped.ref_val',
-    data: [29,26,21,31]
-  },
-  {
-    type: 'bar',
-    name: 'stripped.ref_struct',
-    data: [34,34,27,36]
-  },
-  {
-    type: 'bar',
-    name: 'stripped.expected_val',
-    data: [41,51,59,61]
-  },
-  {
-    type: 'bar',
-    name: 'stripped.expected_struct',
-    data: [52,29,61,63]
-  },
-  {
-    type: 'bar',
-    name: 'stripped.tls_error_val',
-    data: [28,28,214,215]
-  },
-  {
-    type: 'bar',
-    name: 'stripped.tls_error_struct',
-    data: [29,29,481,510]
-  },
-  {
-    type: 'bar',
-    name: 'abort',
-    data: [57376,42732,6360,0]
-  },
-  {
-    type: 'bar',
-    name: 'noexcept_abort',
-    data: [57376,42732,6360,0]
-  },
-  {
-    type: 'bar',
-    name: 'return_val',
-    data: [57404,42746,6373,9]
-  },
-  {
-    type: 'bar',
-    name: 'return_struct',
-    data: [57422,42759,6434,29]
-  },
-  {
-    type: 'bar',
-    name: 'ref_val',
-    data: [57413,42766,6381,31]
-  },
-  {
-    type: 'bar',
-    name: 'ref_struct',
-    data: [57418,42774,6387,36]
-  },
-  {
-    type: 'bar',
-    name: 'expected_val',
-    data: [57425,42783,6419,61]
-  },
-  {
-    type: 'bar',
-    name: 'expected_struct',
-    data: [57436,42769,6421,63]
-  },
-  {
-    type: 'bar',
-    name: 'tls_error_val',
-    data: [57404,42760,6574,215]
-  },
-  {
-    type: 'bar',
-    name: 'tls_error_struct',
-    data: [57405,42761,6885,510]
-  },
-  {
-    type: 'bar',
-    name: 'throw_val',
+    name: 'throw_exception',
+    stack: 'throw_exception',
+    itemStyle: {color: '#1b9e77'},
     data: [384208,102620,19990,6140]
   },
   {
     type: 'bar',
     name: 'throw_struct',
+    stack: 'throw_struct',
+    itemStyle: {color: '#d95f02'},
     data: [384208,102620,19990,6140]
   },
   {
     type: 'bar',
-    name: 'throw_exception',
-    barCategoryGap: '10%',
+    name: 'throw_val',
+    stack: 'throw_val',
+    itemStyle: {color: '#7570b3'},
     data: [384208,102620,19990,6140]
+  },
+  {
+    type: 'bar',
+    name: 'noexcept_abort',
+    stack: 'noexcept_abort',
+    itemStyle: {color: '#e7298a'},
+    data: [57376,42732,6360,0]
+  },
+  {
+    type: 'bar',
+    name: 'stripped.abort',
+    stack: 'abort',
+    itemStyle: {color: '#66a61e'},
+    data: [0,0,0,0]
+  },
+  {
+    type: 'bar',
+    name: 'abort',
+    stack: 'abort',
+    itemStyle: {color: '#A6DE66'},
+    data: [57376,42732,6360,0]
+  },
+  {
+    type: 'bar',
+    name: 'stripped.ref_val',
+    stack: 'ref_val',
+    itemStyle: {color: '#e6ab02'},
+    data: [29,26,21,31]
+  },
+  {
+    type: 'bar',
+    name: 'ref_val',
+    stack: 'ref_val',
+    itemStyle: {color: '#FFD45B'},
+    data: [57413,42766,6381,31]
+  },
+  {
+    type: 'bar',
+    name: 'stripped.return_val',
+    stack: 'return_val',
+    itemStyle: {color: '#a6761d'},
+    data: [20,14,13,9]
+  },
+  {
+    type: 'bar',
+    name: 'return_val',
+    stack: 'return_val',
+    itemStyle: {color: '#E6B965'},
+    data: [57404,42746,6373,9]
+  },
+  {
+    type: 'bar',
+    name: 'stripped.ref_struct',
+    stack: 'ref_struct',
+    itemStyle: {color: '#666666'},
+    data: [34,34,27,36]
+  },
+  {
+    type: 'bar',
+    name: 'ref_struct',
+    stack: 'ref_struct',
+    itemStyle: {color: '#C4C3C3'},
+    data: [57418,42774,6387,36]
+  },
+  {
+    type: 'bar',
+    name: 'stripped.return_struct',
+    stack: 'return_struct',
+    itemStyle: {color: '#1b9e77'},
+    data: [30,27,58,29]
+  },
+  {
+    type: 'bar',
+    name: 'return_struct',
+    stack: 'return_struct',
+    itemStyle: {color: '#5EC2A4'},
+    data: [57422,42759,6434,29]
+  },
+  {
+    type: 'bar',
+    name: 'stripped.outcome_val',
+    stack: 'outcome_val',
+    itemStyle: {color: '#d95f02'},
+    data: [36,408099,90,73]
+  },
+  {
+    type: 'bar',
+    name: 'outcome_val',
+    stack: 'outcome_val',
+    itemStyle: {color: '#FF9F55'},
+    data: [57428,505767,6450,73]
+  },
+  {
+    type: 'bar',
+    name: 'stripped.expected_val',
+    stack: 'expected_val',
+    itemStyle: {color: '#7570b3'},
+    data: [41,51,59,61]
+  },
+  {
+    type: 'bar',
+    name: 'expected_val',
+    stack: 'expected_val',
+    itemStyle: {color: '#CFCDEA'},
+    data: [57425,42783,6419,61]
+  },
+  {
+    type: 'bar',
+    name: 'stripped.outcome_struct',
+    stack: 'outcome_struct',
+    itemStyle: {color: '#e7298a'},
+    data: [48,408096,98,78]
+  },
+  {
+    type: 'bar',
+    name: 'outcome_struct',
+    stack: 'outcome_struct',
+    itemStyle: {color: '#F27DB9'},
+    data: [57432,505772,6458,78]
+  },
+  {
+    type: 'bar',
+    name: 'stripped.expected_struct',
+    stack: 'expected_struct',
+    itemStyle: {color: '#66a61e'},
+    data: [52,29,61,63]
+  },
+  {
+    type: 'bar',
+    name: 'expected_struct',
+    stack: 'expected_struct',
+    itemStyle: {color: '#A6DE66'},
+    data: [57436,42769,6421,63]
+  },
+  {
+    type: 'bar',
+    name: 'stripped.tls_error_val',
+    stack: 'tls_error_val',
+    itemStyle: {color: '#e6ab02'},
+    data: [28,28,214,215]
+  },
+  {
+    type: 'bar',
+    name: 'tls_error_val',
+    stack: 'tls_error_val',
+    itemStyle: {color: '#FFD45B'},
+    data: [57404,42760,6574,215]
+  },
+  {
+    type: 'bar',
+    name: 'stripped.tls_error_struct',
+    stack: 'tls_error_struct',
+    itemStyle: {color: '#a6761d'},
+    data: [29,29,481,510]
+  },
+  {
+    type: 'bar',
+    name: 'tls_error_struct',
+    stack: 'tls_error_struct',
+    itemStyle: {color: '#E6B965'},
+    barCategoryGap: '10%',
+    data: [57405,42761,6885,510]
   }
 ];
 
 var data_Cost2ndNeutral = [
   {
     type: 'bar',
-    name: 'stripped.abort',
-    data: [48,48,49,49]
-  },
-  {
-    type: 'bar',
-    name: 'stripped.return_val',
-    data: [55,62,68,63]
-  },
-  {
-    type: 'bar',
-    name: 'stripped.return_struct',
-    data: [75,75,113,71]
-  },
-  {
-    type: 'bar',
-    name: 'stripped.ref_val',
-    data: [67,64,71,66]
-  },
-  {
-    type: 'bar',
-    name: 'stripped.ref_struct',
-    data: [62,63,72,66]
-  },
-  {
-    type: 'bar',
-    name: 'stripped.expected_val',
-    data: [76,96,113,104]
-  },
-  {
-    type: 'bar',
-    name: 'stripped.expected_struct',
-    data: [81,74,115,106]
-  },
-  {
-    type: 'bar',
-    name: 'stripped.tls_error_val',
-    data: [76,76,79,75]
-  },
-  {
-    type: 'bar',
-    name: 'stripped.tls_error_struct',
-    data: [77,77,80,75]
-  },
-  {
-    type: 'bar',
-    name: 'abort',
-    data: [120,104,61,49]
-  },
-  {
-    type: 'bar',
-    name: 'noexcept_abort',
-    data: [120,104,61,49]
-  },
-  {
-    type: 'bar',
-    name: 'return_val',
-    data: [135,118,80,63]
-  },
-  {
-    type: 'bar',
-    name: 'return_struct',
-    data: [163,131,141,71]
-  },
-  {
-    type: 'bar',
-    name: 'ref_val',
-    data: [155,128,83,66]
-  },
-  {
-    type: 'bar',
-    name: 'ref_struct',
-    data: [150,127,84,66]
-  },
-  {
-    type: 'bar',
-    name: 'expected_val',
-    data: [156,152,141,104]
-  },
-  {
-    type: 'bar',
-    name: 'expected_struct',
-    data: [161,138,127,106]
-  },
-  {
-    type: 'bar',
-    name: 'tls_error_val',
-    data: [148,132,91,75]
-  },
-  {
-    type: 'bar',
-    name: 'tls_error_struct',
-    data: [149,133,92,75]
-  },
-  {
-    type: 'bar',
-    name: 'throw_val',
+    name: 'throw_exception',
+    stack: 'throw_exception',
+    itemStyle: {color: '#1b9e77'},
     data: [140,124,85,105]
   },
   {
     type: 'bar',
     name: 'throw_struct',
+    stack: 'throw_struct',
+    itemStyle: {color: '#d95f02'},
     data: [140,124,85,105]
   },
   {
     type: 'bar',
-    name: 'throw_exception',
-    barCategoryGap: '10%',
+    name: 'throw_val',
+    stack: 'throw_val',
+    itemStyle: {color: '#7570b3'},
     data: [140,124,85,105]
+  },
+  {
+    type: 'bar',
+    name: 'noexcept_abort',
+    stack: 'noexcept_abort',
+    itemStyle: {color: '#e7298a'},
+    data: [120,104,61,49]
+  },
+  {
+    type: 'bar',
+    name: 'stripped.abort',
+    stack: 'abort',
+    itemStyle: {color: '#66a61e'},
+    data: [48,48,49,49]
+  },
+  {
+    type: 'bar',
+    name: 'abort',
+    stack: 'abort',
+    itemStyle: {color: '#A6DE66'},
+    data: [120,104,61,49]
+  },
+  {
+    type: 'bar',
+    name: 'stripped.ref_val',
+    stack: 'ref_val',
+    itemStyle: {color: '#e6ab02'},
+    data: [67,64,71,66]
+  },
+  {
+    type: 'bar',
+    name: 'ref_val',
+    stack: 'ref_val',
+    itemStyle: {color: '#FFD45B'},
+    data: [155,128,83,66]
+  },
+  {
+    type: 'bar',
+    name: 'stripped.return_val',
+    stack: 'return_val',
+    itemStyle: {color: '#a6761d'},
+    data: [55,62,68,63]
+  },
+  {
+    type: 'bar',
+    name: 'return_val',
+    stack: 'return_val',
+    itemStyle: {color: '#E6B965'},
+    data: [135,118,80,63]
+  },
+  {
+    type: 'bar',
+    name: 'stripped.ref_struct',
+    stack: 'ref_struct',
+    itemStyle: {color: '#666666'},
+    data: [62,63,72,66]
+  },
+  {
+    type: 'bar',
+    name: 'ref_struct',
+    stack: 'ref_struct',
+    itemStyle: {color: '#C4C3C3'},
+    data: [150,127,84,66]
+  },
+  {
+    type: 'bar',
+    name: 'stripped.return_struct',
+    stack: 'return_struct',
+    itemStyle: {color: '#1b9e77'},
+    data: [75,75,113,71]
+  },
+  {
+    type: 'bar',
+    name: 'return_struct',
+    stack: 'return_struct',
+    itemStyle: {color: '#5EC2A4'},
+    data: [163,131,141,71]
+  },
+  {
+    type: 'bar',
+    name: 'stripped.outcome_val',
+    stack: 'outcome_val',
+    itemStyle: {color: '#d95f02'},
+    data: [85,96,112,100]
+  },
+  {
+    type: 'bar',
+    name: 'outcome_val',
+    stack: 'outcome_val',
+    itemStyle: {color: '#FF9F55'},
+    data: [173,152,140,100]
+  },
+  {
+    type: 'bar',
+    name: 'stripped.expected_val',
+    stack: 'expected_val',
+    itemStyle: {color: '#7570b3'},
+    data: [76,96,113,104]
+  },
+  {
+    type: 'bar',
+    name: 'expected_val',
+    stack: 'expected_val',
+    itemStyle: {color: '#CFCDEA'},
+    data: [156,152,141,104]
+  },
+  {
+    type: 'bar',
+    name: 'stripped.outcome_struct',
+    stack: 'outcome_struct',
+    itemStyle: {color: '#e7298a'},
+    data: [77,93,120,105]
+  },
+  {
+    type: 'bar',
+    name: 'outcome_struct',
+    stack: 'outcome_struct',
+    itemStyle: {color: '#F27DB9'},
+    data: [157,157,132,105]
+  },
+  {
+    type: 'bar',
+    name: 'stripped.expected_struct',
+    stack: 'expected_struct',
+    itemStyle: {color: '#66a61e'},
+    data: [81,74,115,106]
+  },
+  {
+    type: 'bar',
+    name: 'expected_struct',
+    stack: 'expected_struct',
+    itemStyle: {color: '#A6DE66'},
+    data: [161,138,127,106]
+  },
+  {
+    type: 'bar',
+    name: 'stripped.tls_error_val',
+    stack: 'tls_error_val',
+    itemStyle: {color: '#e6ab02'},
+    data: [76,76,79,75]
+  },
+  {
+    type: 'bar',
+    name: 'tls_error_val',
+    stack: 'tls_error_val',
+    itemStyle: {color: '#FFD45B'},
+    data: [148,132,91,75]
+  },
+  {
+    type: 'bar',
+    name: 'stripped.tls_error_struct',
+    stack: 'tls_error_struct',
+    itemStyle: {color: '#a6761d'},
+    data: [77,77,80,75]
+  },
+  {
+    type: 'bar',
+    name: 'tls_error_struct',
+    stack: 'tls_error_struct',
+    itemStyle: {color: '#E6B965'},
+    barCategoryGap: '10%',
+    data: [149,133,92,75]
   }
 ];
 
 var data_Cost1stError = [
   {
     type: 'bar',
+    name: 'throw_exception',
+    stack: 'throw_exception',
+    itemStyle: {color: '#1b9e77'},
+    data: [224,2933,827,633]
+  },
+  {
+    type: 'bar',
+    name: 'throw_struct',
+    stack: 'throw_struct',
+    itemStyle: {color: '#d95f02'},
+    data: [107,2746,226,161]
+  },
+  {
+    type: 'bar',
+    name: 'throw_val',
+    stack: 'throw_val',
+    itemStyle: {color: '#7570b3'},
+    data: [246,3080,178,103]
+  },
+  {
+    type: 'bar',
+    name: 'noexcept_abort',
+    stack: 'noexcept_abort',
+    itemStyle: {color: '#e7298a'},
+    data: [18,21,13647,6100]
+  },
+  {
+    type: 'bar',
     name: 'stripped.abort',
+    stack: 'abort',
+    itemStyle: {color: '#66a61e'},
     data: [18,21,21,17]
   },
   {
     type: 'bar',
-    name: 'stripped.return_val',
-    data: [13,13,13,16]
-  },
-  {
-    type: 'bar',
-    name: 'stripped.return_struct',
-    data: [26,26,51,23]
+    name: 'abort',
+    stack: 'abort',
+    itemStyle: {color: '#A6DE66'},
+    data: [18,21,33,17]
   },
   {
     type: 'bar',
     name: 'stripped.ref_val',
+    stack: 'ref_val',
+    itemStyle: {color: '#e6ab02'},
     data: [18,18,19,23]
   },
   {
     type: 'bar',
+    name: 'ref_val',
+    stack: 'ref_val',
+    itemStyle: {color: '#FFD45B'},
+    data: [18,18,19,23]
+  },
+  {
+    type: 'bar',
+    name: 'stripped.return_val',
+    stack: 'return_val',
+    itemStyle: {color: '#a6761d'},
+    data: [13,13,13,16]
+  },
+  {
+    type: 'bar',
+    name: 'return_val',
+    stack: 'return_val',
+    itemStyle: {color: '#E6B965'},
+    data: [13,13,13,16]
+  },
+  {
+    type: 'bar',
     name: 'stripped.ref_struct',
+    stack: 'ref_struct',
+    itemStyle: {color: '#666666'},
     data: [40,27,50,30]
   },
   {
     type: 'bar',
+    name: 'ref_struct',
+    stack: 'ref_struct',
+    itemStyle: {color: '#C4C3C3'},
+    data: [40,27,50,30]
+  },
+  {
+    type: 'bar',
+    name: 'stripped.return_struct',
+    stack: 'return_struct',
+    itemStyle: {color: '#1b9e77'},
+    data: [26,26,51,23]
+  },
+  {
+    type: 'bar',
+    name: 'return_struct',
+    stack: 'return_struct',
+    itemStyle: {color: '#5EC2A4'},
+    data: [26,26,51,23]
+  },
+  {
+    type: 'bar',
+    name: 'stripped.outcome_val',
+    stack: 'outcome_val',
+    itemStyle: {color: '#d95f02'},
+    data: [23,29,27,27]
+  },
+  {
+    type: 'bar',
+    name: 'outcome_val',
+    stack: 'outcome_val',
+    itemStyle: {color: '#FF9F55'},
+    data: [23,29,27,27]
+  },
+  {
+    type: 'bar',
     name: 'stripped.expected_val',
+    stack: 'expected_val',
+    itemStyle: {color: '#7570b3'},
     data: [17,45,24,24]
   },
   {
     type: 'bar',
+    name: 'expected_val',
+    stack: 'expected_val',
+    itemStyle: {color: '#CFCDEA'},
+    data: [17,45,24,24]
+  },
+  {
+    type: 'bar',
+    name: 'stripped.outcome_struct',
+    stack: 'outcome_struct',
+    itemStyle: {color: '#e7298a'},
+    data: [49,68,77,34]
+  },
+  {
+    type: 'bar',
+    name: 'outcome_struct',
+    stack: 'outcome_struct',
+    itemStyle: {color: '#F27DB9'},
+    data: [49,68,97,34]
+  },
+  {
+    type: 'bar',
     name: 'stripped.expected_struct',
+    stack: 'expected_struct',
+    itemStyle: {color: '#66a61e'},
     data: [47,32,73,31]
   },
   {
     type: 'bar',
+    name: 'expected_struct',
+    stack: 'expected_struct',
+    itemStyle: {color: '#A6DE66'},
+    data: [47,32,93,31]
+  },
+  {
+    type: 'bar',
     name: 'stripped.tls_error_val',
+    stack: 'tls_error_val',
+    itemStyle: {color: '#e6ab02'},
+    data: [24,24,44,38]
+  },
+  {
+    type: 'bar',
+    name: 'tls_error_val',
+    stack: 'tls_error_val',
+    itemStyle: {color: '#FFD45B'},
     data: [24,24,44,38]
   },
   {
     type: 'bar',
     name: 'stripped.tls_error_struct',
+    stack: 'tls_error_struct',
+    itemStyle: {color: '#a6761d'},
     data: [46,38,61,64]
-  },
-  {
-    type: 'bar',
-    name: 'abort',
-    data: [18,21,33,17]
-  },
-  {
-    type: 'bar',
-    name: 'noexcept_abort',
-    data: [18,21,13647,6100]
-  },
-  {
-    type: 'bar',
-    name: 'return_val',
-    data: [13,13,13,16]
-  },
-  {
-    type: 'bar',
-    name: 'return_struct',
-    data: [26,26,51,23]
-  },
-  {
-    type: 'bar',
-    name: 'ref_val',
-    data: [18,18,19,23]
-  },
-  {
-    type: 'bar',
-    name: 'ref_struct',
-    data: [40,27,50,30]
-  },
-  {
-    type: 'bar',
-    name: 'expected_val',
-    data: [17,45,24,24]
-  },
-  {
-    type: 'bar',
-    name: 'expected_struct',
-    data: [47,32,93,31]
-  },
-  {
-    type: 'bar',
-    name: 'tls_error_val',
-    data: [24,24,44,38]
   },
   {
     type: 'bar',
     name: 'tls_error_struct',
-    data: [46,38,61,64]
-  },
-  {
-    type: 'bar',
-    name: 'throw_val',
-    data: [246,3080,178,103]
-  },
-  {
-    type: 'bar',
-    name: 'throw_struct',
-    data: [107,2746,226,161]
-  },
-  {
-    type: 'bar',
-    name: 'throw_exception',
+    stack: 'tls_error_struct',
+    itemStyle: {color: '#E6B965'},
     barCategoryGap: '10%',
-    data: [224,2933,827,633]
+    data: [46,38,61,64]
   }
 ];
 
 var data_Cost2ndError = [
   {
     type: 'bar',
+    name: 'throw_exception',
+    stack: 'throw_exception',
+    itemStyle: {color: '#1b9e77'},
+    data: [66,60,68,41]
+  },
+  {
+    type: 'bar',
+    name: 'throw_struct',
+    stack: 'throw_struct',
+    itemStyle: {color: '#d95f02'},
+    data: [77,58,77,52]
+  },
+  {
+    type: 'bar',
+    name: 'throw_val',
+    stack: 'throw_val',
+    itemStyle: {color: '#7570b3'},
+    data: [55,49,61,35]
+  },
+  {
+    type: 'bar',
+    name: 'noexcept_abort',
+    stack: 'noexcept_abort',
+    itemStyle: {color: '#e7298a'},
+    data: [20,23,60,56]
+  },
+  {
+    type: 'bar',
     name: 'stripped.abort',
+    stack: 'abort',
+    itemStyle: {color: '#66a61e'},
     data: [20,23,24,15]
   },
   {
     type: 'bar',
-    name: 'stripped.return_val',
-    data: [19,19,22,15]
-  },
-  {
-    type: 'bar',
-    name: 'stripped.return_struct',
-    data: [25,25,43,22]
+    name: 'abort',
+    stack: 'abort',
+    itemStyle: {color: '#A6DE66'},
+    data: [20,23,36,15]
   },
   {
     type: 'bar',
     name: 'stripped.ref_val',
+    stack: 'ref_val',
+    itemStyle: {color: '#e6ab02'},
     data: [21,21,27,22]
   },
   {
     type: 'bar',
+    name: 'ref_val',
+    stack: 'ref_val',
+    itemStyle: {color: '#FFD45B'},
+    data: [21,21,27,22]
+  },
+  {
+    type: 'bar',
+    name: 'stripped.return_val',
+    stack: 'return_val',
+    itemStyle: {color: '#a6761d'},
+    data: [19,19,22,15]
+  },
+  {
+    type: 'bar',
+    name: 'return_val',
+    stack: 'return_val',
+    itemStyle: {color: '#E6B965'},
+    data: [19,19,22,15]
+  },
+  {
+    type: 'bar',
     name: 'stripped.ref_struct',
+    stack: 'ref_struct',
+    itemStyle: {color: '#666666'},
     data: [43,30,42,30]
   },
   {
     type: 'bar',
+    name: 'ref_struct',
+    stack: 'ref_struct',
+    itemStyle: {color: '#C4C3C3'},
+    data: [43,30,42,30]
+  },
+  {
+    type: 'bar',
+    name: 'stripped.return_struct',
+    stack: 'return_struct',
+    itemStyle: {color: '#1b9e77'},
+    data: [25,25,43,22]
+  },
+  {
+    type: 'bar',
+    name: 'return_struct',
+    stack: 'return_struct',
+    itemStyle: {color: '#5EC2A4'},
+    data: [25,25,43,22]
+  },
+  {
+    type: 'bar',
+    name: 'stripped.outcome_val',
+    stack: 'outcome_val',
+    itemStyle: {color: '#d95f02'},
+    data: [30,31,35,29]
+  },
+  {
+    type: 'bar',
+    name: 'outcome_val',
+    stack: 'outcome_val',
+    itemStyle: {color: '#FF9F55'},
+    data: [30,31,35,29]
+  },
+  {
+    type: 'bar',
     name: 'stripped.expected_val',
+    stack: 'expected_val',
+    itemStyle: {color: '#7570b3'},
     data: [28,47,32,23]
   },
   {
     type: 'bar',
+    name: 'expected_val',
+    stack: 'expected_val',
+    itemStyle: {color: '#CFCDEA'},
+    data: [28,47,32,23]
+  },
+  {
+    type: 'bar',
+    name: 'stripped.outcome_struct',
+    stack: 'outcome_struct',
+    itemStyle: {color: '#e7298a'},
+    data: [53,38,69,36]
+  },
+  {
+    type: 'bar',
+    name: 'outcome_struct',
+    stack: 'outcome_struct',
+    itemStyle: {color: '#F27DB9'},
+    data: [53,38,81,36]
+  },
+  {
+    type: 'bar',
     name: 'stripped.expected_struct',
+    stack: 'expected_struct',
+    itemStyle: {color: '#66a61e'},
     data: [49,34,65,30]
   },
   {
     type: 'bar',
+    name: 'expected_struct',
+    stack: 'expected_struct',
+    itemStyle: {color: '#A6DE66'},
+    data: [49,34,77,30]
+  },
+  {
+    type: 'bar',
     name: 'stripped.tls_error_val',
+    stack: 'tls_error_val',
+    itemStyle: {color: '#e6ab02'},
+    data: [27,27,48,37]
+  },
+  {
+    type: 'bar',
+    name: 'tls_error_val',
+    stack: 'tls_error_val',
+    itemStyle: {color: '#FFD45B'},
     data: [27,27,48,37]
   },
   {
     type: 'bar',
     name: 'stripped.tls_error_struct',
+    stack: 'tls_error_struct',
+    itemStyle: {color: '#a6761d'},
     data: [49,41,65,47]
-  },
-  {
-    type: 'bar',
-    name: 'abort',
-    data: [20,23,36,15]
-  },
-  {
-    type: 'bar',
-    name: 'noexcept_abort',
-    data: [20,23,60,56]
-  },
-  {
-    type: 'bar',
-    name: 'return_val',
-    data: [19,19,22,15]
-  },
-  {
-    type: 'bar',
-    name: 'return_struct',
-    data: [25,25,43,22]
-  },
-  {
-    type: 'bar',
-    name: 'ref_val',
-    data: [21,21,27,22]
-  },
-  {
-    type: 'bar',
-    name: 'ref_struct',
-    data: [43,30,42,30]
-  },
-  {
-    type: 'bar',
-    name: 'expected_val',
-    data: [28,47,32,23]
-  },
-  {
-    type: 'bar',
-    name: 'expected_struct',
-    data: [49,34,77,30]
-  },
-  {
-    type: 'bar',
-    name: 'tls_error_val',
-    data: [27,27,48,37]
   },
   {
     type: 'bar',
     name: 'tls_error_struct',
-    data: [49,41,65,47]
-  },
-  {
-    type: 'bar',
-    name: 'throw_val',
-    data: [55,49,61,35]
-  },
-  {
-    type: 'bar',
-    name: 'throw_struct',
-    data: [77,58,77,52]
-  },
-  {
-    type: 'bar',
-    name: 'throw_exception',
+    stack: 'tls_error_struct',
+    itemStyle: {color: '#E6B965'},
     barCategoryGap: '10%',
-    data: [66,60,68,41]
+    data: [49,41,65,47]
   }
 ];
 
 var data_Cost1stCatch = [
   {
     type: 'bar',
-    name: 'stripped.return_val',
-    data: [14,14,19,18]
-  },
-  {
-    type: 'bar',
-    name: 'stripped.return_struct',
-    data: [15,15,21,18]
-  },
-  {
-    type: 'bar',
-    name: 'stripped.ref_val',
-    data: [13,25,19,16]
-  },
-  {
-    type: 'bar',
-    name: 'stripped.ref_struct',
-    data: [23,34,25,18]
-  },
-  {
-    type: 'bar',
-    name: 'stripped.expected_val',
-    data: [18,22,13,19]
-  },
-  {
-    type: 'bar',
-    name: 'stripped.expected_struct',
-    data: [25,17,13,19]
-  },
-  {
-    type: 'bar',
-    name: 'stripped.tls_error_val',
-    data: [54,57,43,36]
-  },
-  {
-    type: 'bar',
-    name: 'stripped.tls_error_struct',
-    data: [61,68,48,42]
-  },
-  {
-    type: 'bar',
-    name: 'return_val',
-    data: [14,14,19,18]
-  },
-  {
-    type: 'bar',
-    name: 'return_struct',
-    data: [15,15,21,18]
-  },
-  {
-    type: 'bar',
-    name: 'ref_val',
-    data: [21,25,19,16]
-  },
-  {
-    type: 'bar',
-    name: 'ref_struct',
-    data: [23,34,25,18]
-  },
-  {
-    type: 'bar',
-    name: 'expected_val',
-    data: [18,22,13,19]
-  },
-  {
-    type: 'bar',
-    name: 'expected_struct',
-    data: [33,17,13,19]
-  },
-  {
-    type: 'bar',
-    name: 'tls_error_val',
-    data: [62,65,43,36]
-  },
-  {
-    type: 'bar',
-    name: 'tls_error_struct',
-    data: [69,76,48,42]
-  },
-  {
-    type: 'bar',
-    name: 'throw_val',
-    data: [53,63,77,134]
+    name: 'throw_exception',
+    stack: 'throw_exception',
+    itemStyle: {color: '#1b9e77'},
+    data: [53,63,77,126]
   },
   {
     type: 'bar',
     name: 'throw_struct',
+    stack: 'throw_struct',
+    itemStyle: {color: '#d95f02'},
     data: [53,63,85,134]
   },
   {
     type: 'bar',
-    name: 'throw_exception',
+    name: 'throw_val',
+    stack: 'throw_val',
+    itemStyle: {color: '#7570b3'},
+    data: [53,63,77,134]
+  },
+  {
+    type: 'bar',
+    name: 'noexcept_abort',
+    stack: 'noexcept_abort',
+    itemStyle: {color: '#e7298a'},
+    data: [0,0,0,0]
+  },
+  {
+    type: 'bar',
+    name: 'stripped.abort',
+    stack: 'abort',
+    itemStyle: {color: '#66a61e'},
+    data: [0,0,0,0]
+  },
+  {
+    type: 'bar',
+    name: 'abort',
+    stack: 'abort',
+    itemStyle: {color: '#A6DE66'},
+    data: [0,0,0,0]
+  },
+  {
+    type: 'bar',
+    name: 'stripped.ref_val',
+    stack: 'ref_val',
+    itemStyle: {color: '#e6ab02'},
+    data: [13,25,19,16]
+  },
+  {
+    type: 'bar',
+    name: 'ref_val',
+    stack: 'ref_val',
+    itemStyle: {color: '#FFD45B'},
+    data: [21,25,19,16]
+  },
+  {
+    type: 'bar',
+    name: 'stripped.return_val',
+    stack: 'return_val',
+    itemStyle: {color: '#a6761d'},
+    data: [14,14,19,18]
+  },
+  {
+    type: 'bar',
+    name: 'return_val',
+    stack: 'return_val',
+    itemStyle: {color: '#E6B965'},
+    data: [14,14,19,18]
+  },
+  {
+    type: 'bar',
+    name: 'stripped.ref_struct',
+    stack: 'ref_struct',
+    itemStyle: {color: '#666666'},
+    data: [23,34,25,18]
+  },
+  {
+    type: 'bar',
+    name: 'ref_struct',
+    stack: 'ref_struct',
+    itemStyle: {color: '#C4C3C3'},
+    data: [23,34,25,18]
+  },
+  {
+    type: 'bar',
+    name: 'stripped.return_struct',
+    stack: 'return_struct',
+    itemStyle: {color: '#1b9e77'},
+    data: [15,15,21,18]
+  },
+  {
+    type: 'bar',
+    name: 'return_struct',
+    stack: 'return_struct',
+    itemStyle: {color: '#5EC2A4'},
+    data: [15,15,21,18]
+  },
+  {
+    type: 'bar',
+    name: 'stripped.outcome_val',
+    stack: 'outcome_val',
+    itemStyle: {color: '#d95f02'},
+    data: [17,22,16,19]
+  },
+  {
+    type: 'bar',
+    name: 'outcome_val',
+    stack: 'outcome_val',
+    itemStyle: {color: '#FF9F55'},
+    data: [17,22,16,19]
+  },
+  {
+    type: 'bar',
+    name: 'stripped.expected_val',
+    stack: 'expected_val',
+    itemStyle: {color: '#7570b3'},
+    data: [18,22,13,19]
+  },
+  {
+    type: 'bar',
+    name: 'expected_val',
+    stack: 'expected_val',
+    itemStyle: {color: '#CFCDEA'},
+    data: [18,22,13,19]
+  },
+  {
+    type: 'bar',
+    name: 'stripped.outcome_struct',
+    stack: 'outcome_struct',
+    itemStyle: {color: '#e7298a'},
+    data: [25,17,16,19]
+  },
+  {
+    type: 'bar',
+    name: 'outcome_struct',
+    stack: 'outcome_struct',
+    itemStyle: {color: '#F27DB9'},
+    data: [33,17,16,19]
+  },
+  {
+    type: 'bar',
+    name: 'stripped.expected_struct',
+    stack: 'expected_struct',
+    itemStyle: {color: '#66a61e'},
+    data: [25,17,13,19]
+  },
+  {
+    type: 'bar',
+    name: 'expected_struct',
+    stack: 'expected_struct',
+    itemStyle: {color: '#A6DE66'},
+    data: [33,17,13,19]
+  },
+  {
+    type: 'bar',
+    name: 'stripped.tls_error_val',
+    stack: 'tls_error_val',
+    itemStyle: {color: '#e6ab02'},
+    data: [54,57,43,36]
+  },
+  {
+    type: 'bar',
+    name: 'tls_error_val',
+    stack: 'tls_error_val',
+    itemStyle: {color: '#FFD45B'},
+    data: [62,65,43,36]
+  },
+  {
+    type: 'bar',
+    name: 'stripped.tls_error_struct',
+    stack: 'tls_error_struct',
+    itemStyle: {color: '#a6761d'},
+    data: [61,68,48,42]
+  },
+  {
+    type: 'bar',
+    name: 'tls_error_struct',
+    stack: 'tls_error_struct',
+    itemStyle: {color: '#E6B965'},
     barCategoryGap: '10%',
-    data: [53,63,77,126]
+    data: [69,76,48,42]
   }
 ];
 
 var data_Cost2ndCatch = [
   {
     type: 'bar',
-    name: 'stripped.return_val',
-    data: [20,14,16,16]
-  },
-  {
-    type: 'bar',
-    name: 'stripped.return_struct',
-    data: [21,15,25,16]
-  },
-  {
-    type: 'bar',
-    name: 'stripped.ref_val',
-    data: [32,17,14,13]
-  },
-  {
-    type: 'bar',
-    name: 'stripped.ref_struct',
-    data: [36,17,17,13]
-  },
-  {
-    type: 'bar',
-    name: 'stripped.expected_val',
-    data: [24,22,13,17]
-  },
-  {
-    type: 'bar',
-    name: 'stripped.expected_struct',
-    data: [26,17,13,17]
-  },
-  {
-    type: 'bar',
-    name: 'stripped.tls_error_val',
-    data: [49,53,37,29]
-  },
-  {
-    type: 'bar',
-    name: 'stripped.tls_error_struct',
-    data: [58,64,60,35]
-  },
-  {
-    type: 'bar',
-    name: 'return_val',
-    data: [28,14,16,16]
-  },
-  {
-    type: 'bar',
-    name: 'return_struct',
-    data: [29,15,25,16]
-  },
-  {
-    type: 'bar',
-    name: 'ref_val',
-    data: [40,17,14,13]
-  },
-  {
-    type: 'bar',
-    name: 'ref_struct',
-    data: [44,17,17,13]
-  },
-  {
-    type: 'bar',
-    name: 'expected_val',
-    data: [32,22,13,17]
-  },
-  {
-    type: 'bar',
-    name: 'expected_struct',
-    data: [34,17,13,17]
-  },
-  {
-    type: 'bar',
-    name: 'tls_error_val',
-    data: [49,53,37,29]
-  },
-  {
-    type: 'bar',
-    name: 'tls_error_struct',
-    data: [58,64,68,35]
-  },
-  {
-    type: 'bar',
-    name: 'throw_val',
+    name: 'throw_exception',
+    stack: 'throw_exception',
+    itemStyle: {color: '#1b9e77'},
     data: [29,34,25,64]
   },
   {
     type: 'bar',
     name: 'throw_struct',
+    stack: 'throw_struct',
+    itemStyle: {color: '#d95f02'},
     data: [29,34,17,64]
   },
   {
     type: 'bar',
-    name: 'throw_exception',
-    barCategoryGap: '10%',
+    name: 'throw_val',
+    stack: 'throw_val',
+    itemStyle: {color: '#7570b3'},
     data: [29,34,25,64]
+  },
+  {
+    type: 'bar',
+    name: 'noexcept_abort',
+    stack: 'noexcept_abort',
+    itemStyle: {color: '#e7298a'},
+    data: [0,0,0,0]
+  },
+  {
+    type: 'bar',
+    name: 'stripped.abort',
+    stack: 'abort',
+    itemStyle: {color: '#66a61e'},
+    data: [0,0,0,0]
+  },
+  {
+    type: 'bar',
+    name: 'abort',
+    stack: 'abort',
+    itemStyle: {color: '#A6DE66'},
+    data: [0,0,0,0]
+  },
+  {
+    type: 'bar',
+    name: 'stripped.ref_val',
+    stack: 'ref_val',
+    itemStyle: {color: '#e6ab02'},
+    data: [32,17,14,13]
+  },
+  {
+    type: 'bar',
+    name: 'ref_val',
+    stack: 'ref_val',
+    itemStyle: {color: '#FFD45B'},
+    data: [40,17,14,13]
+  },
+  {
+    type: 'bar',
+    name: 'stripped.return_val',
+    stack: 'return_val',
+    itemStyle: {color: '#a6761d'},
+    data: [20,14,16,16]
+  },
+  {
+    type: 'bar',
+    name: 'return_val',
+    stack: 'return_val',
+    itemStyle: {color: '#E6B965'},
+    data: [28,14,16,16]
+  },
+  {
+    type: 'bar',
+    name: 'stripped.ref_struct',
+    stack: 'ref_struct',
+    itemStyle: {color: '#666666'},
+    data: [36,17,17,13]
+  },
+  {
+    type: 'bar',
+    name: 'ref_struct',
+    stack: 'ref_struct',
+    itemStyle: {color: '#C4C3C3'},
+    data: [44,17,17,13]
+  },
+  {
+    type: 'bar',
+    name: 'stripped.return_struct',
+    stack: 'return_struct',
+    itemStyle: {color: '#1b9e77'},
+    data: [21,15,25,16]
+  },
+  {
+    type: 'bar',
+    name: 'return_struct',
+    stack: 'return_struct',
+    itemStyle: {color: '#5EC2A4'},
+    data: [29,15,25,16]
+  },
+  {
+    type: 'bar',
+    name: 'stripped.outcome_val',
+    stack: 'outcome_val',
+    itemStyle: {color: '#d95f02'},
+    data: [40,22,16,15]
+  },
+  {
+    type: 'bar',
+    name: 'outcome_val',
+    stack: 'outcome_val',
+    itemStyle: {color: '#FF9F55'},
+    data: [56,22,16,15]
+  },
+  {
+    type: 'bar',
+    name: 'stripped.expected_val',
+    stack: 'expected_val',
+    itemStyle: {color: '#7570b3'},
+    data: [24,22,13,17]
+  },
+  {
+    type: 'bar',
+    name: 'expected_val',
+    stack: 'expected_val',
+    itemStyle: {color: '#CFCDEA'},
+    data: [32,22,13,17]
+  },
+  {
+    type: 'bar',
+    name: 'stripped.outcome_struct',
+    stack: 'outcome_struct',
+    itemStyle: {color: '#e7298a'},
+    data: [26,17,16,15]
+  },
+  {
+    type: 'bar',
+    name: 'outcome_struct',
+    stack: 'outcome_struct',
+    itemStyle: {color: '#F27DB9'},
+    data: [34,17,16,15]
+  },
+  {
+    type: 'bar',
+    name: 'stripped.expected_struct',
+    stack: 'expected_struct',
+    itemStyle: {color: '#66a61e'},
+    data: [26,17,13,17]
+  },
+  {
+    type: 'bar',
+    name: 'expected_struct',
+    stack: 'expected_struct',
+    itemStyle: {color: '#A6DE66'},
+    data: [34,17,13,17]
+  },
+  {
+    type: 'bar',
+    name: 'stripped.tls_error_val',
+    stack: 'tls_error_val',
+    itemStyle: {color: '#e6ab02'},
+    data: [49,53,37,29]
+  },
+  {
+    type: 'bar',
+    name: 'tls_error_val',
+    stack: 'tls_error_val',
+    itemStyle: {color: '#FFD45B'},
+    data: [49,53,37,29]
+  },
+  {
+    type: 'bar',
+    name: 'stripped.tls_error_struct',
+    stack: 'tls_error_struct',
+    itemStyle: {color: '#a6761d'},
+    data: [58,64,60,35]
+  },
+  {
+    type: 'bar',
+    name: 'tls_error_struct',
+    stack: 'tls_error_struct',
+    itemStyle: {color: '#E6B965'},
+    barCategoryGap: '10%',
+    data: [58,64,68,35]
   }
 ];
 </script>
@@ -860,7 +1327,7 @@ My first batch of measurements is comparing each of the mechanisms to the abort 
     },
     xAxis: [{
       type: 'log',
-      logBase: '400000'
+      logBase: '510000'
     }],
     yAxis: [{
       type: 'category',
@@ -1017,7 +1484,7 @@ void callee() {
 </script>
 <p align="center"><i>Warning! Logarithmic axis!</i></p>
 
-On MSVC, there are multiple ways to build with exceptions "on".  This experiment was built with `/EHs`, which turns on exceptions in a C++ conforming manner.  The Microsoft recommended flag is `/EHsc`, which turns on exceptions for all C++ functions, but assumes that `extern "C"` functions won't throw.  This is a useful, though non-conforming option.  The trick is that the noexcept_abort `callee()` implementation calls `abort()`, and that's an `extern "C"` function that isn't marked as `noexcept`, so we suddenly need to pay for all the exception handling costs that we had been avoiding by making everything `noexcept`.  We can't easily make the C runtime, or other people's code noexcept.  We don't see this on GCC and Clang because the C library they are calling marks abort as `**attribute** ((**nothrow**))`, and that lets them avoid generating the exception machinery.
+On MSVC, there are multiple ways to build with exceptions "on".  This experiment was built with `/EHs`, which turns on exceptions in a C++ conforming manner.  The Microsoft recommended flag is `/EHsc`, which turns on exceptions for all C++ functions, but assumes that `extern "C"` functions won't throw.  This is a useful, though non-conforming option.  The trick is that the noexcept_abort `callee()` implementation calls `abort()`, and that's an `extern "C"` function that isn't marked as `noexcept`, so we suddenly need to pay for all the exception handling costs that we had been avoiding by making everything `noexcept`.  We can't easily make the C runtime, or other people's code noexcept.  We don't see this on GCC and Clang because the C library they are calling marks abort as `__attribute__ ((__nothrow__))`, and that lets them avoid generating the exception machinery.
 
 GCC's first throw costs look worse than Clang's because Clang paid a lot of those costs even before there was a throw.
 
@@ -1218,7 +1685,7 @@ Things of note in this graph:
 
 Acknowledgments {#ack}
 ======================
-TBD: Simon Brand, Niall Douglas
+TBD: Simon Brand, Niall Douglas, Brad Keryan, Reid Kleckner, Modi Mo
 
 Appendix A: Why no speed measurements? {#speed}
 =======================================

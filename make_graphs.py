@@ -4,30 +4,71 @@ import re
 import os
 
 ORDINAL_MAPPING = {
-  "expected_struct" :            16,
-  "expected_val" :               15,
-  "noexcept_abort" :         10,
-  "ref_struct" :                 14,
-  "ref_val" :                    13,
-  "return_struct" :              12,
-  "return_val" :                 11,
-  "stripped.expected_struct" :   6,
-  "stripped.expected_val" :      5,
-  "stripped.ref_struct" :        4,
-  "stripped.ref_val" :           3,
-  "stripped.return_struct" :     2,
-  "stripped.return_val" :        1,
-  "stripped.abort" :         0,
-  "stripped.tls_error_struct" :  8,
-  "stripped.tls_error_val" :     7,
-  "abort" :                  9,
-  "throw_exception" :            21,
-  "throw_struct" :               20,
-  "throw_val" :                  19,
-  "tls_error_struct" :           18,
-  "tls_error_val" :              17,
+  "throw_exception" :            0,
+  "throw_struct" :               1,
+  "throw_val" :                  2,
+  "noexcept_abort" :             3,
+  "stripped.abort" :             4,
+  "abort" :                      5,
+  "stripped.ref_val" :           6,
+  "ref_val" :                    7,
+  "stripped.return_val" :        8,
+  "return_val" :                 9,
+  "stripped.ref_struct" :        10,
+  "ref_struct" :                 11,
+  "stripped.return_struct" :     12,
+  "return_struct" :              13,
+  "stripped.outcome_val" :       14,
+  "outcome_val" :                15,
+  "stripped.expected_val" :      16,
+  "expected_val" :               17,
+  "stripped.outcome_struct" :    18,
+  "outcome_struct" :             19,
+  "stripped.expected_struct" :   20,
+  "expected_struct" :            21,
+  "stripped.tls_error_val" :     22,
+  "tls_error_val" :              23,
+  "stripped.tls_error_struct" :  24,
+  "tls_error_struct" :           25,
 }
 
+#1b9e77 5EC2A4
+#d95f02 FF9F55
+#7570b3 CFCDEA
+#e7298a F27DB9
+#66a61e A6DE66
+#e6ab02 FFD45B
+#a6761d E6B965
+#666666 C4C3C3
+
+COLOR_MAPPING = {
+  "throw_exception" :            "1b9e77",
+  "throw_struct" :               "d95f02",
+  "throw_val" :                  "7570b3",
+  "noexcept_abort" :             "e7298a",
+  "stripped.abort" :             "66a61e",
+  "abort" :                      "A6DE66",
+  "stripped.ref_val" :           "e6ab02",
+  "ref_val" :                    "FFD45B",
+  "stripped.return_val" :        "a6761d",
+  "return_val" :                 "E6B965",
+  "stripped.ref_struct" :        "666666",
+  "ref_struct" :                 "C4C3C3",
+  "stripped.return_struct" :     "1b9e77",
+  "return_struct" :              "5EC2A4",
+  "stripped.outcome_val" :       "d95f02",
+  "outcome_val" :                "FF9F55",
+  "stripped.expected_val" :      "7570b3",
+  "expected_val" :               "CFCDEA",
+  "stripped.outcome_struct" :    "e7298a",
+  "outcome_struct" :             "F27DB9",
+  "stripped.expected_struct" :   "66a61e",
+  "expected_struct" :            "A6DE66",
+  "stripped.tls_error_val" :     "e6ab02",
+  "tls_error_val" :              "FFD45B",
+  "stripped.tls_error_struct" :  "a6761d",
+  "tls_error_struct" :           "E6B965",
+}
 
 class SeriesData(object):
     def __init__(self, elt_map):
@@ -48,8 +89,18 @@ class SeriesData(object):
 class SeriesTypeData(object):
     def __init__(self, seriesData):
         self.type = seriesData.type
+        self.stack_type = seriesData.type.replace("stripped.","")
         self.ord = int(seriesData.ord)
+        self.color = COLOR_MAPPING[self.type]
         self.plat_map = {seriesData.plat: seriesData}
+
+def is_all_zeroes(series_type_data, case):
+    return \
+        (series_type_data.plat_map["Clang/x64"].eltMap[case] == "0") and \
+        (series_type_data.plat_map["GCC/x64"].eltMap[case] == "0"  ) and \
+        (series_type_data.plat_map["MSVC/x64"].eltMap[case] == "0" ) and \
+        (series_type_data.plat_map["MSVC/x86"].eltMap[case] == "0" )
+
 
 def make_graphs(tsv_name, out_name):
     data = {}
@@ -86,6 +137,8 @@ def make_graphs(tsv_name, out_name):
             fout.write("var data_" + case + " = [\n")
             first = True
             for ord in sorted(data.keys()):
+                if is_all_zeroes(data[ord], case):
+                    continue
                 if not first:
                     fout.write(spaces + "},\n")
                 else:
@@ -93,6 +146,8 @@ def make_graphs(tsv_name, out_name):
                 fout.write(spaces + "{\n")
                 fout.write(spaces + "  type: 'bar',\n")
                 fout.write(spaces + "  name: '" + data[ord].type + "',\n")
+                fout.write(spaces + "  stack: '" + data[ord].stack_type + "',\n")
+                fout.write(spaces + "  itemStyle: {color: '#" + data[ord].color + "'},\n"),
                 if ord == len(data) - 1:
                     fout.write(spaces + "  barCategoryGap: '10%',\n")
                 fout.write(spaces + "  data: [" +
