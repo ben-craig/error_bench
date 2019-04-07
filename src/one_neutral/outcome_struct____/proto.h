@@ -1,5 +1,5 @@
 #pragma once
-#include <common/outcome.hpp>
+#include <outcome/result.hpp>
 
 namespace outcome = OUTCOME_V2_NAMESPACE;
 
