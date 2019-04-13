@@ -1,7 +1,7 @@
 ninja_required_version = 1.7
 
-CXX=~/llvm/clang+llvm-7.0.0-x86_64-linux-gnu-ubuntu-14.04/bin/clang++
-LINK_PROG=~/llvm/clang+llvm-7.0.0-x86_64-linux-gnu-ubuntu-14.04/bin/clang++
+CXX=~/llvm/clang+llvm-8.0.0-x86_64-linux-gnu-ubuntu-14.04/bin/clang++
+LINK_PROG=~/llvm/clang+llvm-8.0.0-x86_64-linux-gnu-ubuntu-14.04/bin/clang++
 DUMPBIN_PROG=objdump
 
 CXXFLAGS= $
@@ -10,7 +10,6 @@ CXXFLAGS= $
 -Wextra $
 -Werror $
 -Os $
--march=native $
 -ffunction-sections $
 -fdata-sections $
 -std=c++17 $
