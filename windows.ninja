@@ -31,7 +31,6 @@ CCFLAGS= $
 /std:c++latest $
 /permissive- $
 /I"src" $
-/I"include" $
 /I"$MY_DDK_INCLUDE\ucrt" $
 /I"$MY_DDK_INCLUDE\um" $
 /I"$MY_DDK_INCLUDE\shared" $

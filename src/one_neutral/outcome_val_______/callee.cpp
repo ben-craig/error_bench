@@ -1,3 +1,6 @@
 #include "proto.h"
+#include <limits.h>
 
-outcome::result<void, int> callee() { return outcome::success(); }
+result<void, int> callee() {
+  return outcome::success();
+}

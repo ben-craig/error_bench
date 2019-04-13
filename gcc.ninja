@@ -16,7 +16,6 @@ CXXFLAGS= $
 -std=c++17 $
 -static $
 -I"src" $
--I"include" $
 
 LINK_FLAGS= $
 -Wl,--gc-sections $

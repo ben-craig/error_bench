@@ -2,20 +2,16 @@
 #include <common/dtor.h>
 
 int global_int = 0;
-outcome::result<void, error_struct> caller() {
+result<void, error_struct> caller() {
   Dtor d;
-  outcome::result<void, error_struct> e = callee();
-  if (!e)
-    return e;
+  OUTCOME_TRYV(callee());
   global_int = 0;
-  return e;
+  return outcome::success();
 }
 
-outcome::result<void, error_struct> caller2(int amount) {
+result<void, error_struct> caller2(int amount) {
   Dtor d;
-  outcome::result<void, error_struct> e = callee2(amount);
-  if (!e)
-    return e;
+  OUTCOME_TRYV(callee2(amount));
   global_int += amount;
-  return e;
+  return outcome::success();
 }

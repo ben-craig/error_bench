@@ -1,3 +1,6 @@
 #include "proto.h"
 
-int main() { (void)caller(); return global_int;}
+int main() {
+  (void)caller();
+  return global_int;
+}

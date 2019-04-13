@@ -17,7 +17,6 @@ CXXFLAGS= $
 -stdlib=libc++ $
 -static $
 -I"src" $
--I"include" $
 
 LINK_FLAGS= $
 -Wl,--gc-sections $

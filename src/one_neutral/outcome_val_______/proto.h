@@ -1,8 +1,11 @@
 #pragma once
-#include <outcome/result.hpp>
+#include <common/outcome-experimental.hpp>
 
 namespace outcome = OUTCOME_V2_NAMESPACE;
 
-outcome::result<void, int> caller();
-outcome::result<void, int> callee();
+template <class T, class E>
+using result = outcome::experimental::status_result<T, E>;
+
+result<void, int> caller();
+result<void, int> callee();
 extern int global_int;
