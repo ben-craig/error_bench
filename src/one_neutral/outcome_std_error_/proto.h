@@ -4,9 +4,9 @@
 
 namespace outcome = OUTCOME_V2_NAMESPACE;
 
-template <class T, class E>
-using result = outcome::experimental::status_result<T, E>;
+template <class T>
+using result = outcome::experimental::status_result<T>;
 
-result<void, int> caller();
-result<void, int> callee();
+result<void> caller();
+result<void> callee();
 extern int global_int;
