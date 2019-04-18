@@ -3,80 +3,62 @@
 import re
 import os
 
-ORDINAL_MAPPING = {
-  "throw_exception" :            0,
-  "throw_struct" :               1,
-  "throw_val" :                  2,
-  "noexcept_abort" :             3,
-  "stripped.abort" :             4,
-  "abort" :                      5,
-  "stripped.tls_error_val" :     6,
-  "tls_error_val" :              7,
-  "stripped.tls_error_struct" :  8,
-  "tls_error_struct" :           9,
-  "stripped.ref_val" :           10,
-  "ref_val" :                    11,
-  "stripped.return_val" :        12,
-  "return_val" :                 13,
-  "stripped.ref_struct" :        14,
-  "ref_struct" :                 15,
-  "stripped.return_struct" :     16,
-  "return_struct" :              17,
-  "stripped.expected_val" :      18,
-  "expected_val" :               19,
-  "stripped.outcome_val" :       20,
-  "outcome_val" :                21,
-  "stripped.expected_struct" :   22,
-  "expected_struct" :            23,
-  "stripped.outcome_struct" :    24,
-  "outcome_struct" :             25,
-  "stripped.outcome_std_error" : 26,
-  "outcome_std_error" :          27,
-}
+SERIES_PAIRS = [
+  ["throw_exception", False],
+  ["throw_struct", False],
+  ["throw_val", False],
+  ["stripped.outcome_std_error", "outcome_std_error"],
+  ["stripped.outcome_struct", "outcome_struct"],
+  ["stripped.outcome_val", "outcome_val"],
+  ["stripped.tls_error_struct", "tls_error_struct"],
+  ["stripped.tls_error_val", "tls_error_val"],
+  ["stripped.expected_struct", "expected_struct"],
+  ["stripped.expected_val", "expected_val"],
+  ["stripped.ref_struct", "ref_struct"],
+  ["stripped.return_struct", "return_struct"],
+  ["stripped.ref_val", "ref_val"],
+  ["stripped.return_val", "return_val"],
+  ["noexcept_abort", False],
+  ["stripped.abort", "abort"],
+]
 
-#1b9e77 5EC2A4
-#d95f02 FF9F55
-#7570b3 CFCDEA
-#e7298a F27DB9
-#66a61e A6DE66
-#e6ab02 FFD45B
-#a6761d E6B965
-#666666 C4C3C3
+COLOR_PAIRS = [
+  ["1b9e77", "5EC2A4"],
+  ["d95f02", "FF9F55"],
+  ["7570b3", "CFCDEA"],
+  ["e7298a", "F27DB9"],
+  ["66a61e", "A6DE66"],
+  ["e6ab02", "FFD45B"],
+  ["a6761d", "E6B965"],
+  ["666666", "C4C3C3"],
+]
 
-COLOR_MAPPING = {
-  "throw_exception" :            "1b9e77",
-  "throw_struct" :               "d95f02",
-  "throw_val" :                  "7570b3",
-  "noexcept_abort" :             "e7298a",
-  "stripped.abort" :             "66a61e",
-  "abort" :                      "A6DE66",
-  "stripped.ref_val" :           "e6ab02",
-  "ref_val" :                    "FFD45B",
-  "stripped.return_val" :        "a6761d",
-  "return_val" :                 "E6B965",
-  "stripped.ref_struct" :        "666666",
-  "ref_struct" :                 "C4C3C3",
-  "stripped.return_struct" :     "1b9e77",
-  "return_struct" :              "5EC2A4",
-  "stripped.outcome_val" :       "d95f02",
-  "outcome_val" :                "FF9F55",
-  "stripped.expected_val" :      "7570b3",
-  "expected_val" :               "CFCDEA",
-  "stripped.outcome_struct" :    "e7298a",
-  "outcome_struct" :             "F27DB9",
-  "stripped.expected_struct" :   "66a61e",
-  "expected_struct" :            "A6DE66",
-  "stripped.tls_error_val" :     "e6ab02",
-  "tls_error_val" :              "FFD45B",
-  "stripped.tls_error_struct" :  "a6761d",
-  "tls_error_struct" :           "E6B965",
-}
+def pair_idx_to_color_pair(pair_idx):
+    color_idx = pair_idx % len(COLOR_PAIRS)
+    return COLOR_PAIRS[color_idx]
+
+def build_property_mapping():
+    ord = 0
+    pair_idx = 0
+    mapping = {}
+    for pair in SERIES_PAIRS:
+        color_pair = pair_idx_to_color_pair(pair_idx)
+        mapping[pair[0]] = [ord, color_pair[0]]
+        ord = ord + 1
+        if pair[1]:
+            mapping[pair[1]] = [ord, color_pair[1]]
+            ord = ord + 1
+        pair_idx = pair_idx + 1
+    return mapping
+
+PROPERTY_MAPPING = build_property_mapping()
 
 class SeriesData(object):
     def __init__(self, elt_map):
         self.plat = elt_map["plat"]
         self.type = elt_map["type"]
-        self.ord = ORDINAL_MAPPING[self.type]
+        self.ord = PROPERTY_MAPPING[self.type][0]
+        self.color = PROPERTY_MAPPING[self.type][1]
         self.eltMap = elt_map
         self.cmpTerm = elt_map["CmpTerm"]
         self.cost2ndNeutral = elt_map["Cost2ndNeutral"]
@@ -92,8 +74,8 @@ class SeriesTypeData(object):
     def __init__(self, seriesData):
         self.type = seriesData.type
         self.stack_type = seriesData.type.replace("stripped.","")
-        self.ord = int(seriesData.ord)
-        self.color = COLOR_MAPPING[self.type]
+        self.ord = seriesData.ord
+        self.color = seriesData.color
         self.plat_map = {seriesData.plat: seriesData}
 
 def is_all_zeroes(series_type_data, case):

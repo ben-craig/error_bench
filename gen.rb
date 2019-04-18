@@ -1,22 +1,22 @@
 TERM_TYPES = [
-    {:dir => "terminate_________", :cc_flags => ""},
-    {:dir => "noexcept_terminate", :cc_flags => "/EHs"},
+    {:dir => "terminate_________", :cc_flags => "/GR"},
+    {:dir => "noexcept_terminate", :cc_flags => "/GR /EHs"},
 ]
 ERROR_TYPES = [
-    {:dir => "throw_val_________", :cc_flags => "/EHs"},
-    {:dir => "throw_struct______", :cc_flags => "/EHs"},
-    {:dir => "throw_exception___", :cc_flags => "/EHs"},
-    {:dir => "tls_error_val_____", :cc_flags => ""},
-    {:dir => "tls_error_struct__", :cc_flags => ""},
-    {:dir => "return_val________", :cc_flags => ""},
-    {:dir => "return_struct_____", :cc_flags => ""},
-    {:dir => "ref_struct________", :cc_flags => ""},
-    {:dir => "ref_val___________", :cc_flags => ""},
-    {:dir => "expected_struct___", :cc_flags => ""},
-    {:dir => "expected_val______", :cc_flags => ""},
-    {:dir => "outcome_struct____", :cc_flags => ""},
-    {:dir => "outcome_val_______", :cc_flags => ""},
-    {:dir => "outcome_std_error_", :cc_flags => ""},
+    {:dir => "throw_val_________", :cc_flags => "/GR /EHs"},
+    {:dir => "throw_struct______", :cc_flags => "/GR /EHs"},
+    {:dir => "throw_exception___", :cc_flags => "/GR /EHs"},
+    {:dir => "tls_error_val_____", :cc_flags => "/GR"},
+    {:dir => "tls_error_struct__", :cc_flags => "/GR"},
+    {:dir => "return_val________", :cc_flags => "/GR"},
+    {:dir => "return_struct_____", :cc_flags => "/GR"},
+    {:dir => "ref_struct________", :cc_flags => "/GR"},
+    {:dir => "ref_val___________", :cc_flags => "/GR"},
+    {:dir => "expected_struct___", :cc_flags => "/GR"},
+    {:dir => "expected_val______", :cc_flags => "/GR"},
+    {:dir => "outcome_struct____", :cc_flags => "/GR-"},
+    {:dir => "outcome_val_______", :cc_flags => "/GR-"},
+    {:dir => "outcome_std_error_", :cc_flags => "/GR-"},
 ]
 FULL_CASE_NAMES =   ["one_neutral", "two_neutral", "one_error__", "two_error__"]
 NO_TERM_CASE_NAME = ["one_catch__", "two_catch__"]
@@ -81,7 +81,7 @@ def gen_incr_size_diffs(file, test_case, all_the_sizes)
     file.print "        measure_size.py\n"
     file.print "    DIFF_FILE=#{cur_dir}\\main.exe.map\n"
 
-    if test_case.error_type[:cc_flags].empty?
+    if not test_case.error_type[:cc_flags].include? "/EHs"
         all_the_sizes << "#{cur_dir}\\except_incr_diff.size"
         file.print "build #{cur_dir}\\except_incr_diff.size: diff_size #{prev_dir}\\main.exe.map | $\n"
         file.print "        #{prev_dir}\\main.exe.asm $\n"
@@ -151,7 +151,7 @@ def gen_config(file, test_case)
     file.print "    #{dest_dir}\\main.exe.asm $\n"
     file.print "    measure_size.py\n"
 
-    if test_case.error_type[:cc_flags].empty?
+    if not test_case.error_type[:cc_flags].include? "/EHs"
         file.print "build #{dest_dir}\\noexcept.main.size: measure_size #{dest_dir}\\main.exe.map | $\n"
         file.print "    #{dest_dir}\\main.exe.asm $\n"
         file.print "    measure_size.py\n"
@@ -177,7 +177,7 @@ def main()
         h.print "build totals\\sizes.csv: collect_sizes"
         each_case do |c|
             h.print " #{c.dest}\\main.size"
-            if c.error_type[:cc_flags].empty?
+            if not c.error_type[:cc_flags].include? "/EHs"
                 h.print " #{c.dest}\\noexcept.main.size"
             end
         end

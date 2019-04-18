@@ -14,6 +14,7 @@ CXXFLAGS= $
 -fdata-sections $
 -std=c++17 $
 -static $
+-DNDEBUG $
 -I"src" $
 
 LINK_FLAGS= $

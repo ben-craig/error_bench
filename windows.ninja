@@ -21,7 +21,6 @@ CCFLAGS= $
 /c $
 /W3 $
 /WX $
-/GR $
 /Gy $
 /Gw $
 /O1 $
@@ -30,6 +29,7 @@ CCFLAGS= $
 /wd4530 $
 /std:c++latest $
 /permissive- $
+/DNDEBUG $
 /I"src" $
 /I"include" $
 /I"$MY_DDK_INCLUDE\ucrt" $
