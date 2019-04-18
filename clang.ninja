@@ -17,6 +17,7 @@ CXXFLAGS= $
 -static $
 -DNDEBUG $
 -I"src" $
+-I"include" $
 
 LINK_FLAGS= $
 -Wl,--gc-sections $
