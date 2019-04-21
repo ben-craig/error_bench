@@ -1,7 +1,7 @@
 <pre class='metadata'>
 Title: Error size benchmarking
 Shortname: Dxxxx
-Revision: 0.3
+Revision: 0.4
 Audience: SG14, SG10, SG1, EWG, LEWG
 Status: D
 Group: WG21
@@ -39,42 +39,42 @@ var data_CmpTerm = [
     name: 'stripped.outcome_std_error',
     stack: 'outcome_std_error',
     itemStyle: {color: '#e7298a'},
-    data: [1019,1027,44029,38703]
+    data: [156,165,10646,6992]
   },
   {
     type: 'bar',
     name: 'outcome_std_error',
     stack: 'outcome_std_error',
     itemStyle: {color: '#F27DB9'},
-    data: [58459,43767,53661,38703]
+    data: [57556,42905,18230,6992]
   },
   {
     type: 'bar',
     name: 'stripped.outcome_struct',
     stack: 'outcome_struct',
     itemStyle: {color: '#66a61e'},
-    data: [596,614,43950,38608]
+    data: [88,104,10567,6948]
   },
   {
     type: 'bar',
     name: 'outcome_struct',
     stack: 'outcome_struct',
     itemStyle: {color: '#A6DE66'},
-    data: [58028,43354,53566,38608]
+    data: [57480,42844,18135,6948]
   },
   {
     type: 'bar',
     name: 'stripped.outcome_val',
     stack: 'outcome_val',
     itemStyle: {color: '#e6ab02'},
-    data: [585,575,43936,38596]
+    data: [59,65,10553,6936]
   },
   {
     type: 'bar',
     name: 'outcome_val',
     stack: 'outcome_val',
     itemStyle: {color: '#FFD45B'},
-    data: [58017,43307,53552,38596]
+    data: [57451,42797,18121,6936]
   },
   {
     type: 'bar',
@@ -232,42 +232,42 @@ var data_Cost2ndNeutral = [
     name: 'stripped.outcome_std_error',
     stack: 'outcome_std_error',
     itemStyle: {color: '#e7298a'},
-    data: [195,194,225,201]
+    data: [190,175,225,173]
   },
   {
     type: 'bar',
     name: 'outcome_std_error',
     stack: 'outcome_std_error',
     itemStyle: {color: '#F27DB9'},
-    data: [291,314,253,201]
+    data: [278,271,253,173]
   },
   {
     type: 'bar',
     name: 'stripped.outcome_struct',
     stack: 'outcome_struct',
     itemStyle: {color: '#66a61e'},
-    data: [128,168,145,143]
+    data: [126,149,145,133]
   },
   {
     type: 'bar',
     name: 'outcome_struct',
     stack: 'outcome_struct',
     itemStyle: {color: '#A6DE66'},
-    data: [224,256,165,143]
+    data: [214,213,165,133]
   },
   {
     type: 'bar',
     name: 'stripped.outcome_val',
     stack: 'outcome_val',
     itemStyle: {color: '#e6ab02'},
-    data: [121,129,130,129]
+    data: [104,110,130,119]
   },
   {
     type: 'bar',
     name: 'outcome_val',
     stack: 'outcome_val',
     itemStyle: {color: '#FFD45B'},
-    data: [217,209,158,129]
+    data: [192,166,158,119]
   },
   {
     type: 'bar',
@@ -432,28 +432,28 @@ var data_Cost1stError = [
     name: 'stripped.outcome_std_error',
     stack: 'outcome_std_error',
     itemStyle: {color: '#e7298a'},
-    data: [192569,5970,5765,4362]
+    data: [2844,2907,4392,3241]
   },
   {
     type: 'bar',
     name: 'outcome_std_error',
     stack: 'outcome_std_error',
     itemStyle: {color: '#F27DB9'},
-    data: [200673,6962,5829,4362]
+    data: [3100,3099,4404,3241]
   },
   {
     type: 'bar',
     name: 'stripped.outcome_struct',
     stack: 'outcome_struct',
     itemStyle: {color: '#66a61e'},
-    data: [49,68,61,34]
+    data: [49,36,61,34]
   },
   {
     type: 'bar',
     name: 'outcome_struct',
     stack: 'outcome_struct',
     itemStyle: {color: '#A6DE66'},
-    data: [49,68,81,34]
+    data: [49,36,81,34]
   },
   {
     type: 'bar',
@@ -839,7 +839,7 @@ var data_Cost1stCatch = [
     name: 'outcome_std_error',
     stack: 'outcome_std_error',
     itemStyle: {color: '#F27DB9'},
-    data: [31,20,45,26]
+    data: [31,20,37,26]
   },
   {
     type: 'bar',
@@ -1331,8 +1331,8 @@ Most of the programs were built with exceptions turned off, but the throw_* case
 * return_struct: Return an `error_struct` object (described below) rather than an integer error code.
 * ref_val and ref_struct: Rather than returning integers and `error_struct`s, construct them in main and pass them in by mutable reference.
 * expected_val and expected_struct: Use tl::expected [[BrandExpected]] wrapping either an integer or an error_struct, accordingly.
-* outcome_val and outcome_struct: Use outcome::experimental::status_result [[DouglasOutcome]] wrapping either an integer or an error_struct, accordingly.
-* outcome_std_error: Use outcome::experimental::status_result [[DouglasOutcome]] wrapping a prototype of the proposed std::error [[P1028R1]].  This is the idiomatic way to use outcome.
+* outcome_val and outcome_struct: Use outcome::experimental::status_result [[DouglasOutcome]] wrapping either an integer or an error_struct, accordingly.  This is built with RTTI turned off.
+* outcome_std_error: Use outcome::experimental::status_result [[DouglasOutcome]] wrapping a prototype of the proposed std::error [[P1028R1]].  This is the idiomatic way to use outcome.  This is built with RTTI turned off.
 * tls_val and tls_struct: Use thread_local variables to communicate error conditions.
 * throw_val and throw_struct: Throw an integer or error_struct as an exception.  This is to allow a direct comparison to the other error handling strategies in terms of information transmitted from error site to handling site.
 * throw_exception: Throw an exception deriving from std::exception, that contains only an int.  This should represent more typical use cases.
@@ -1383,9 +1383,9 @@ My first batch of measurements is comparing each of the mechanisms to the abort 
 </script>
 <p align="center"><i>Warning! Logarithmic axis! Linear version [here](#linearneutral1)</i></p>
 
-Set aside outcome for a moment.  These tables show us that the one-time cost for exceptions is really high (6KB on MSVC x86, 384KB on Clang x64), and the one time cost for unwind information is pretty high too (6KB on MSVC x64, 57KB on Clang).  Once we ignore unwind information, we can see that the one-time cost for TLS on Windows is small compared to unwind information, but high compared to the other error mechanisms (214 bytes - 481 bytes).  All the other one-time overheads are 66 bytes or less.  Remember that this code doesn't currently have any throw statements in the program.  This is the one-time cost of error neutral functions when exceptions are turned on.
+Set aside outcome for a moment.  These tables show us that the one-time cost for exceptions is really high (6KB on MSVC x86, 384KB on Clang x64), and the one time cost for unwind information is pretty high too (6KB on MSVC x64, 57KB on Clang).  Once we ignore unwind information, we can see that the one-time cost for TLS on Windows is small compared to unwind information, but high compared to the other error mechanisms (214 bytes - 481 bytes).  All the other (non-outcome) one-time overheads are 66 bytes or less.  Remember that this code doesn't currently have any throw statements in the program.  This is the one-time cost of error neutral functions when exceptions are turned on.
 
-On MSVC, outcome pulls in exception handling routines, even though exceptions are disabled.  There are also some I/O routines that are in the final binary as well.  These bloat the final binary substantially.  On GCC and Clang, the extra size mostly comes from .rodata, presumably to hold virtual table entries.
+On MSVC, outcome pulls in exception handling routines, even though exceptions are disabled.
 
 [[BatyievEmbedded]] claims to be able to get the cost of the exception machinery down to 6,760 bytes on a bare metal ARMv4t system in Thumb mode with GCC 5.3.0.
 
@@ -1447,7 +1447,7 @@ The "2" versions of these functions are slightly different than the original ver
   myChart.setOption(option);
 </script>
 
-The delta between the best and the worst is much smaller in the incremental error neutral measurements than in the one-time cost measurements.  The largest incremental cost is GCC/x64 outcome_std_error (314 bytes), and the smallest is a tie between GCC/x64 and Clang/x64 stripped.abort with 48 bytes.  There are many spurs in these graphs, and many of them can be attributed to codegen that is either low quality, or just code that isn't trying to be as small as possible.  Many of the struct cases resulted in the compiler generating vectorization code, which is almost always larger than the equivalent scalar code.  `abort` and return values were always cheaper than exceptions as well, even with included unwind information.
+The delta between the best and the worst is much smaller in the incremental error neutral measurements than in the one-time cost measurements.  The largest incremental cost is Clang/x64 outcome_std_error (278 bytes), and the smallest is a tie between GCC/x64 and Clang/x64 stripped.abort with 48 bytes.  There are many spurs in these graphs, and many of them can be attributed to codegen that is either low quality, or just code that isn't trying to be as small as possible.  Many of the struct cases resulted in the compiler generating vectorization code, which is almost always larger than the equivalent scalar code.  `abort` and return values were always cheaper than exceptions as well, even with included unwind information.
 
 Initial cost of signaling an error {#error1}
 ------------------------------------
@@ -1498,7 +1498,7 @@ void callee() {
 
 On MSVC, there are multiple ways to build with exceptions "on".  This experiment was built with `/EHs`, which turns on exceptions in a C++ conforming manner.  The Microsoft recommended flag is `/EHsc`, which turns on exceptions for all C++ functions, but assumes that `extern "C"` functions won't throw.  This is a useful, though non-conforming option.  The trick is that the noexcept_abort `callee()` implementation calls `abort()`, and that's an `extern "C"` function that isn't marked as `noexcept`, so we suddenly need to pay for all the exception handling costs that we had been avoiding by making everything `noexcept`.  We can't easily make the C runtime, or other people's code `noexcept`.  We don't see this on GCC and Clang because the C library they are calling marks abort as `__attribute__ ((__nothrow__))`, and that lets them avoid generating the exception machinery.
 
-GCC's first throw costs look worse than Clang's because Clang paid a lot of those costs even before there was a throw.  The outcome_std_error cases are expensive on GCC and Clang as they pull in a lot or RTTI machinery at this point.
+GCC's first throw costs look worse than Clang's because Clang paid a lot of those costs even before there was a throw.  The outcome_std_error cases are expensive as they pull in the status code domain machinery at this point.
 
 Incremental cost of signaling an error {#error2}
 ----------------------------------------------
@@ -1663,7 +1663,7 @@ WG21 should also note that returning a two-pointer structure isn't "free" when c
 
 Acknowledgments {#ack}
 ======================
-Simon Brand, Niall Douglas, Brad Keryan, Reid Kleckner, Modi Mo, and Herb Sutter provided valuable review commentary on this paper.
+Simon Brand, Niall Douglas, Brad Keryan, Reid Kleckner, Modi Mo, Herb Sutter, and John McFarlane provided valuable review commentary on this paper.
 
 Thanks to Lawrence Crowl, for asking the question "what if everything were `noexcept`?".
 
@@ -1695,9 +1695,11 @@ Compiler toolkit version: 14.20.27508
 
 cl.exe version: 19.20.27508.1
 
-Compiler codegen flags (no exceptions): /GR /Gy /Gw /O1 /MT /d2FH4 /std:c++latest /permissive-
+Compiler codegen flags (no exceptions): /GR /Gy /Gw /O1 /MT /d2FH4 /std:c++latest /permissive- /DNDEBUG
 
-Compiler codegen flags (with exceptions): /EHs /GR /Gy /Gw /O1 /MT /d2FH4 /std:c++latest /permissive-
+Compiler codegen flags (with exceptions): /EHs /GR /Gy /Gw /O1 /MT /d2FH4 /std:c++latest /permissive- /DNDEBUG
+
+Compiler codegen flags (outcome, no exceptions): /GR- /Gy /Gw /O1 /MT /d2FH4 /std:c++latest /permissive- /DNDEBUG
 
 Linker flags: /OPT:REF /release /subsystem:CONSOLE /incremental:no /OPT:ICF /NXCOMPAT /DYNAMICBASE /DEBUG 
 
@@ -1707,9 +1709,11 @@ Toolchains used:
 * Clang 8.0.0 and libc++
 * System linker from Ubuntu 14.04.3's GCC 4.8.4 installation
 
-Compiler codegen flags (no exceptions): -fno-exceptions -Os -ffunction-sections -fdata-sections -std=c++17 -stdlib=libc++ -static
+Compiler codegen flags (no exceptions): -fno-exceptions -Os -ffunction-sections -fdata-sections -std=c++17 -stdlib=libc++ -static -DNDEBUG
 
-Compiler codegen flags (exceptions): -Os -ffunction-sections -fdata-sections -std=c++17 -stdlib=libc++ -static
+Compiler codegen flags (exceptions): -Os -ffunction-sections -fdata-sections -std=c++17 -stdlib=libc++ -static -DNDEBUG
+
+Compiler codegen flags (outcome, no exceptions): -fno-rtti -fno-exceptions -Os -ffunction-sections -fdata-sections -std=c++17 -stdlib=libc++ -static -DNDEBUG
 
 Linking flags: -Wl,--gc-sections -pthread -static -static-libgcc -stdlib=libc++
 
@@ -1721,6 +1725,8 @@ Compiler codegen flags (no exceptions): -fno-exceptions -Os -ffunction-sections 
 
 Compiler codegen flags (exceptions): -Os -ffunction-sections -fdata-sections -std=c++17 -static
 
+Compiler codegen flags (outcome, no exceptions): -fno-rtti -fno-exceptions -Os -ffunction-sections -fdata-sections -std=c++17 -static -DNDEBUG
+
 Linking flags: -Wl,--gc-sections -pthread -static -static-libgcc -static-libstdc++
 
 Appendix C: The code {#code}
@@ -1729,6 +1735,8 @@ As stated before, this isn't the exact code that was benchmarked.  In the benchm
 
 Common support code {#code_support}
 ---------------------------------------
+<details>
+<summary>Expand to see code snippets</summary>
 **All cases**
 ```
 struct Dtor {~Dtor() {}};
@@ -1754,11 +1762,14 @@ public:
   const char *what() const noexcept override { return ""; }
 };
 ```
+</details>
 
 Initial error neutral functions  {#code_neutral1}
 ---------------------------------------
 This section lays the groundwork for future comparisons.  All of these cases are capable of transporting error information from a future signaling site (`callee`) to a future catching site (`main`).  No errors are signaled here, but the plumbing is in place.
 
+<details>
+<summary>Expand to see code snippets</summary>
 **Default main function**
 
 All of the `main` functions in this section look the same, except for the ref_struct and ref_val `main` functions.  To avoid repetition, I will show the most common main function here.  The ref_struct and ref_val cases will still show their `main functions`.
@@ -1941,12 +1952,15 @@ void caller() {
   global_int = 0;
 }
 ```
+</details>
 Incremental error neutral functions {#code_neutral2}
 ---------------------------------------
 Here, we add an extra two functions with error transporting capabilities so that we can measure the incremental cost of error neutral functions.  These functions need to be slightly different than the old functions in order to avoid deduplication optimizations.
 
 In order to save on text length, the only functions that will be listed here are the functions were added or changed compared to the previous section.
 
+<details>
+<summary>Expand to see code snippets</summary>
 **Default main function**
 
 All of the `main` functions in this section look the same, except for the ref_struct and ref_val `main` functions.  To avoid repetition, I will show the most common main function here.  The ref_struct and ref_val cases will still show their `main functions`.
@@ -2130,8 +2144,11 @@ void caller2(int amount) {
   global_int += amount;
 }
 ```
+</details>
 Initial signaling of an error {#code_error1}
 ---------------------------------------
+<details>
+<summary>Expand to see code snippets</summary>
 **abort**
 ```
 void callee() {
@@ -2280,9 +2297,12 @@ void callee() {
     throw err_exception(1);
 }
 ```
+</details>
 
 Incremental signaling of an error {#code_error2}
 ---------------------------------------
+<details>
+<summary>Expand to see code snippets</summary>
 **abort**
 ```
 void callee2(int amount) {
@@ -2448,8 +2468,11 @@ void callee2(int amount) {
   global_int += amount;
 }
 ```
+</details>
 Initial handling of an error {#code_catch1}
 ---------------------------------------
+<details>
+<summary>Expand to see code snippets</summary>
 **return_val**
 ```
 int main() {
@@ -2561,8 +2584,11 @@ int main() {
   return global_int;
 }
 ```
+</details>
 Incremental handling of an error {#code_catch2}
 ---------------------------------------
+<details>
+<summary>Expand to see code snippets</summary>
 **return_val**
 ```
 int main() {
@@ -2699,10 +2725,12 @@ int main() {
   return global_int;
 }
 ```
+</details>
 Appendix D: Linear graphs {#linear_graphs}
 ==========================================
 Initial error neutral cost, linear {#linearneutral1}
 ----------------------------------------------------
+[Logarithmic version of this graph with commentary](#neutral1)
 <div id="CmpTermLinear" style="width: 100%;height:600px;"></div>
 <script type="text/javascript">
   // based on prepared DOM, initialize echarts instance
@@ -2737,6 +2765,7 @@ Initial error neutral cost, linear {#linearneutral1}
 </script>
 Initial cost of signaling an error, linear {#linearerror1}
 ------------------------------------
+[Logarithmic version of this graph with commentary](#error1)
 <div id="FirstErrorLinear" style="width: 100%;height:600px;"></div>
 <script type="text/javascript">
   // based on prepared DOM, initialize echarts instance
