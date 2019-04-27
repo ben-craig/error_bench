@@ -1,7 +1,7 @@
 <pre class='metadata'>
 Title: Error size benchmarking
 Shortname: Dxxxx
-Revision: 0.4
+Revision: 0.5
 Audience: SG14, SG10, SG1, EWG, LEWG
 Status: D
 Group: WG21
@@ -1235,7 +1235,7 @@ One may try to avoid all the costs by calling `std::abort` or something similar,
 
 So great, there are costs, but how should we measure the costs, and which error handling mechanisms exhibit what kinds of costs?
 
-In this paper, we will look at the *size* costs of error handling.  We'll break things down into one-time costs and incremental costs, and subdivide by costs paid for error neutral functions, raising an error, and handling an error.
+In this paper, we will look at the *size* costs of error handling.  We'll break things down into one-time costs and incremental costs, and subdivide by costs paid for error neutral functions, raising an error, and handling an error.  I will also discuss some of the inherent implementation difficulties and constraints of today's C++ exceptions.
 
 Exception implementation {#exception_impl}
 ==========================================
@@ -1663,7 +1663,7 @@ WG21 should also note that returning a two-pointer structure isn't "free" when c
 
 Acknowledgments {#ack}
 ======================
-Simon Brand, Niall Douglas, Brad Keryan, Reid Kleckner, Modi Mo, Herb Sutter, and John McFarlane provided valuable review commentary on this paper.
+Simon Brand, Niall Douglas, Brad Keryan, Reid Kleckner, Modi Mo, Herb Sutter, John McFarlane and Ben Saks provided valuable review commentary on this paper.
 
 Thanks to Lawrence Crowl, for asking the question "what if everything were `noexcept`?".
 
@@ -2781,10 +2781,7 @@ Initial cost of signaling an error, linear {#linearerror1}
       top: 0,
       orient: 'vertical',
     },
-    xAxis: [{
-      type: 'value',
-      max: 210000
-    }],
+    xAxis: [{type: 'value'}],
     yAxis: [{
       type: 'category',
       data: ['Clang','GCC','MSVC x64','MSVC x86']
