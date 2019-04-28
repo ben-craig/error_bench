@@ -2,7 +2,7 @@
 <html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
   
   <meta content="width=device-width, initial-scale=1, shrink-to-fit=no" name="viewport">
-  <title>DxxxxR0.5: Error size benchmarking</title>
+  <title>D1640R0.7: Error size benchmarking</title>
 <style data-fill-with="stylesheet">/******************************************************************************
  *                   Style sheet for the W3C specifications                   *
  *
@@ -1228,7 +1228,7 @@ Possible extra rowspan handling
     }
   </style>
   <meta content="Bikeshed version 10ff3eb4050069e20bb9b943c8b76fe5bfe3a48f" name="generator">
-  <link href="TODO" rel="canonical">
+  <link href="https://wg21.link/P1640R0" rel="canonical">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
 <style>
 blockquote.book {
@@ -1482,12 +1482,12 @@ pre .property::before, pre .property::after {
  </head><body class="h-entry toc-sidebar"><p id="toc-nav"><a id="toc-jump" href="#toc"><span aria-hidden="true">↑</span> <span>Jump to Table of Contents</span></a><a id="toc-toggle" href="#toc"><span aria-hidden="true">←</span> <span>Collapse Sidebar</span></a></p>
   <div class="head">
    <p data-fill-with="logo"></p>
-   <h1 class="p-name no-ref" id="title">DxxxxR0.5<br>Error size benchmarking</h1>
+   <h1 class="p-name no-ref" id="title">D1640R0.7<br>Error size benchmarking</h1>
    <h2 class="no-num no-toc no-ref heading settled" id="subtitle"><span class="content">Draft Proposal, <time class="dt-updated" datetime="2019-04-28">2019-04-28</time></span></h2>
    <div data-fill-with="spec-metadata">
     <dl>
      <dt>This version:
-     </dt><dd><a class="u-url" href="TODO">TODO</a>
+     </dt><dd><a class="u-url" href="https://wg21.link/P1640R0">https://wg21.link/P1640R0</a>
      </dd><dt>Author:
      </dt><dd>
       </dd><dd class="editor p-author h-card vcard"><a class="p-name fn u-email email" href="mailto:ben.craig@gmail.com">Ben Craig</a> (<span class="p-org org">National Instruments</span>)
@@ -2736,7 +2736,7 @@ function myFormatter(params, ticket, callback) {
     In GCC, Clang, and MSVC x64, exceptions are implemented using the "table-based exceptions" strategy.  When an exception is thrown, the instruction pointer is used to look in a constant, global table to determine how to restore registers, which destructors to call, and how to get to the next frame.  This approach has the advantage that minimal extra code is required to be executed in the success path. 
    <p>In MSVC x86, exceptions are implemented with a variant of the "setjmp/longjmp" method.  Bookkeeping information is emitted anytime a try block is entered, or anytime an object with a non-trivial destructor has been constructed.  This information is linked together into a list.  When an exception is thrown, the list is traversed, destructors and catch blocks are executed.  This approach has the advantage that throwing an exception has a much more deterministic cost than the table-based approach.</p>
    <p>In Clang and GCC, exception objects are allocated on the heap.  Both implementations have an emergency buffer they fall back to if allocations fail.</p>
-   <p>With MSVC, exception objects are allocated from a large stack based buffer.  This consumes roughly 2,100 bytes of stack on 32-bit windows, and 9,700 bytes of stack on 64-bit windows.</p>
+   <p>With MSVC, exception objects are allocated into a buffer that is borrowed from the stack just beyond the throw site’s active frame. Each active exception gets a distinct buffer. The exception buffer and the stack frames between the throw and catch sites cannot be deallocated or reused until the exception is fully handled.  Destructors and other code run during unwinding consumes additional stack beyond the throwing stack frame and exception buffer.  At minimum, throwing one exception consumes roughly 2,100 bytes of stack on 32-bit Windows, and 9,700 bytes of stack on 64-bit Windows.  The stack size cost will quickly increase with large exception types, re-throws, distance between the throw and catch sites, and/or multiple active exceptions.</p>
    <p>The heap is often not present in freestanding environments.  Stack space is often tightly constrained in freestanding environments as well.</p>
    <p><a data-link-type="biblio" href="#biblio-renwicklowcost">[RenwickLowCost]</a> describes a way to implement exceptions by passing in exception information though a hidden function parameter.  Currently, this approach can’t be used for a conforming C++ implementation, but it will come close enough for many applications.  The author does not have access to a compiler with this implementation of exceptions, so it has not been benchmarked.</p>
    <p><a data-link-type="biblio" href="#biblio-p0709">[P0709]</a> describes a way to implement a new kind of exceptions, where the error information is packaged with the return value in a discriminated union.  The author does not have access to a compiler that can use this kind of exception handling mechanism, so it has not been benchmarked.  Readers should _not_ assume that the costs will be the same as those for <code class="highlight"><c- n="">expected</c-></code> or returning a struct, as the code to test and the code to set the discriminator could cause substantial size differences from what was measured for existing cases.  This style of exceptions requires that values of specific types be thrown, rather than allowing any type to be thrown.</p>
@@ -2811,6 +2811,8 @@ function myFormatter(params, ticket, callback) {
      <p>abort: When an error is encountered, kill the program with <code class="highlight"><c- n="">std</c-><c- o="">::</c-><c- n="">abort</c-></code>.</p>
     </li><li data-md="">
      <p>noexcept_abort: Same as abort, except exceptions are turned on, and all the functions declared in user source are marked as <code class="highlight"><c- k="">noexcept</c-></code>.</p>
+    </li><li data-md="">
+     <p>return_val: Return an integer error code, where zero represents success.</p>
     </li><li data-md="">
      <p>return_struct: Return an <code class="highlight"><c- n="">error_struct</c-></code> object (described below) rather than an integer error code.</p>
     </li><li data-md="">
