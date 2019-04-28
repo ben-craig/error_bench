@@ -1245,7 +1245,7 @@ In MSVC x86, exceptions are implemented with a variant of the "setjmp/longjmp" m
 
 In Clang and GCC, exception objects are allocated on the heap.  Both implementations have an emergency buffer they fall back to if allocations fail.
 
-With MSVC, exception objects are allocated from a large stack based buffer.  This consumes roughly 2,100 bytes of stack on 32-bit windows, and 9,700 bytes of stack on 64-bit windows.
+With MSVC, exception objects are allocated into a buffer that is taken from the stack.  Each active exception gets a distinct buffer.  The buffer is not deallocated until unwinding is complete.  Additional stack is consumed to run destructors and other unwinding code during this process.  In the best case, this consumes roughly 2,100 bytes of stack on 32-bit Windows, and 9,700 bytes of stack on 64-bit Windows.  Large exception types and re-throws will quicly increase this stack size cost.
 
 The heap is often not present in freestanding environments.  Stack space is often tightly constrained in freestanding environments as well.
 
