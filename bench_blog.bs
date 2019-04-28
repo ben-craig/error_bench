@@ -2,7 +2,7 @@
 Title: Error size benchmarking
 Shortname: Dxxxx
 Revision: 0.5
-Audience: SG14, SG10, SG1, EWG, LEWG
+Audience: WG21
 Status: D
 Group: WG21
 URL: TODO
