@@ -1245,7 +1245,7 @@ In MSVC x86, exceptions are implemented with a variant of the "setjmp/longjmp" m
 
 In Clang and GCC, exception objects are allocated on the heap.  Both implementations have an emergency buffer they fall back to if allocations fail.
 
-With MSVC, exception objects are allocated into a buffer that is taken from the stack.  Each active exception gets a distinct buffer.  The buffer is not deallocated until unwinding is complete.  Additional stack is consumed to run destructors and other unwinding code during this process.  In the best case, this consumes roughly 2,100 bytes of stack on 32-bit Windows, and 9,700 bytes of stack on 64-bit Windows.  Large exception types and re-throws will quicly increase this stack size cost.
+With MSVC, exception objects are allocated into a buffer that is borrowed from the stack just beyond the throw site’s active frame. Each active exception gets a distinct buffer. The exception buffer and the stack frames between the throw and catch sites cannot be deallocated or reused until the exception is fully handled.  Destructors and other code run during unwinding consumes additional stack beyond the throwing stack frame and exception buffer.  At minimum, throwing one exception consumes roughly 2,100 bytes of stack on 32-bit Windows, and 9,700 bytes of stack on 64-bit Windows.  The stack size cost will quickly increase with large exception types, re-throws, distance between the throw and catch sites, and/or multiple active exceptions.
 
 The heap is often not present in freestanding environments.  Stack space is often tightly constrained in freestanding environments as well.
 
@@ -1328,6 +1328,7 @@ This is pretty typical integer return value code, without any macro niceties.
 Most of the programs were built with exceptions turned off, but the throw_* cases and noexcept_abort all had exceptions turned on in the program.
 * abort: When an error is encountered, kill the program with `std::abort`.
 * noexcept_abort: Same as abort, except exceptions are turned on, and all the functions declared in user source are marked as `noexcept`.
+* return_val: Return an integer error code, where zero represents success.
 * return_struct: Return an `error_struct` object (described below) rather than an integer error code.
 * ref_val and ref_struct: Rather than returning integers and `error_struct`s, construct them in main and pass them in by mutable reference.
 * expected_val and expected_struct: Use tl::expected [[BrandExpected]] wrapping either an integer or an error_struct, accordingly.
