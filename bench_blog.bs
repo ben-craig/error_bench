@@ -1,7 +1,7 @@
 <pre class='metadata'>
 Title: Error size benchmarking
 Shortname: D1640
-Revision: 0.6
+Revision: 0.7
 Audience: WG21
 Status: D
 Group: WG21
