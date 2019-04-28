@@ -5,7 +5,7 @@ Revision: 0.6
 Audience: WG21
 Status: D
 Group: WG21
-URL: TODO
+URL: https://wg21.link/P1640R0
 !Source: <a href="https://github.com/ben-craig/error_bench/blob/master/bench_blog.bs">github.com/ben-craig/error_bench/blob/master/bench_blog.bs</a>
 Editor: Ben Craig, National Instruments, ben.craig@gmail.com
 Abstract: The author measures size costs of error handling approaches.  Exceptions are big, <code>std::abort</code> and integer error codes are small, <code>expected</code> is somewhere in between.
