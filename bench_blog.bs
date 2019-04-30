@@ -1270,7 +1270,7 @@ Measuring methodology {#methodology}
 ====================================
 All benchmarks lie.  It's important to know how a benchmark is set up so that the useful parts can be distinguished from the misleading parts.
 
-MSVC 2019 was used for MSVC x86 and MSVC x64 builds.  The /d2FH4 flag described in [[MoFH4]] was used, and /EHs was used when exceptions exceptions were on.
+MSVC 2019 was used for MSVC x86 and MSVC x64 builds.  The /d2FH4 flag described in [[MoFH4]] was used, and /EHs was used when exceptions were on.
 
 GCC 7.3.1 from the Red Hat Developer Toolset 7.1 was used for my GCC builds.  The Linux x64 platform was targeted.
 
