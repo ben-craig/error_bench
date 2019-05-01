@@ -34,7 +34,7 @@ rule compile
     deps = gcc
 
 rule link
-    command = $LINK_PROG $LINK_FLAGS -o $out $in ~/llvm/clang+llvm-7.0.0-x86_64-linux-gnu-ubuntu-14.04/lib/libc++abi.a
+    command = $LINK_PROG $LINK_FLAGS -o $out $in ~/llvm/clang+llvm-8.0.0-x86_64-linux-gnu-ubuntu-14.04/lib/libc++abi.a
     description = LINK $out
 
 rule measure_size
