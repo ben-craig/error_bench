@@ -1,7 +1,7 @@
 <pre class='metadata'>
 Title: Error size benchmarking
 Shortname: D1640
-Revision: 0.7
+Revision: 0.8
 Audience: WG21
 Status: D
 Group: WG21
@@ -1241,17 +1241,17 @@ Exception implementation {#exception_impl}
 ==========================================
 In GCC, Clang, and MSVC x64, exceptions are implemented using the "table-based exceptions" strategy.  When an exception is thrown, the instruction pointer is used to look in a constant, global table to determine how to restore registers, which destructors to call, and how to get to the next frame.  This approach has the advantage that minimal extra code is required to be executed in the success path.
 
-In MSVC x86, exceptions are implemented with a variant of the "setjmp/longjmp" method.  Bookkeeping information is emitted anytime a try block is entered, or anytime an object with a non-trivial destructor has been constructed.  This information is linked together into a list.  When an exception is thrown, the list is traversed, destructors and catch blocks are executed.  This approach has the advantage that throwing an exception has a much more deterministic cost than the table-based approach.
+In MSVC x86, exceptions are implemented with a variant of the "setjmp/longjmp" method.  Bookkeeping information is emitted anytime a try block is entered, or anytime an object with a non-trivial destructor has been constructed.  This information is linked together into a list.  When an exception is thrown, the list is traversed, destructors and catch blocks are executed.  This approach has the advantage that throwing an exception has a much more predictable and consistent cost than the table-based approach.
 
-In Clang and GCC, exception objects are allocated on the heap.  Both implementations have an emergency buffer they fall back to if allocations fail.
+In libc++abi (usually associated with Clang) and libsupc++ (usually associated with GCC), exception objects are allocated on the heap.  Both implementations have an emergency buffer they fall back to if allocations fail.  An alternative implementation could use the fixed sized buffer first, though this would still qualify as a dynamic allocation.
 
 With MSVC, exception objects are allocated into a buffer that is borrowed from the stack just beyond the throw site’s active frame. Each active exception gets a distinct buffer. The exception buffer and the stack frames between the throw and catch sites cannot be deallocated or reused until the exception is fully handled.  Destructors and other code run during unwinding consumes additional stack beyond the throwing stack frame and exception buffer.  At minimum, throwing one exception consumes roughly 2,100 bytes of stack on 32-bit Windows, and 9,700 bytes of stack on 64-bit Windows.  The stack size cost will quickly increase with large exception types, re-throws, distance between the throw and catch sites, and/or multiple active exceptions.
 
 The heap is often not present in freestanding environments.  Stack space is often tightly constrained in freestanding environments as well.
 
-[[RenwickLowCost]] describes a way to implement exceptions by passing in exception information though a hidden function parameter.  Currently, this approach can't be used for a conforming C++ implementation, but it will come close enough for many applications.  The author does not have access to a compiler with this implementation of exceptions, so it has not been benchmarked.
+[[RenwickLowCost]] describes a way to implement exceptions by passing in exception information though a hidden function parameter.  Currently, this approach can't be used for a conforming C++ implementation, but it will come close enough for many applications.  Most of the "tricky use cases" outlined below are not implementable with the hidden parameter trick unless all functions, including `noexcept` and C functions, are all passed the hidden parameter.  This would significantly undermine the utility of the approach.  The author does not have access to a compiler with this implementation of exceptions, so it has not been benchmarked.
 
-[[P0709]] describes a way to implement a new kind of exceptions, where the error information is packaged with the return value in a discriminated union.  The author does not have access to a compiler that can use this kind of exception handling mechanism, so it has not been benchmarked.  Readers should _not_ assume that the costs will be the same as those for `expected` or returning a struct, as the code to test and the code to set the discriminator could cause substantial size differences from what was measured for existing cases.  This style of exceptions requires that values of specific types be thrown, rather than allowing any type to be thrown.
+[[P0709]] describes a way to implement a new kind of exceptions, where the error information is packaged with the return value in a discriminated union.  The author does not have access to a compiler that can use this kind of exception handling mechanism, so it has not been benchmarked.  Readers should _not_ assume that the costs will be the same as those for `expected` or returning a struct, as the code to test and the code to set the discriminator could cause substantial size differences from what was measured for existing cases.  The benefits of this approach are realized when a specific type (a yet to be standardized `std::error`) is thrown.  Throwing other types falls back to the current C++ exception approach.
 
 Conforming C++ exceptions need to be able to support some tricky use cases.
 * Transporting information across `noexcept` barriers.
@@ -1260,7 +1260,7 @@ Conforming C++ exceptions need to be able to support some tricky use cases.
 * Re-throwing exceptions in distant functions, for example, in a "Lippincott" function [[Guillemot]].
 * Multiple in-flight exceptions at the same time.
 
-In addition, for exceptions to be acceptable in the market, there is also the requirement that C++ be source and link compatible with C.
+In addition, for exceptions to be acceptable in the market, there is also the requirement that C++ programs should be able to consume C source and C object files.
 
 In general, supporting these difficult use cases requires some kind of storage that is local to a thread.  In single threaded environments, "storage that is local to a thread" can be implemented with a simple global.  In multi-threaded environments, something more invasive or sophisticated is required.  In practice, the "more invasive or sophisticated" facilities are often not available in freestanding environments.  Getting those features into freestanding environments often requires substantial runtime cost, cooperation from vendors other than the compiler vendor, or both runtime cost and vendor cooperation.
 
@@ -1270,11 +1270,15 @@ Measuring methodology {#methodology}
 ====================================
 All benchmarks lie.  It's important to know how a benchmark is set up so that the useful parts can be distinguished from the misleading parts.
 
+The specific build flags can be found in [Appendix B](#build_flags).  Following is a brief summary.
+
 MSVC 2019 was used for MSVC x86 and MSVC x64 builds.  The /d2FH4 flag described in [[MoFH4]] was used, and /EHs was used when exceptions were on.
 
 GCC 7.3.1 from the Red Hat Developer Toolset 7.1 was used for my GCC builds.  The Linux x64 platform was targeted.
 
-Clang 8.0.0 and libc++ was used for my Clang builds.  The Linux x64 platform was targeted.  The system linker and C library leaked in to this build.  The system GCC was GCC 4.8.4 from Ubuntu 14.04.3.
+Clang 8.0.0, libc++, and libc++abi was used for my Clang builds.  The Linux x64 platform was targeted.  The system linker and C library leaked in to this build.  The system GCC was GCC 4.8.4 from Ubuntu 14.04.3.
+
+All the binaries are optimized for size, rather than speed.
 
 All the binaries are built with static runtimes, so that we can also see the costs of the error handling runtime machinery.  For many people, this is a sunk cost.  If the cost of the runtime machinery isn't of interest, then don't pay attention to the one-time costs, and just look at the incremental costs.  Sizes were not calculated by just doing the "easy" thing and comparing the on-disk sizes of the resulting programs.  Programs have lots and lots of padding internal to them due to alignment constraints, and that padding can mask or inflate small cost changes.  Instead, the size is calculated by summing the size of all the non-code sections, and by summing the size of each function in the code sections.  Measuring the size of a function is a little tricky, as the compiler doesn't emit that information directly.  There are often padding instructions between consecutive functions.  My measurements omit the padding instructions so that we can see code size differences as small as one byte.
 
@@ -1283,8 +1287,6 @@ Measurements are also included where the size of some data sections related to u
 Note that on Linux, the entire user mode program can be statically linked.  This is the program under test, the C++ runtime, the C runtime, and any OS support.  On Windows, the program, the C++ runtime, and the C runtime can be statically linked, but the OS support (kernel32.dll) is still distinct.  With this in mind, refrain from comparing the one-time MSVC sizes to the Clang and GCC sizes, as it isn't comparing the same set of functionality.
 
 These benchmarks are run on very small programs.  On larger programs, various code and data deduplication optimizations could substantially change the application-level costs of error handling.  [[MoFH4]] documents the kinds of deduplication that MSVC 2019 performs.
-
-The specific build flags can be found in [Appendix B](#build_flags).
 
 Starter test cases {#starter_case}
 =====================
@@ -1343,7 +1345,7 @@ Expository code for all the cases can be found in [Appendix C](#code).  The actu
 Measurements {#measurements}
 ============================
 
-Initial error neutral cost {#neutral1}
+Initial error neutral size cost {#neutral1}
 -----------------------
 My first batch of measurements is comparing each of the mechanisms to the abort test case that has no unwind information.  This lets us focus on the incremental costs of the other mechanisms.
 <p align="center"><i>Warning! Logarithmic axis! Linear version [here](#linearneutral1)</i></p>
@@ -1392,7 +1394,7 @@ On MSVC, outcome pulls in exception handling routines, even though exceptions ar
 
 Note that noexcept_abort has the same cost as regular abort right now.  If everything is `noexcept`, the exception machinery costs are not incurred.
 
-Incremental error neutral cost {#neutral2}
+Incremental error neutral size cost {#neutral2}
 ---------------------------------------------
 To measure the incremental cost of error neutral code, the code will be updated as follows:
 ```
@@ -1450,7 +1452,7 @@ The "2" versions of these functions are slightly different than the original ver
 
 The delta between the best and the worst is much smaller in the incremental error neutral measurements than in the one-time cost measurements.  The largest incremental cost is Clang/x64 outcome_std_error (278 bytes), and the smallest is a tie between GCC/x64 and Clang/x64 stripped.abort with 48 bytes.  There are many spurs in these graphs, and many of them can be attributed to codegen that is either low quality, or just code that isn't trying to be as small as possible.  Many of the struct cases resulted in the compiler generating vectorization code, which is almost always larger than the equivalent scalar code.  `abort` and return values were always cheaper than exceptions as well, even with included unwind information.
 
-Initial cost of signaling an error {#error1}
+Initial size cost of signaling an error {#error1}
 ------------------------------------
 What happens when an error is signaled first time?  What's the one-time cost of that first error?
 ```
@@ -1501,7 +1503,7 @@ On MSVC, there are multiple ways to build with exceptions "on".  This experiment
 
 GCC's first throw costs look worse than Clang's because Clang paid a lot of those costs even before there was a throw.  The outcome_std_error cases are expensive as they pull in the status code domain machinery at this point.
 
-Incremental cost of signaling an error {#error2}
+Incremental size cost of signaling an error {#error2}
 ----------------------------------------------
 ```
 void callee2(int amount) {
@@ -1550,7 +1552,7 @@ These numbers are all over the place.  Here are some highlights:
 * On MSVC, it isn't just the first non-`noexcept` function that is expensive in noexcept_abort, but the later calls are expensive too.
 * MSVC and Clang have somewhat inflated costs for struct errors.  Both compilers emit vectorized instructions in many cases, and vectorized instructions are large.
 
-Initial cost for handling an error {#handle1}
+Initial size cost for handling an error {#handle1}
 ---------------------------------------------
 To get the initial handling costs, we'll rewrite main to look something like this...
 ```
@@ -1603,7 +1605,7 @@ int main() {
 
 Here we see that the initial catch cost of TLS and exceptions is universally high compared to the alternatives.
 
-Incremental cost for handling an error {#handle2}
+Incremental size cost for handling an error {#handle2}
 -------------------------------------------------
 Now for the incremental code, and the associated costs.
 ```
@@ -1621,6 +1623,8 @@ int main() {
   return global_int;
 }
 ```
+Note that this is measuring the cost of handling a second error within a single function.  If the error handling were split over multiple functions, the cost profile may be different.
+
 <div id="SecondCatch" style="width: 100%;height:600px;"></div>
 <script type="text/javascript">
   // based on prepared DOM, initialize echarts instance
@@ -1664,7 +1668,7 @@ WG21 should also note that returning a two-pointer structure isn't "free" when c
 
 Acknowledgments {#ack}
 ======================
-Simon Brand, Niall Douglas, Brad Keryan, Reid Kleckner, Modi Mo, Herb Sutter, John McFarlane and Ben Saks provided valuable review commentary on this paper.
+Simon Brand, Niall Douglas, Brad Keryan, Reid Kleckner, Modi Mo, Herb Sutter, John McFarlane, Ben Saks, and Richard Smith provided valuable review commentary on this paper.
 
 Thanks to Lawrence Crowl, for asking the question "what if everything were `noexcept`?".
 
@@ -1702,7 +1706,7 @@ Compiler codegen flags (with exceptions): /EHs /GR /Gy /Gw /O1 /MT /d2FH4 /std:c
 
 Compiler codegen flags (outcome, no exceptions): /GR- /Gy /Gw /O1 /MT /d2FH4 /std:c++latest /permissive- /DNDEBUG
 
-Linker flags: /OPT:REF /release /subsystem:CONSOLE /incremental:no /OPT:ICF /NXCOMPAT /DYNAMICBASE /DEBUG 
+Linker flags: /OPT:REF /release /subsystem:CONSOLE /incremental:no /OPT:ICF /NXCOMPAT /DYNAMICBASE /DEBUG *.obj
 
 Clang x64 {#clang_x64}
 ----------------------
@@ -1716,7 +1720,7 @@ Compiler codegen flags (exceptions): -Os -ffunction-sections -fdata-sections -st
 
 Compiler codegen flags (outcome, no exceptions): -fno-rtti -fno-exceptions -Os -ffunction-sections -fdata-sections -std=c++17 -stdlib=libc++ -static -DNDEBUG
 
-Linking flags: -Wl,--gc-sections -pthread -static -static-libgcc -stdlib=libc++
+Linking flags: -Wl,--gc-sections -pthread -static -static-libgcc -stdlib=libc++ *.o libc++abi.a
 
 GCC x64 {#gcc_x64}
 ------------------
@@ -1728,7 +1732,7 @@ Compiler codegen flags (exceptions): -Os -ffunction-sections -fdata-sections -st
 
 Compiler codegen flags (outcome, no exceptions): -fno-rtti -fno-exceptions -Os -ffunction-sections -fdata-sections -std=c++17 -static -DNDEBUG
 
-Linking flags: -Wl,--gc-sections -pthread -static -static-libgcc -static-libstdc++
+Linking flags: -Wl,--gc-sections -pthread -static -static-libgcc -static-libstdc++ *.o
 
 Appendix C: The code {#code}
 ============================
