@@ -18,21 +18,21 @@ var data_CmpTerm = [
     name: 'throw_exception',
     stack: 'throw_exception',
     itemStyle: {color: '#1b9e77'},
-    data: [384208,102620,19990,6140]
+    data: [382891,102620,19990,6140]
   },
   {
     type: 'bar',
     name: 'throw_struct',
     stack: 'throw_struct',
     itemStyle: {color: '#d95f02'},
-    data: [384208,102620,19990,6140]
+    data: [382891,102620,19990,6140]
   },
   {
     type: 'bar',
     name: 'throw_val',
     stack: 'throw_val',
     itemStyle: {color: '#7570b3'},
-    data: [384208,102620,19990,6140]
+    data: [382891,102620,19990,6140]
   },
   {
     type: 'bar',
@@ -411,21 +411,21 @@ var data_Cost1stError = [
     name: 'throw_exception',
     stack: 'throw_exception',
     itemStyle: {color: '#1b9e77'},
-    data: [224,2933,827,633]
+    data: [256,2933,827,633]
   },
   {
     type: 'bar',
     name: 'throw_struct',
     stack: 'throw_struct',
     itemStyle: {color: '#d95f02'},
-    data: [107,2746,226,161]
+    data: [139,2746,226,161]
   },
   {
     type: 'bar',
     name: 'throw_val',
     stack: 'throw_val',
     itemStyle: {color: '#7570b3'},
-    data: [246,3080,178,103]
+    data: [310,3080,178,103]
   },
   {
     type: 'bar',
