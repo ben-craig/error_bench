@@ -1386,7 +1386,7 @@ My first batch of measurements is comparing each of the mechanisms to the abort 
 </script>
 <p align="center"><i>Warning! Logarithmic axis! Linear version [here](#linearneutral1)</i></p>
 
-Set aside outcome for a moment.  These tables show us that the one-time cost for exceptions is really high (6KB on MSVC x86, 384KB on Clang x64), and the one time cost for unwind information is pretty high too (6KB on MSVC x64, 57KB on Clang).  Once we ignore unwind information, we can see that the one-time cost for TLS on Windows is small compared to unwind information, but high compared to the other error mechanisms (214 bytes - 481 bytes).  All the other (non-outcome) one-time overheads are 66 bytes or less.  Remember that this code doesn't currently have any throw statements in the program.  This is the one-time cost of error neutral functions when exceptions are turned on.
+Set aside outcome for a moment.  These tables show us that the one-time cost for exceptions is really high (6KB on MSVC x86, 382KB on Clang x64), and the one time cost for unwind information is pretty high too (6KB on MSVC x64, 57KB on Clang).  Once we ignore unwind information, we can see that the one-time cost for TLS on Windows is small compared to unwind information, but high compared to the other error mechanisms (214 bytes - 481 bytes).  All the other (non-outcome) one-time overheads are 66 bytes or less.  Remember that this code doesn't currently have any throw statements in the program.  This is the one-time cost of error neutral functions when exceptions are turned on.
 
 On MSVC, outcome pulls in exception handling routines, even though exceptions are disabled.
 
