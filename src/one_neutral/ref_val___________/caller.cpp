@@ -3,9 +3,13 @@
 
 int global_int = 0;
 void caller(int &e) {
-  Dtor d;
-  callee(e);
-  if (e)
-    return;
-  global_int = 0;
+  {
+    Dtor d;
+    callee(e);
+    if (e)
+      return;
+    NOP_SLED_HEAD_2;
+    global_int = 0;
+  }
+  NOP_SLED_TAIL_2;
 }

@@ -14,6 +14,7 @@ x64_LINK_PROG="$x64_MY_VC_BIN_DIR\link.exe"
 x86_CC="$x86_MY_VC_BIN_DIR\cl.exe"
 x86_LINK_PROG="$x86_MY_VC_BIN_DIR\link.exe"
 DUMPBIN_PROG="$x64_MY_VC_BIN_DIR\dumpbin.exe"
+NOP_COUNTS = /DNOP_COUNT_1=0 /DNOP_COUNT_2=0
 
 CCFLAGS= $
 /nologo $
@@ -36,6 +37,29 @@ CCFLAGS= $
 /I"$MY_DDK_INCLUDE\um" $
 /I"$MY_DDK_INCLUDE\shared" $
 /I"$MY_VC_DIR\include"
+
+bench_CCFLAGS= $
+/nologo $
+/showIncludes $
+/c $
+/W3 $
+/WX $
+/Gy $
+/Gw $
+/O2 $
+/MD $
+/d2FH4 $
+/wd4530 $
+/std:c++latest $
+/permissive- $
+/DNDEBUG $
+/I"src" $
+/I"include" $
+/I"$MY_DDK_INCLUDE\ucrt" $
+/I"$MY_DDK_INCLUDE\um" $
+/I"$MY_DDK_INCLUDE\shared" $
+/I"$MY_VC_DIR\include"
+
 
 allproc_LINK_FLAGS= $
 /nologo $
@@ -67,7 +91,12 @@ rule x64_compile
     description = x64_CXX $out
     deps = msvc
 
-rule x64_link
+rule x64_bench_compile
+    command = $x64_CC $bench_CCFLAGS $EXTRA_FLAGS $NOP_COUNTS /Fo$out $in
+    description = x64_CXX $out
+    deps = msvc
+
+rule x64_bench_link
     command = $x64_LINK_PROG $x64_LINK_FLAGS /OUT:$out $in
     description = x64_LINK $out
 
@@ -80,7 +109,12 @@ rule x86_compile
     description = x86_CXX $out
     deps = msvc
 
-rule x86_link
+rule x86_bench_compile
+    command = $x86_CC $bench_CCFLAGS $EXTRA_FLAGS $NOP_COUNTS /Fo$out $in
+    description = x86_CXX $out
+    deps = msvc
+
+rule x86_bench_link
     command = $x86_LINK_PROG $x86_LINK_FLAGS /OUT:$out $in
     description = x86_LINK $out
 
@@ -101,7 +135,10 @@ rule collect_sizes
     description = COLLECT_SIZES
 
 rule collect_benches
-    command = python concat_benches.py $out $in
+    command = python concat_benches.py $out $out.rsp
+    pool = console
+    rspfile = $out.rsp
+    rspfile_content = $in
     description = COLLECT_BENCHES
 
 rule asm_dump

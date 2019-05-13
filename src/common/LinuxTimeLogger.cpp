@@ -3,7 +3,7 @@
 #include <stdio.h>
 #include <time.h>
 
-TimeLogger::TimeLogger() {
+TimeLogger::TimeLogger() noexcept {
   sched_yield(); // try to avoid time slicing in the middle of a run
   timespec t;
   clock_gettime(CLOCK_MONOTONIC, &t);
@@ -19,4 +19,4 @@ TimeLogger::~TimeLogger() {
   printf("%.4f\n", count / ITERATIONS);
 }
 
-void Setup() {}
+void Setup() noexcept {}

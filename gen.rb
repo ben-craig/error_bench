@@ -1,26 +1,26 @@
 TERM_TYPES = [
-    {:dir => "terminate_________", :cc_flags => "/GR"},
-    {:dir => "noexcept_terminate", :cc_flags => "/GR /EHs"},
+    {:dir => "terminate_________", :cc_flags => "/GR", :max_nop_2 => 0},
+    #{:dir => "noexcept_terminate", :cc_flags => "/GR /EHs", :max_nop_2 => 0},
 ]
 ERROR_TYPES = [
-    {:dir => "throw_val_________", :cc_flags => "/GR /EHs"},
-    {:dir => "throw_struct______", :cc_flags => "/GR /EHs"},
-    {:dir => "throw_exception___", :cc_flags => "/GR /EHs"},
-    {:dir => "tls_error_val_____", :cc_flags => "/GR"},
-    {:dir => "tls_error_struct__", :cc_flags => "/GR"},
-    {:dir => "return_val________", :cc_flags => "/GR"},
-    {:dir => "return_struct_____", :cc_flags => "/GR"},
-    {:dir => "ref_struct________", :cc_flags => "/GR"},
-    {:dir => "ref_val___________", :cc_flags => "/GR"},
-    {:dir => "expected_struct___", :cc_flags => "/GR"},
-    {:dir => "expected_val______", :cc_flags => "/GR"},
-    {:dir => "outcome_struct____", :cc_flags => "/GR-"},
-    {:dir => "outcome_val_______", :cc_flags => "/GR-"},
-    {:dir => "outcome_std_error_", :cc_flags => "/GR-"},
+    #{:dir => "throw_val_________", :cc_flags => "/GR /EHs", :max_nop_2 => 0},
+    #{:dir => "throw_struct______", :cc_flags => "/GR /EHs", :max_nop_2 => 0},
+    {:dir => "throw_exception___", :cc_flags => "/GR /EHs", :max_nop_2 => 0},
+    {:dir => "tls_error_val_____", :cc_flags => "/GR", :max_nop_2 => 1},
+    {:dir => "tls_error_struct__", :cc_flags => "/GR", :max_nop_2 => 1},
+    {:dir => "return_val________", :cc_flags => "/GR", :max_nop_2 => 1},
+    {:dir => "return_struct_____", :cc_flags => "/GR", :max_nop_2 => 1},
+    {:dir => "ref_struct________", :cc_flags => "/GR", :max_nop_2 => 1},
+    {:dir => "ref_val___________", :cc_flags => "/GR", :max_nop_2 => 1},
+    {:dir => "expected_struct___", :cc_flags => "/GR", :max_nop_2 => 1},
+    {:dir => "expected_val______", :cc_flags => "/GR", :max_nop_2 => 1},
+    {:dir => "outcome_struct____", :cc_flags => "/GR-", :max_nop_2 => 1},
+    {:dir => "outcome_val_______", :cc_flags => "/GR-", :max_nop_2 => 1},
+    {:dir => "outcome_std_error_", :cc_flags => "/GR-", :max_nop_2 => 1},
 ]
 FULL_CASE_NAMES =   ["one_neutral", "two_neutral", "one_error__", "two_error__"]
 NO_TERM_CASE_NAME = ["one_catch__", "two_catch__"]
-
+BENCH_CASE_NAMES = ["one_neutral"]
 class TestCase
     def initialize(error_case, error_type, proc)
         @error_case = error_case
@@ -30,7 +30,9 @@ class TestCase
         @dest = "#{@proc}\\#{dir_part}"
         @flags = "    EXTRA_FLAGS = " + @error_type[:cc_flags] + "\n"
         @cc = "#{@proc}_compile"
+        @bench_cc = "#{@proc}_bench_compile"
         @dir = "src\\#{dir_part}"
+        @max_nop_2 = @error_type[:max_nop_2]
     end
     def error_case; @error_case; end
     def error_type; @error_type; end
@@ -39,6 +41,8 @@ class TestCase
     def dest; @dest; end
     def flags; @flags; end
     def cc; @cc; end
+    def bench_cc; @bench_cc; end
+    def max_nop_2; @max_nop_2; end
 end
 
 def each_case
@@ -50,6 +54,16 @@ def each_case
         end
         NO_TERM_CASE_NAME.each do |c|
             ERROR_TYPES.each do |t|
+                yield TestCase.new(c, t, proc)
+            end
+        end
+    end
+end
+
+def each_bench
+    ["x86", "x64"].each do |proc|
+        BENCH_CASE_NAMES.each do |c|
+            (TERM_TYPES + ERROR_TYPES).each do |t|
                 yield TestCase.new(c, t, proc)
             end
         end
@@ -119,13 +133,9 @@ def gen_config(file, test_case)
     file.print "#===========================================================\n"
     file.print "build #{dest_dir}\\dtor.obj: #{cc} src\\common\\dtor.cpp\n"
     file.print cc_flags
-    file.print "build #{dest_dir}\\TimeLogger.obj: #{cc} src\\common\\TimeLogger.cpp\n"
-    file.print cc_flags
     file.print "build #{dest_dir}\\caller.obj: #{cc} #{dir}\\caller.cpp\n"
     file.print cc_flags
     file.print "build #{dest_dir}\\callee.obj: #{cc} #{dir}\\callee.cpp\n"
-    file.print cc_flags
-    file.print "build #{dest_dir}\\bench.obj: #{cc} #{dir}\\bench.cpp\n"
     file.print cc_flags
     file.print "build #{dest_dir}\\main.obj: #{cc} #{dir}\\main.cpp\n"
     file.print cc_flags
@@ -137,15 +147,7 @@ def gen_config(file, test_case)
     file.print "    #{dest_dir}\\callee.obj $\n"
     file.print "    #{dest_dir}\\dtor.obj\n\n"
 
-    file.print "build #{dest_dir}\\bench.exe : #{test_case.proc}_link $\n"
-    file.print "    #{dest_dir}\\bench.obj $\n"
-    file.print "    #{dest_dir}\\caller.obj $\n"
-    file.print "    #{dest_dir}\\callee.obj $\n"
-    file.print "    #{dest_dir}\\dtor.obj $\n"
-    file.print "    #{dest_dir}\\TimeLogger.obj\n\n"
-
     file.print "build #{dest_dir}\\main.exe.asm: asm_dump #{dest_dir}\\main.exe\n"
-    file.print "build #{dest_dir}\\bench.exe.asm: asm_dump #{dest_dir}\\bench.exe\n"
 
     file.print "build #{dest_dir}\\main.size: measure_size #{dest_dir}\\main.exe.map | $\n"
     file.print "    #{dest_dir}\\main.exe.asm $\n"
@@ -157,9 +159,45 @@ def gen_config(file, test_case)
         file.print "    measure_size.py\n"
         file.print "    FLAGS=--noexcept=True\n"
     end
+end
 
-    file.print "build #{dest_dir}\\bench_padding: check_asm_padding #{dest_dir}\\bench.exe.asm | $\n"
-    file.print "    check_asm_alignment.py\n"
+def gen_bench(file, test_case)
+    cc_flags = test_case.flags
+    cc = test_case.bench_cc
+    dir = test_case.dir
+    dest_dir = test_case.dest
+    file.print "#===========================================================\n"
+    file.print "# #{dest_dir}\n"
+    file.print "#===========================================================\n"
+    file.print "build #{dest_dir}\\bench\\TimeLogger.obj: #{cc} src\\common\\TimeLogger.cpp\n"
+    file.print cc_flags
+    file.print "build #{dest_dir}\\bench\\dtor.obj: #{cc} src\\common\\dtor.cpp\n"
+    file.print cc_flags
+    file.print "build #{dest_dir}\\bench\\callee.obj: #{cc} #{dir}\\callee.cpp\n"
+    file.print cc_flags
+    
+    for nop1 in 0..2
+        file.print "build #{dest_dir}\\#{nop1}\\bench.obj: #{cc} #{dir}\\bench.cpp\n"
+        file.print cc_flags
+        file.print "    NOP_COUNTS=/DNOP_COUNT_1=#{nop1} /DNOP_COUNT_2=0\n"
+    end
+    for nop2 in 0..test_case.max_nop_2
+        file.print "build #{dest_dir}\\#{nop2}\\caller.obj: #{cc} #{dir}\\caller.cpp\n"
+        file.print cc_flags
+        file.print "    NOP_COUNTS=/DNOP_COUNT_1=0 /DNOP_COUNT_2=#{nop2}\n"
+    end
+    for nop1 in 0..2
+        for nop2 in 0..test_case.max_nop_2
+            file.print "build #{dest_dir}\\#{nop1}\\#{nop2}\\bench.exe : #{test_case.proc}_bench_link $\n"
+            file.print "    #{dest_dir}\\#{nop1}\\bench.obj $\n"
+            file.print "    #{dest_dir}\\#{nop2}\\caller.obj $\n"
+            file.print "    #{dest_dir}\\bench\\callee.obj $\n"
+            file.print "    #{dest_dir}\\bench\\dtor.obj $\n"
+            file.print "    #{dest_dir}\\bench\\TimeLogger.obj\n\n"
+        
+            file.print "build #{dest_dir}\\#{nop1}\\#{nop2}\\bench.exe.asm: asm_dump #{dest_dir}\\#{nop1}\\#{nop2}\\bench.exe\n"
+        end
+    end
 end
 
 def main()
@@ -174,6 +212,10 @@ def main()
             gen_incr_size_diffs(h, c, all_the_sizes)
         end
 
+        each_bench do |c|
+            gen_bench(h, c)
+        end
+
         h.print "build totals\\sizes.csv: collect_sizes"
         each_case do |c|
             h.print " #{c.dest}\\main.size"
@@ -183,19 +225,26 @@ def main()
         end
         h.print " | concat_files.py\n\n"
 
-        h.print "build totals\\times.csv: collect_benches"
-        each_case do |c|
-            h.print " #{c.dest}\\bench.exe"
+        h.print "build totals\\times.csv: collect_benches $\n"
+        each_bench do |c|
+            for nop1 in 0..2
+                for nop2 in 0..c.max_nop_2
+                    h.print "    #{c.dest}\\#{nop1}\\#{nop2}\\bench.exe $\n"
+                end
+            end
         end
         h.print "\n\n"
 
-        h.print "build padding: phony $\n"
-        each_case do |c|
-            h.print " #{c.dest}\\bench_padding"
+        h.print "build bench: phony $\n"
+        h.print "    totals\\times.csv $\n"
+        each_bench do |c|
+            for nop1 in 0..2
+                for nop2 in 0..c.max_nop_2
+                    h.print "    #{c.dest}\\#{nop1}\\#{nop2}\\bench.exe.asm $\n"
+                end
+            end
         end
         h.print "\n\n"
-
-        h.print "build bench: phony totals\\times.csv\n\n"
 
         h.print "default totals\\sizes.csv $\n"
         all_the_sizes.each do |s|

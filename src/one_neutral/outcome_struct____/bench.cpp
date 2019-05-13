@@ -4,13 +4,12 @@
 int main() {
   Setup();
   for (uint64_t i = 0; i < WARMUP_ITERATIONS; ++i) {
-    caller();
-    caller2(0);
+    (void)caller();
   }
-  NOP_SLED;
   TimeLogger logger;
+  NOP_SLED_HEAD_1;
   for (uint64_t i = 0; i < ITERATIONS; ++i) {
-    caller();
-    caller2(0);
+    (void)caller();
   }
+  NOP_SLED_TAIL_1;
 }
