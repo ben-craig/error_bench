@@ -1,22 +1,25 @@
+MAX_NOP_1 = 31
+MAX_NOP_2 = 31
+
 TERM_TYPES = [
-    {:dir => "terminate_________", :cc_flags => "/GR", :max_nop_2 => 0},
-    #{:dir => "noexcept_terminate", :cc_flags => "/GR /EHs", :max_nop_2 => 0},
+    {:dir => "terminate_________", :cc_flags => "/GR"},
+    #{:dir => "noexcept_terminate", :cc_flags => "/GR /EHs"},
 ]
 ERROR_TYPES = [
-    #{:dir => "throw_val_________", :cc_flags => "/GR /EHs", :max_nop_2 => 0},
-    #{:dir => "throw_struct______", :cc_flags => "/GR /EHs", :max_nop_2 => 0},
-    {:dir => "throw_exception___", :cc_flags => "/GR /EHs", :max_nop_2 => 0},
-    {:dir => "tls_error_val_____", :cc_flags => "/GR", :max_nop_2 => 1},
-    {:dir => "tls_error_struct__", :cc_flags => "/GR", :max_nop_2 => 1},
-    {:dir => "return_val________", :cc_flags => "/GR", :max_nop_2 => 1},
-    {:dir => "return_struct_____", :cc_flags => "/GR", :max_nop_2 => 1},
-    {:dir => "ref_struct________", :cc_flags => "/GR", :max_nop_2 => 1},
-    {:dir => "ref_val___________", :cc_flags => "/GR", :max_nop_2 => 1},
-    {:dir => "expected_struct___", :cc_flags => "/GR", :max_nop_2 => 1},
-    {:dir => "expected_val______", :cc_flags => "/GR", :max_nop_2 => 1},
-    {:dir => "outcome_struct____", :cc_flags => "/GR-", :max_nop_2 => 1},
-    {:dir => "outcome_val_______", :cc_flags => "/GR-", :max_nop_2 => 1},
-    {:dir => "outcome_std_error_", :cc_flags => "/GR-", :max_nop_2 => 1},
+    #{:dir => "throw_val_________", :cc_flags => "/GR /EHs"},
+    #{:dir => "throw_struct______", :cc_flags => "/GR /EHs"},
+    {:dir => "throw_exception___", :cc_flags => "/GR /EHs"},
+    {:dir => "tls_error_val_____", :cc_flags => "/GR"},
+    {:dir => "tls_error_struct__", :cc_flags => "/GR"},
+    {:dir => "return_val________", :cc_flags => "/GR"},
+    {:dir => "return_struct_____", :cc_flags => "/GR"},
+    {:dir => "ref_struct________", :cc_flags => "/GR"},
+    {:dir => "ref_val___________", :cc_flags => "/GR"},
+    {:dir => "expected_struct___", :cc_flags => "/GR"},
+    {:dir => "expected_val______", :cc_flags => "/GR"},
+    {:dir => "outcome_struct____", :cc_flags => "/GR-"},
+    {:dir => "outcome_val_______", :cc_flags => "/GR-"},
+    {:dir => "outcome_std_error_", :cc_flags => "/GR-"},
 ]
 FULL_CASE_NAMES =   ["one_neutral", "two_neutral", "one_error__", "two_error__"]
 NO_TERM_CASE_NAME = ["one_catch__", "two_catch__"]
@@ -32,7 +35,6 @@ class TestCase
         @cc = "#{@proc}_compile"
         @bench_cc = "#{@proc}_bench_compile"
         @dir = "src\\#{dir_part}"
-        @max_nop_2 = @error_type[:max_nop_2]
     end
     def error_case; @error_case; end
     def error_type; @error_type; end
@@ -42,7 +44,6 @@ class TestCase
     def flags; @flags; end
     def cc; @cc; end
     def bench_cc; @bench_cc; end
-    def max_nop_2; @max_nop_2; end
 end
 
 def each_case
@@ -176,18 +177,18 @@ def gen_bench(file, test_case)
     file.print "build #{dest_dir}\\bench\\callee.obj: #{cc} #{dir}\\callee.cpp\n"
     file.print cc_flags
     
-    for nop1 in 0..2
+    for nop1 in 0..MAX_NOP_1
         file.print "build #{dest_dir}\\#{nop1}\\bench.obj: #{cc} #{dir}\\bench.cpp\n"
         file.print cc_flags
         file.print "    NOP_COUNTS=/DNOP_COUNT_1=#{nop1} /DNOP_COUNT_2=0\n"
     end
-    for nop2 in 0..test_case.max_nop_2
+    for nop2 in 0..MAX_NOP_2
         file.print "build #{dest_dir}\\#{nop2}\\caller.obj: #{cc} #{dir}\\caller.cpp\n"
         file.print cc_flags
         file.print "    NOP_COUNTS=/DNOP_COUNT_1=0 /DNOP_COUNT_2=#{nop2}\n"
     end
-    for nop1 in 0..2
-        for nop2 in 0..test_case.max_nop_2
+    for nop1 in 0..MAX_NOP_1
+        for nop2 in 0..MAX_NOP_2
             file.print "build #{dest_dir}\\#{nop1}\\#{nop2}\\bench.exe : #{test_case.proc}_bench_link $\n"
             file.print "    #{dest_dir}\\#{nop1}\\bench.obj $\n"
             file.print "    #{dest_dir}\\#{nop2}\\caller.obj $\n"
@@ -227,8 +228,8 @@ def main()
 
         h.print "build totals\\times.csv: collect_benches $\n"
         each_bench do |c|
-            for nop1 in 0..2
-                for nop2 in 0..c.max_nop_2
+            for nop1 in 0..MAX_NOP_1
+                for nop2 in 0..MAX_NOP_2
                     h.print "    #{c.dest}\\#{nop1}\\#{nop2}\\bench.exe $\n"
                 end
             end
@@ -238,8 +239,8 @@ def main()
         h.print "build bench: phony $\n"
         h.print "    totals\\times.csv $\n"
         each_bench do |c|
-            for nop1 in 0..2
-                for nop2 in 0..c.max_nop_2
+            for nop1 in 0..MAX_NOP_1
+                for nop2 in 0..MAX_NOP_2
                     h.print "    #{c.dest}\\#{nop1}\\#{nop2}\\bench.exe.asm $\n"
                 end
             end

@@ -1,5 +1,7 @@
 #pragma once
+#ifdef _WIN32
 #include <intrin.h>
+#endif
 
 struct Dtor {
   ~Dtor();
