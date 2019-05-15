@@ -1,5 +1,5 @@
 #pragma once
-#ifdef _WIN32
+#ifdef _MSC_VER
 #include <intrin.h>
 #endif
 
@@ -23,7 +23,11 @@ struct Dtor {
 #error "Missing NOP_COUNT_2!"
 #endif
 
+#ifdef _MSC_VER
 #define CONDITIONAL_NOP(x, limit) if ((x) < limit) __nop()
+#else
+#define CONDITIONAL_NOP(x, limit) if ((x) < limit) __asm__ __volatile__("nop")
+#endif
 
 #define NOP_SLED_IMPL(limit)                    \
   CONDITIONAL_NOP(0, limit);       \

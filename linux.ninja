@@ -1,0 +1,112 @@
+ninja_required_version = 1.7
+
+gcc_CXX=~/p4/perforce/build/targets/gcc/7.3/export/7.3/7.3.1f0/tools/linux/i386/usr/x86_64-redhat-linux/sysroot/usr/bin/g++
+gcc_LINK_PROG=$gcc_CXX
+clang_CXX=~/llvm/clang+llvm-8.0.0-x86_64-linux-gnu-ubuntu-14.04/bin/clang++
+clang_LINK_PROG=~/llvm/clang+llvm-8.0.0-x86_64-linux-gnu-ubuntu-14.04/bin/clang++
+DUMPBIN_PROG=objdump
+NOP_COUNTS = -DNOP_COUNT_1=0 -DNOP_COUNT_2=0
+
+general_CXXFLAGS= $
+-c $
+-Wall $
+-Wextra $
+-Werror $
+-ffunction-sections $
+-fdata-sections $
+-std=c++17 $
+-static $
+-DNDEBUG $
+-I"src" $
+-I"include" $
+
+gcc_CXXFLAGS= $
+$general_CXXFLAGS $
+-Os $
+
+clang_CXXFLAGS= $
+$general_CXXFLAGS $
+-Os $
+-stdlib=libc++ $
+
+gcc_bench_CXXFLAGS= $
+$general_CXXFLAGS $
+-O2 $
+
+clang_bench_CXXFLAGS= $
+$general_CXXFLAGS $
+-O2 $
+-stdlib=libc++ $
+
+general_LINK_FLAGS= $
+-Wl,--gc-sections $
+-pthread $
+-static $
+-static-libgcc $
+
+gcc_LINK_FLAGS= $
+$general_LINK_FLAGS $
+-static-libstdc++ $
+
+clang_LINK_FLAGS= $
+$general_LINK_FLAGS $
+-stdlib=libc++ $
+
+rule gcc_compile
+    command = $gcc_CXX $gcc_CXXFLAGS $EXTRA_FLAGS -o $out $in -MMD -MF $out.d
+    description = gcc_CXX $out
+    depfile = $out.d
+    deps = gcc
+
+rule gcc_bench_compile
+    command = $gcc_CXX $gcc_bench_CXXFLAGS $EXTRA_FLAGS -o $out $in -MMD -MF $out.d
+    description = gcc_CXX $out
+    depfile = $out.d
+    deps = gcc
+
+rule gcc_link
+    command = $gcc_LINK_PROG $gcc_LINK_FLAGS -o $out $in $EXTRA_FLAGS
+    description = gcc_LINK $out
+
+rule clang_compile
+    command = $clang_CXX $clang_CXXFLAGS $EXTRA_FLAGS -o $out $in -MMD -MF $out.d
+    description = clang_CXX $out
+    depfile = $out.d
+    deps = gcc
+
+rule clang_bench_compile
+    command = $clang_CXX $clang_bench_CXXFLAGS $EXTRA_FLAGS -o $out $in -MMD -MF $out.d
+    description = clang_CXX $out
+    depfile = $out.d
+    deps = gcc
+
+rule clang_link
+    command = $clang_LINK_PROG $clang_LINK_FLAGS -o $out $in ~/llvm/clang+llvm-8.0.0-x86_64-linux-gnu-ubuntu-14.04/lib/libc++abi.a
+    description = clang_LINK $out
+
+rule measure_size
+    command = python3 clang_measure_size.py $FLAGS $in $out
+    description = SIZE $out
+
+rule diff_size
+    command = python3 clang_measure_size.py $FLAGS $in $out --diff $DIFF_FILE
+    description = DIFF $out
+
+rule collect_sizes
+    command = python3 concat_files.py $out $in
+    description = COLLECT_SIZES
+
+rule collect_benches
+    command = python3 concat_benches.py $out $out.rsp
+    pool = console
+    rspfile = $out.rsp
+    rspfile_content = $in
+    description = COLLECT_BENCHES
+
+rule asm_dump
+    command = $DUMPBIN_PROG --headers --disassemble $in > $out
+    description = ASM_DUMP $out
+
+rule check_asm_padding
+    command = python3 check_asm_alignment.py $in
+    description = ASM_ALIGNMENT $in
