@@ -2,6 +2,8 @@
 .ninja_log
 x64/
 x86/
+clang/
+gcc/
 totals/
 ruby_linux/
 ruby
