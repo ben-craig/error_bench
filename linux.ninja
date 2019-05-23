@@ -97,10 +97,10 @@ rule collect_sizes
     description = COLLECT_SIZES
 
 rule collect_benches
-    command = python3 concat_benches.py $out $out.rsp
+    command = python3 create_bench_script.py $out $out.rsp
     pool = console
     rspfile = $out.rsp
-    rspfile_content = $in
+    rspfile_content = $in_newline
     description = COLLECT_BENCHES
 
 rule asm_dump

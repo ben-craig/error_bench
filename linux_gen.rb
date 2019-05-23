@@ -1,5 +1,5 @@
-MAX_NOP_1 = 0 #31
-MAX_NOP_2 = 0 #31
+MAX_NOP_1 = 31
+MAX_NOP_2 = 31
 
 TERM_TYPES = [
     {:dir => "terminate_________", :cc_flags => "-fno-exceptions"},
