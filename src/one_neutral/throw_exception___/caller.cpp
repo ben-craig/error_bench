@@ -7,5 +7,4 @@ void caller() {
   callee();
   NOP_SLED_HEAD_2;
   global_int = 0;
-  NOP_SLED_TAIL_2;
 }
