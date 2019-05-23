@@ -1,13 +1,13 @@
-MAX_NOP_1 = 0 #31
-MAX_NOP_2 = 0 #31
+MAX_NOP_1 = 31
+MAX_NOP_2 = 31
 
 TERM_TYPES = [
     {:dir => "terminate_________", :cc_flags => "-fno-exceptions"},
-    {:dir => "noexcept_terminate", :cc_flags => ""},
+#    {:dir => "noexcept_terminate", :cc_flags => ""},
 ]
 ERROR_TYPES = [
-    {:dir => "throw_val_________", :cc_flags => ""},
-    {:dir => "throw_struct______", :cc_flags => ""},
+#    {:dir => "throw_val_________", :cc_flags => ""},
+#    {:dir => "throw_struct______", :cc_flags => ""},
     {:dir => "throw_exception___", :cc_flags => ""},
     {:dir => "tls_error_val_____", :cc_flags => "-fno-exceptions"},
     {:dir => "tls_error_struct__", :cc_flags => "-fno-exceptions"},

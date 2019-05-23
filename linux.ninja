@@ -59,7 +59,7 @@ rule gcc_compile
     deps = gcc
 
 rule gcc_bench_compile
-    command = $gcc_CXX $gcc_bench_CXXFLAGS $EXTRA_FLAGS -o $out $in -MMD -MF $out.d
+    command = $gcc_CXX $gcc_bench_CXXFLAGS $EXTRA_FLAGS $NOP_COUNTS -o $out $in -MMD -MF $out.d
     description = gcc_CXX $out
     depfile = $out.d
     deps = gcc
@@ -75,7 +75,7 @@ rule clang_compile
     deps = gcc
 
 rule clang_bench_compile
-    command = $clang_CXX $clang_bench_CXXFLAGS $EXTRA_FLAGS -o $out $in -MMD -MF $out.d
+    command = $clang_CXX $clang_bench_CXXFLAGS $EXTRA_FLAGS $NOP_COUNTS -o $out $in -MMD -MF $out.d
     description = clang_CXX $out
     depfile = $out.d
     deps = gcc
@@ -97,10 +97,10 @@ rule collect_sizes
     description = COLLECT_SIZES
 
 rule collect_benches
-    command = python3 concat_benches.py $out $out.rsp
+    command = python3 create_bench_script.py $out $out.rsp
     pool = console
     rspfile = $out.rsp
-    rspfile_content = $in
+    rspfile_content = $in_newline
     description = COLLECT_BENCHES
 
 rule asm_dump
