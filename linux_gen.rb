@@ -166,8 +166,6 @@ def gen_bench(file, test_case)
     file.print cc_flags
     file.print "build #{dest_dir}/bench/dtor.obj: #{cc} src/common/dtor.cpp\n"
     file.print cc_flags
-    file.print "build #{dest_dir}/bench/callee.obj: #{cc} #{dir}/callee.cpp\n"
-    file.print cc_flags
 
     for nop1 in 0..MAX_NOP_1
         file.print "build #{dest_dir}/#{nop1}/bench.obj: #{cc} #{dir}/bench.cpp\n"
@@ -178,18 +176,19 @@ def gen_bench(file, test_case)
         file.print "build #{dest_dir}/#{nop2}/caller.obj: #{cc} #{dir}/caller.cpp\n"
         file.print cc_flags
         file.print "    NOP_COUNTS=-DNOP_COUNT_1=0 -DNOP_COUNT_2=#{nop2}\n"
+        file.print "build #{dest_dir}/#{nop2}/callee.obj: #{cc} #{dir}/callee.cpp\n"
+        file.print cc_flags
+        file.print "    NOP_COUNTS=-DNOP_COUNT_1=0 -DNOP_COUNT_2=#{nop2}\n"
     end
     for nop1 in 0..MAX_NOP_1
         for nop2 in 0..MAX_NOP_2
             file.print "build #{dest_dir}/#{nop1}/#{nop2}/bench.exe : #{test_case.proc}_link $\n"
             file.print "    #{dest_dir}/#{nop1}/bench.obj $\n"
             file.print "    #{dest_dir}/#{nop2}/caller.obj $\n"
-            file.print "    #{dest_dir}/bench/callee.obj $\n"
+            file.print "    #{dest_dir}/#{nop2}/callee.obj $\n"
             file.print "    #{dest_dir}/bench/dtor.obj $\n"
             file.print "    #{dest_dir}/bench/LinuxTimeLogger.obj\n"
             file.print "    EXTRA_FLAGS = -lrt\n\n"
-
-            file.print "build #{dest_dir}/#{nop1}/#{nop2}/bench.exe.asm: asm_dump #{dest_dir}/#{nop1}/#{nop2}/bench.exe\n"
         end
     end
 end
