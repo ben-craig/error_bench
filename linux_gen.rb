@@ -229,15 +229,7 @@ def main()
         h.print "\n\n"
 
         h.print "build bench: phony $\n"
-        h.print "    totals/times.csv $\n"
-        each_bench do |c|
-            for nop1 in 0..MAX_NOP_1
-                for nop2 in 0..MAX_NOP_2
-                    h.print "    #{c.dest}/#{nop1}/#{nop2}/bench.exe.asm $\n"
-                end
-            end
-        end
-        h.print "\n\n"
+        h.print "    totals/times.csv\n\n"
 
         h.print "default totals/sizes.csv $\n"
         all_the_sizes.each do |s|
