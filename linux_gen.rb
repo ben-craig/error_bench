@@ -9,21 +9,21 @@ ERROR_TYPES = [
 #    {:dir => "throw_val_________", :cc_flags => ""},
 #    {:dir => "throw_struct______", :cc_flags => ""},
     {:dir => "throw_exception___", :cc_flags => ""},
-    {:dir => "tls_error_val_____", :cc_flags => "-fno-exceptions"},
-    {:dir => "tls_error_struct__", :cc_flags => "-fno-exceptions"},
-    {:dir => "return_val________", :cc_flags => "-fno-exceptions"},
-    {:dir => "return_struct_____", :cc_flags => "-fno-exceptions"},
-    {:dir => "ref_struct________", :cc_flags => "-fno-exceptions"},
-    {:dir => "ref_val___________", :cc_flags => "-fno-exceptions"},
-    {:dir => "expected_struct___", :cc_flags => "-fno-exceptions"},
-    {:dir => "expected_val______", :cc_flags => "-fno-exceptions"},
-    {:dir => "outcome_struct____", :cc_flags => "-fno-exceptions -fno-rtti"},
-    {:dir => "outcome_val_______", :cc_flags => "-fno-exceptions -fno-rtti"},
-    {:dir => "outcome_std_error_", :cc_flags => "-fno-exceptions -fno-rtti"},
+#    {:dir => "tls_error_val_____", :cc_flags => "-fno-exceptions"},
+#    {:dir => "tls_error_struct__", :cc_flags => "-fno-exceptions"},
+#    {:dir => "return_val________", :cc_flags => "-fno-exceptions"},
+#    {:dir => "return_struct_____", :cc_flags => "-fno-exceptions"},
+#    {:dir => "ref_struct________", :cc_flags => "-fno-exceptions"},
+#    {:dir => "ref_val___________", :cc_flags => "-fno-exceptions"},
+#    {:dir => "expected_struct___", :cc_flags => "-fno-exceptions"},
+#    {:dir => "expected_val______", :cc_flags => "-fno-exceptions"},
+#    {:dir => "outcome_struct____", :cc_flags => "-fno-exceptions -fno-rtti"},
+#    {:dir => "outcome_val_______", :cc_flags => "-fno-exceptions -fno-rtti"},
+#    {:dir => "outcome_std_error_", :cc_flags => "-fno-exceptions -fno-rtti"},
 ]
 FULL_CASE_NAMES =   ["one_neutral", "two_neutral", "one_error__", "two_error__"]
 NO_TERM_CASE_NAME = ["one_catch__", "two_catch__"]
-BENCH_CASE_NAMES = ["one_neutral"]
+BENCH_CASE_NAMES = ["lotsa_regs_"] #"one_neutral"]
 class TestCase
     def initialize(error_case, error_type, proc)
         @error_case = error_case
