@@ -1,6 +1,8 @@
 #include "proto.h"
 #include <common/dtor.h>
 
+int error_info = 1;
+int error_domain = 99;
 
 error_struct callee() {
   error_struct e;

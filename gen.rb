@@ -1,13 +1,13 @@
-MAX_NOP_1 = 31
-MAX_NOP_2 = 31
+MAX_NOP_1 = 0 #31
+MAX_NOP_2 = 0 #31
 
 TERM_TYPES = [
-    {:dir => "terminate_________", :cc_flags => "/GR"},
+    #{:dir => "terminate_________", :cc_flags => "/GR"},
     #{:dir => "noexcept_terminate", :cc_flags => "/GR /EHs"},
 ]
 ERROR_TYPES = [
-    #{:dir => "throw_val_________", :cc_flags => "/GR /EHs"},
-    #{:dir => "throw_struct______", :cc_flags => "/GR /EHs"},
+    {:dir => "throw_val_________", :cc_flags => "/GR /EHs"},
+    {:dir => "throw_struct______", :cc_flags => "/GR /EHs"},
     {:dir => "throw_exception___", :cc_flags => "/GR /EHs"},
     {:dir => "tls_error_val_____", :cc_flags => "/GR"},
     {:dir => "tls_error_struct__", :cc_flags => "/GR"},
@@ -23,7 +23,7 @@ ERROR_TYPES = [
 ]
 FULL_CASE_NAMES =   ["one_neutral", "two_neutral", "one_error__", "two_error__"]
 NO_TERM_CASE_NAME = ["one_catch__", "two_catch__"]
-BENCH_CASE_NAMES = ["one_neutral"]
+BENCH_CASE_NAMES = ["err_path___"]#, "one_neutral"]
 class TestCase
     def initialize(error_case, error_type, proc)
         @error_case = error_case
@@ -172,7 +172,7 @@ def gen_bench(file, test_case)
     file.print "#===========================================================\n"
     file.print "build #{dest_dir}\\bench\\TimeLogger.obj: #{cc} src\\common\\TimeLogger.cpp\n"
     file.print cc_flags
-    file.print "build #{dest_dir}\\bench\\dtor.obj: #{cc} src\\common\\dtor.cpp\n"
+    file.print "build #{dest_dir}\\bench\\callee.obj: #{cc} #{dir}\\callee.cpp\n"
     file.print cc_flags
 
     for nop1 in 0..MAX_NOP_1
@@ -181,7 +181,7 @@ def gen_bench(file, test_case)
         file.print "    NOP_COUNTS=/DNOP_COUNT_1=#{nop1} /DNOP_COUNT_2=0\n"
     end
     for nop2 in 0..MAX_NOP_2
-        file.print "build #{dest_dir}\\#{nop2}\\callee.obj: #{cc} #{dir}\\callee.cpp\n"
+        file.print "build #{dest_dir}\\#{nop2}\\dtor.obj: #{cc} src\\common\\dtor.cpp\n"
         file.print cc_flags
         file.print "    NOP_COUNTS=/DNOP_COUNT_1=0 /DNOP_COUNT_2=#{nop2}\n"
         file.print "build #{dest_dir}\\#{nop2}\\caller.obj: #{cc} #{dir}\\caller.cpp\n"
@@ -193,8 +193,8 @@ def gen_bench(file, test_case)
             file.print "build #{dest_dir}\\#{nop1}\\#{nop2}\\bench.exe : #{test_case.proc}_bench_link $\n"
             file.print "    #{dest_dir}\\#{nop1}\\bench.obj $\n"
             file.print "    #{dest_dir}\\#{nop2}\\caller.obj $\n"
-            file.print "    #{dest_dir}\\#{nop2}\\callee.obj $\n"
-            file.print "    #{dest_dir}\\bench\\dtor.obj $\n"
+            file.print "    #{dest_dir}\\bench\\callee.obj $\n"
+            file.print "    #{dest_dir}\\#{nop2}\\dtor.obj $\n"
             file.print "    #{dest_dir}\\bench\\TimeLogger.obj\n\n"
         
             file.print "build #{dest_dir}\\#{nop1}\\#{nop2}\\bench.exe.asm: asm_dump #{dest_dir}\\#{nop1}\\#{nop2}\\bench.exe\n"

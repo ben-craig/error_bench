@@ -1,6 +1,9 @@
 #include "proto.h"
 #include <common/dtor.h>
 
+int error_info = 1;
+int error_domain = 99;
+
 tl::expected<void, error_struct> callee() {
   error_struct e;
   e.error = &error_info;

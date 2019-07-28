@@ -2,10 +2,12 @@ ninja_required_version = 1.7
 
 #MY_VC_DIR=C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Tools\MSVC\14.14.26428
 #MY_VC_DIR=C:\Program Files (x86)\Microsoft Visual Studio\2017\Professional\VC\Tools\MSVC\14.16.27023
-MY_VC_DIR=C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.20.27508
+#MY_VC_DIR=C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.20.27508
+MY_VC_DIR=C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.22.27905
 x64_MY_VC_BIN_DIR=$MY_VC_DIR\bin\Hostx64\x64
 x86_MY_VC_BIN_DIR=$MY_VC_DIR\bin\Hostx86\x86
-MY_DDK_VER=10.0.17763.0
+#MY_DDK_VER=10.0.17763.0
+MY_DDK_VER=10.0.18362.0
 MY_DDK_INCLUDE=C:\Program Files (x86)\Windows Kits\10\Include\$MY_DDK_VER
 MY_DDK_LIB=C:\Program Files (x86)\Windows Kits\10\Lib\$MY_DDK_VER
 MY_DDK_BIN=C:\Program Files (x86)\Windows Kits\10\bin\$MY_DDK_VER
