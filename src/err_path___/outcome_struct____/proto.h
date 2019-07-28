@@ -11,6 +11,6 @@ struct error_struct {
   void *error = nullptr;
   void *domain = nullptr;
 };
-result<void, error_struct> caller();
+result<void, error_struct> caller(int depth);
 result<void, error_struct> callee();
 extern int global_int;

@@ -3,6 +3,5 @@
 #include <limits.h>
 
 result<void> callee() {
-  NOP_SLED_TAIL_2;
-  return outcome::success();
+  return outcome::experimental::errc::argument_out_of_domain;
 }

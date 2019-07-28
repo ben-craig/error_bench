@@ -1,4 +1,4 @@
 #include "proto.h"
 #include <common/dtor.h>
 
-void callee(int &) {NOP_SLED_TAIL_2;}
+void callee(int &e) { e = 1; }

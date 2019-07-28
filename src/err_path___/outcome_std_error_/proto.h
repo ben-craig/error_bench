@@ -7,6 +7,6 @@ namespace outcome = OUTCOME_V2_NAMESPACE;
 template <class T>
 using result = outcome::experimental::status_result<T>;
 
-result<void> caller();
+result<void> caller(int depth);
 result<void> callee();
 extern int global_int;

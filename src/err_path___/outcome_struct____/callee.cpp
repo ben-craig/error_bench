@@ -6,6 +6,8 @@ int error_info = 1;
 int error_domain = 99;
 
 result<void, error_struct> callee() {
-  NOP_SLED_TAIL_2;
-  return outcome::success();
+  error_struct e;
+  e.error = &error_info;
+  e.domain = &error_domain;
+  return outcome::failure(e);
 }

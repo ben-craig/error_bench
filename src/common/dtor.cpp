@@ -1,3 +1,5 @@
 #include "dtor.h"
 
-Dtor::~Dtor() {}
+Dtor::~Dtor() {
+  NOP_SLED_TAIL_2;
+}

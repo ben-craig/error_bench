@@ -3,6 +3,5 @@
 #include <limits.h>
 
 result<void, int> callee() {
-  NOP_SLED_TAIL_2;
-  return outcome::success();
+  return outcome::failure(1);
 }

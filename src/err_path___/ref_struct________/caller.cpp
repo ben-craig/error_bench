@@ -2,11 +2,14 @@
 #include <common/dtor.h>
 
 int global_int = 0;
-void caller(error_struct &e) {
+void caller(int depth, error_struct &e) {
+  NOP_SLED_HEAD_2;
   Dtor d;
-  callee(e);
+  if(depth == 1)
+    callee(e);
+  else
+    caller(depth - 1, e);
   if (e.error)
     return;
-  NOP_SLED_HEAD_2;
   global_int = 0;
 }

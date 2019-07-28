@@ -2,12 +2,16 @@
 #include <common/dtor.h>
 
 int global_int = 0;
-int caller() {
+int caller(int depth) {
+  NOP_SLED_HEAD_2;
   Dtor d;
-  int e = callee();
+  int e;
+  if(depth == 1)
+    e = callee();
+  else
+    e = caller(depth - 1);
   if (e)
     return e;
-  NOP_SLED_HEAD_2;
   global_int = 0;
   return 0;
 }

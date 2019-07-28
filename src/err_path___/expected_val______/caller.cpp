@@ -2,12 +2,17 @@
 #include <common/dtor.h>
 
 int global_int = 0;
-tl::expected<void, int> caller() {
+tl::expected<void, int> caller(int depth) {
+  NOP_SLED_HEAD_2;
   Dtor d;
-  tl::expected<void, int> e = callee();
+  tl::expected<void, int> e;
+  if(depth == 1)
+    e = callee();
+  else
+    e = caller(depth - 1);
+
   if (!e)
     return e;
-  NOP_SLED_HEAD_2;
   global_int = 0;
-  return {};
+  return e;
 }
