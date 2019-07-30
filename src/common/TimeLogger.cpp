@@ -2,7 +2,8 @@
 #include <Windows.h>
 #include <stdio.h>
 
-TimeLogger::TimeLogger() noexcept {
+TimeLogger::TimeLogger(uint32_t i) noexcept {
+  iters = i;
   Sleep(0); // try to avoid time slicing in the middle of a run
   LARGE_INTEGER local_start;
   QueryPerformanceCounter(&local_start);
@@ -18,7 +19,7 @@ TimeLogger::~TimeLogger() {
 
   double count = (double)(stop.QuadPart - start);
   count = count * 1e9 / freq.QuadPart;
-  printf("%.4f\n", count / ITERATIONS);
+  printf("%.4f\n", count / iters);
 }
 
 void Setup() noexcept {
