@@ -6,8 +6,8 @@ TERM_TYPES = [
 #    {:dir => "noexcept_terminate", :cc_flags => ""},
 ]
 ERROR_TYPES = [
-#    {:dir => "throw_val_________", :cc_flags => ""},
-#    {:dir => "throw_struct______", :cc_flags => ""},
+    {:dir => "throw_val_________", :cc_flags => ""},
+    {:dir => "throw_struct______", :cc_flags => ""},
     {:dir => "throw_exception___", :cc_flags => ""},
     {:dir => "tls_error_val_____", :cc_flags => "-fno-exceptions"},
     {:dir => "tls_error_struct__", :cc_flags => "-fno-exceptions"},
@@ -23,7 +23,7 @@ ERROR_TYPES = [
 ]
 FULL_CASE_NAMES =   ["one_neutral", "two_neutral", "one_error__", "two_error__"]
 NO_TERM_CASE_NAME = ["one_catch__", "two_catch__"]
-BENCH_CASE_NAMES = ["one_neutral"]
+BENCH_CASE_NAMES = ["err_path___"]
 class TestCase
     def initialize(error_case, error_type, proc)
         @error_case = error_case
@@ -164,7 +164,7 @@ def gen_bench(file, test_case)
     file.print "#===========================================================\n"
     file.print "build #{dest_dir}/bench/LinuxTimeLogger.obj: #{cc} src/common/LinuxTimeLogger.cpp\n"
     file.print cc_flags
-    file.print "build #{dest_dir}/bench/dtor.obj: #{cc} src/common/dtor.cpp\n"
+    file.print "build #{dest_dir}/bench/callee.obj: #{cc} #{dir}/callee.cpp\n"
     file.print cc_flags
 
     for nop1 in 0..MAX_NOP_1
@@ -176,7 +176,7 @@ def gen_bench(file, test_case)
         file.print "build #{dest_dir}/#{nop2}/caller.obj: #{cc} #{dir}/caller.cpp\n"
         file.print cc_flags
         file.print "    NOP_COUNTS=-DNOP_COUNT_1=0 -DNOP_COUNT_2=#{nop2}\n"
-        file.print "build #{dest_dir}/#{nop2}/callee.obj: #{cc} #{dir}/callee.cpp\n"
+        file.print "build #{dest_dir}/#{nop2}/dtor.obj: #{cc} src/common/dtor.cpp\n"
         file.print cc_flags
         file.print "    NOP_COUNTS=-DNOP_COUNT_1=0 -DNOP_COUNT_2=#{nop2}\n"
     end
@@ -185,8 +185,8 @@ def gen_bench(file, test_case)
             file.print "build #{dest_dir}/#{nop1}/#{nop2}/bench.exe : #{test_case.proc}_link $\n"
             file.print "    #{dest_dir}/#{nop1}/bench.obj $\n"
             file.print "    #{dest_dir}/#{nop2}/caller.obj $\n"
-            file.print "    #{dest_dir}/#{nop2}/callee.obj $\n"
-            file.print "    #{dest_dir}/bench/dtor.obj $\n"
+            file.print "    #{dest_dir}/bench/callee.obj $\n"
+            file.print "    #{dest_dir}/#{nop2}/dtor.obj $\n"
             file.print "    #{dest_dir}/bench/LinuxTimeLogger.obj\n"
             file.print "    EXTRA_FLAGS = -lrt\n\n"
         end

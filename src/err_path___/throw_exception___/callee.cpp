@@ -9,6 +9,7 @@ public:
   const char *what() const noexcept override { return ""; }
 };
 
-void callee() {
-  throw err_exception(1);
+void callee(bool do_err) {
+  if(do_err)
+    throw err_exception(1);
 }

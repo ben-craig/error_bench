@@ -2,7 +2,7 @@
 import sys
 import subprocess
 
-SIZES = [1,2,4,8,16]
+CASES = ["happy,1","happy,16","sad,1","sad,16"]
 
 def main():
   with open(sys.argv[1], 'wb') as fout:
@@ -11,7 +11,7 @@ def main():
         res = subprocess.check_output([name])
         idx = 0
         for res_line in res.split():
-          fout.write((name + "," + str(SIZES[idx]) + ",").encode('utf-8'))
+          fout.write((name + "," + CASES[idx] + ",").encode('utf-8'))
           fout.write(res_line + "\n".encode('utf-8'))
           idx = idx + 1
         print(name)

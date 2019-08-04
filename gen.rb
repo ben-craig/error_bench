@@ -2,7 +2,7 @@ MAX_NOP_1 = 31
 MAX_NOP_2 = 31
 
 TERM_TYPES = [
-    #{:dir => "terminate_________", :cc_flags => "/GR"},
+    {:dir => "terminate_________", :cc_flags => "/GR"},
     #{:dir => "noexcept_terminate", :cc_flags => "/GR /EHs"},
 ]
 ERROR_TYPES = [

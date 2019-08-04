@@ -4,7 +4,10 @@
 int error_info = 1;
 int error_domain = 99;
 
-void callee(error_struct &e) {
-  e.error = &error_info;
-  e.domain = &error_domain;
+void callee(bool do_err, error_struct &e) {
+  if(do_err)
+  {
+    e.error = &error_info;
+    e.domain = &error_domain;
+  }
 }

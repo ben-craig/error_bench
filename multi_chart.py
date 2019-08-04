@@ -111,15 +111,18 @@ def emit_html(fname):
     fout.write(final_html)
 
 def parse_line(line, frames):
-  [full_case, frame_str, value_str] = line.split(',')
-  frame_count = int(frame_str)
+  [full_case, mood, frame_str, value_str] = line.split(',')
+  value = float(value_str) * CPU_FREQ
+  if value == 0:  # skip over sad path terminate
+    return
+  frame_thing = mood + "_" + frame_str
   pieces = full_case.split('\\')
   plat_name = pieces[0]
   case_name = pieces[2].rstrip('_')
   outer_nop = int(pieces[3])
   inner_nop = int(pieces[4])
 
-  platforms = frames.setdefault(frame_count, {})
+  platforms = frames.setdefault(frame_thing, {})
   cases = platforms.setdefault(plat_name, {})
   values = None
   if case_name not in cases:
@@ -127,7 +130,7 @@ def parse_line(line, frames):
     cases[case_name] = values
   else:
     values = cases[case_name]
-  values[outer_nop][inner_nop] = float(value_str) * CPU_FREQ
+  values[outer_nop][inner_nop] = value
 
 def bucket_data(hist, value, width):
   bucket = round(value/width, 0) * width
@@ -319,8 +322,7 @@ def emit_small_js(frames):
   for frame, platforms in frames.items():
     for plat_name, cases in platforms.items():
       for case_name, data in cases.items():
-        fname = "sad_path_" + str(frame) + "_" + plat_name + "_" + case_name + ".js"
-        info = {"frame_str": str(frame), "frame": frame, "plat_name": plat_name, "case_name": case_name}
+        fname = frame + "_" + plat_name + "_" + case_name + ".js"
         with open(fname, 'w') as fout:
           emit_boilerplate(fout)
           emit_small_data(fout, data)
@@ -332,9 +334,9 @@ def emit_small_js(frames):
 
 def main():
   frames = {}
-  parse_file("sad_path.csv", frames)
+  parse_file("happy_sad_recursion.csv", frames)
   for frame, platforms in frames.items():
-    emit_big_js("sad_path_" + str(frame) + ".js", platforms)
+    emit_big_js(frame + ".js", platforms)
   emit_small_js(frames)
 
 if __name__ == '__main__':
