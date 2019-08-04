@@ -24,10 +24,23 @@ var invertYAxis = Object.assign(
   commonYAxis)
 
 function make_xAxis(name, idx, axisLabel, min, max) {
+  if (idx == 0)
+  {
+    return {
+      name: name,
+      gridIndex: 0,
+      axisLine:  { show: false },
+      axisTick:  { show: false },
+      axisLabel: { show: true, inside: true, verticalAlign: 'bottom' },
+      nameLocation: "start",
+      min: min,
+      max: max,
+    };
+  }
+
   return   {
     name: name,
     gridIndex: idx,
-    splitNumber: 26,
     axisLine:  { show: false },
     axisTick:  { show: false },
     axisLabel: { show: axisLabel },
@@ -56,7 +69,7 @@ function make_series(name, idx, data, color) {
     <div id="SecondNeutral" style="width: 100%;height:10px;"></div>
     <script type="text/javascript">
 // based on prepared DOM, initialize echarts instance
-document.getElementById('SecondNeutral').setAttribute("style","height:"+(gridHeightNeeded + 40) + "px");
+document.getElementById('SecondNeutral').setAttribute("style","height:"+(gridHeightNeeded + 60) + "px");
 var myChart = echarts.init(document.getElementById('SecondNeutral'));
 
 function myFormatter(params, ticket, callback) {
@@ -101,8 +114,7 @@ COLORS = [
 
 CPU_FREQ = 3.3915
 CYCLE_BIN_WIDTH = 1
-START_PIX = 10
-PIX_GAP = 0
+START_PIX = 20
 PIX_HEIGHT=10
 
 def emit_html(fname):
@@ -113,8 +125,6 @@ def emit_html(fname):
 def parse_line(line, frames):
   [full_case, mood, frame_str, value_str] = line.split(',')
   value = float(value_str) * CPU_FREQ
-  if value == 0:  # skip over sad path terminate
-    return
   frame_thing = mood + "_" + frame_str
   pieces = full_case.split('\\')
   plat_name = pieces[0]
@@ -182,7 +192,7 @@ def emit_grids(fout, num_charts):
     mid = top + PIX_HEIGHT
     fout.write("  Object.assign({top: " + str(top) + "}, commonGrid),\n")
     fout.write("  Object.assign({top: " + str(mid) + "}, commonGrid),\n")
-    top = mid + PIX_HEIGHT + PIX_GAP
+    top = mid + PIX_HEIGHT
   fout.write("];\n")
   fout.write("var gridHeightNeeded = " + str(top) + ";\n")
 
@@ -195,7 +205,10 @@ def emit_xAxis(fout, num_charts, noexcept, platforms):
         continue
       name = plat_name + "." + case_name
       fout.write("  make_xAxis('" + name + "', " + str(2*idx) + ", false, minXValue, maxXValue),\n")
-      fout.write("  make_xAxis('" + name + "', " + str(2*idx+1) + ", false, minXValue, maxXValue),\n")
+      showAxis = "false"
+      if idx == num_charts-1:
+        showAxis = "true"
+      fout.write("  make_xAxis('" + name + "', " + str(2*idx+1) + ", " + showAxis + ", minXValue, maxXValue),\n")
       idx = idx + 1
   fout.write("];\n")
   fout.write("var xAxisIndices = [\n  ")
@@ -293,7 +306,10 @@ def emit_small_xAxis(fout, num_charts):
     for id in range( int(num_charts/2) ):
       name = stride_name + "." + str(id)
       fout.write("  make_xAxis('" + name + "', " + str(2*idx) + ", false, minXValue, maxXValue),\n")
-      fout.write("  make_xAxis('" + name + "', " + str(2*idx+1) + ", false, minXValue, maxXValue),\n")
+      showAxis = "false"
+      if idx == num_charts-1:
+        showAxis = "true"
+      fout.write("  make_xAxis('" + name + "', " + str(2*idx+1) + ", " + showAxis + ", minXValue, maxXValue),\n")
       idx = idx + 1
   fout.write("];\n")
   fout.write("var xAxisIndices = [\n  ")
