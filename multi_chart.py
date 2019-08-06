@@ -2,7 +2,7 @@
 
 # plat -> {frames, {plat_name, {case_name, [[val]]}}}
 
-STARTER_HTML = """
+HTML_HEADER = """
 <!DOCTYPE html>
 <html>
 <head>
@@ -60,9 +60,9 @@ function make_series(name, idx, data, color) {
     type: 'bar',
   };
 }
-
+"""
+HTML_FOOTER = """
     </script>
-    <script src="REPLACEMENT_FILE_NAME"></script>
 </head>
 <body>
     <!-- prepare a DOM container with width and height -->
@@ -116,11 +116,6 @@ CPU_FREQ = 3.3915
 CYCLE_BIN_WIDTH = 1
 START_PIX = 20
 PIX_HEIGHT=10
-
-def emit_html(fname):
-  final_html = STARTER_HTML.replace("REPLACEMENT_FILE_NAME", fname)
-  with open(fname + ".html", 'w') as fout:
-    fout.write(final_html)
 
 def parse_line(line, frames):
   [full_case, mood, frame_str, value_str] = line.split(',')
@@ -251,21 +246,23 @@ def emit_big_js(file_name, platforms):
         continue
       num_noexcept_charts = num_noexcept_charts + 1
   with open(file_name, 'w') as fout:
+    fout.write(HTML_HEADER)
     emit_boilerplate(fout)
     emit_data(fout, False, platforms)
     emit_grids(fout, num_charts)
     emit_xAxis(fout, num_charts, False, platforms)
     emit_yAxis(fout, num_charts)
     emit_series(fout, False, platforms)
-    emit_html(file_name)
+    fout.write(HTML_FOOTER)
   with open("noexcept_" + file_name, 'w') as fout:
+    fout.write(HTML_HEADER)
     emit_boilerplate(fout)
     emit_data(fout, True, platforms)
     emit_grids(fout, num_noexcept_charts)
     emit_xAxis(fout, num_noexcept_charts, True, platforms)
     emit_yAxis(fout, num_noexcept_charts)
     emit_series(fout, True, platforms)
-    emit_html("noexcept_" + file_name)
+    fout.write(HTML_FOOTER)
 
 def emit_small_data(fout, data):
   min_x = 10000000
@@ -338,22 +335,23 @@ def emit_small_js(frames):
   for frame, platforms in frames.items():
     for plat_name, cases in platforms.items():
       for case_name, data in cases.items():
-        fname = frame + "_" + plat_name + "_" + case_name + ".js"
+        fname = frame + "_" + plat_name + "_" + case_name + ".html"
         with open(fname, 'w') as fout:
+          fout.write(HTML_HEADER)
           emit_boilerplate(fout)
           emit_small_data(fout, data)
           emit_grids(fout, num_charts)
           emit_small_xAxis(fout, num_charts)
           emit_yAxis(fout, num_charts)
           emit_small_series(fout, num_charts)
-          emit_html(fname)
+          fout.write(HTML_FOOTER)
 
 def main():
   frames = {}
   parse_file("happy_sad_recursion.csv", frames)
   for frame, platforms in frames.items():
-    emit_big_js(frame + ".js", platforms)
-  emit_small_js(frames)
+    emit_big_js(frame + ".html", platforms)
+  #emit_small_js(frames)
 
 if __name__ == '__main__':
   main()
