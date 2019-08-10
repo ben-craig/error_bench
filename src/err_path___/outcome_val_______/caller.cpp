@@ -7,15 +7,11 @@ result<void, int> caller(bool do_err, int depth) {
   Dtor d;
   if(depth == 1)
   {
-    auto && (inner1) = callee(do_err);
-    if(!(inner1).has_value())
-      return OUTCOME_V2_NAMESPACE::try_operation_return_as(static_cast<decltype(inner1) &&>(inner1));
+    OUTCOME_TRYV(callee(do_err));
   }
   else
   {
-    auto && (inner2) = caller(do_err, depth - 1);
-    if(!(inner2).has_value())
-      return OUTCOME_V2_NAMESPACE::try_operation_return_as(static_cast<decltype(inner2) &&>(inner2));
+    OUTCOME_TRYV(caller(do_err, depth - 1));
   }
   global_int = 0;
   return outcome::success();
