@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-
+import statistics
 # plat -> {frames, {plat_name, {case_name, [[val]]}}}
 
 HTML_HEADER = """
@@ -73,7 +73,11 @@ document.getElementById('SecondNeutral').setAttribute("style","height:"+(gridHei
 var myChart = echarts.init(document.getElementById('SecondNeutral'));
 
 function myFormatter(params, ticket, callback) {
-  return params.seriesName + "<br />" + params.value[1] + " samples @ " + params.value[0] + " cycles";
+  mean = means[params.seriesName];
+  median = medians[params.seriesName];
+  return params.seriesName + "<br />" +
+    params.value[1] + " samples @ " + params.value[0] + " cycles" + "<br />" +
+    "median: " + median + " cycles, mean: " + mean + " cycles";
 }
 
 option = {
@@ -156,20 +160,91 @@ def emit_boilerplate(fout):
   fout.write("  height: " + str(PIX_HEIGHT) + ",\n")
   fout.write("}\n")
 
-def emit_data(fout, noexcept, platforms):
+def aesthetic_round(val):
+  as_str = "{:.2e}".format(val)
+  lead_digit = as_str[0]
+  new_lead = {
+    '0' : '0',
+    '1' : '2',
+    '2' : '5',
+    '3' : '5',
+    '4' : '5',
+    '5' : '1',
+    '6' : '1',
+    '7' : '1',
+    '8' : '1',
+    '9' : '1',
+  }[lead_digit]
+
+  as_list = list(as_str)
+  as_list[0] = new_lead
+  as_list[2] = '0'
+  as_list[3] = '0'
+  new_width = float("".join(as_list))
+  if new_lead == '1':
+    new_width = 10.0 * new_width
+  return new_width
+
+MAX_DESIRED_BUCKETS = 250.0
+def calc_width(min_x, max_x):
+  start_width = float(max_x - min_x) / MAX_DESIRED_BUCKETS
+  return aesthetic_round(start_width)
+
+def calc_stats(values):
+  mean = statistics.mean(values)
+  median = statistics.median(values)
+  return {"mean" : mean, "median" : median}
+
+def emit_stats(fout, stats):
+  fout.write("var means = {\n")
+  for name, stat_struct in sorted(stats.items()):
+    data_str = "{:.2f}".format(stat_struct["mean"])
+    fout.write("  '" + name + "': " + data_str + ",\n")
+  fout.write("};\n")
+
+  fout.write("var medians = {\n")
+  for name, stat_struct in sorted(stats.items()):
+    data_str = "{:.2f}".format(stat_struct["median"])
+    fout.write("  '" + name + "': " + data_str + ",\n")
+  fout.write("};\n")
+
+def emit_data(fout, noexcept, sad, platforms):
   min_x = 10000000
   max_x = 0
+  stats = {}
+  for plat_name, cases in sorted(platforms.items()):
+    for case_name, data in sorted(cases.items()):
+      if noexcept and "throw_" in case_name:
+        continue
+      if sad and "terminate" in case_name:
+        continue
+      values = []
+      for inner in data:
+        for value in inner:
+          min_x = min(min_x, value)
+          max_x = max(max_x, value)
+          values.append(value)
+      stats[plat_name + "." + case_name] = calc_stats(values)
+  emit_stats(fout, stats)
+
+  width = calc_width(min_x, max_x)
+
+  min_x = 10000000
+  max_x = 0
+
   fout.write("var theData = {\n")
   for plat_name, cases in sorted(platforms.items()):
     fout.write("  " + plat_name + ": {\n")
     for case_name, data in sorted(cases.items()):
       if noexcept and "throw_" in case_name:
         continue
+      if sad and "terminate" in case_name:
+        continue
       fout.write("    " + case_name + ": [\n")
       hist = {}
       for inner in data:
         for value in inner:
-          bucketed = bucket_data(hist, value, CYCLE_BIN_WIDTH)
+          bucketed = bucket_data(hist, value, width)
           min_x = min(min_x, bucketed)
           max_x = max(max_x, bucketed)
       for val, count in sorted(hist.items()):
@@ -191,12 +266,14 @@ def emit_grids(fout, num_charts):
   fout.write("];\n")
   fout.write("var gridHeightNeeded = " + str(top) + ";\n")
 
-def emit_xAxis(fout, num_charts, noexcept, platforms):
+def emit_xAxis(fout, num_charts, noexcept, sad, platforms):
   fout.write("var theXAxes = [\n")
   idx = 0
   for plat_name, cases in sorted(platforms.items()):
     for case_name, data in sorted(cases.items()):
       if noexcept and "throw_" in case_name:
+        continue
+      if sad and "terminate" in case_name:
         continue
       name = plat_name + "." + case_name
       fout.write("  make_xAxis('" + name + "', " + str(2*idx) + ", false, minXValue, maxXValue),\n")
@@ -210,7 +287,7 @@ def emit_xAxis(fout, num_charts, noexcept, platforms):
   for i in range(2*num_charts):
     fout.write(str(i) + ", ")
   fout.write("\n]\n")
-  
+
 def emit_yAxis(fout, num_charts):
   fout.write("var theYAxes = [\n")
   for i in range(num_charts):
@@ -225,12 +302,14 @@ def emit_single_series(fout, plat_name, case_name, idx):
   fout.write("  make_series( '" +name + "', " + str(2*idx) + ", " + dataStr + ", '#" + color + "'),\n")
   fout.write("  make_series( '" +name + "', " + str(2*idx+1) + ", " + dataStr + ", '#" + color + "'),\n")
 
-def emit_series(fout, noexcept, platforms):
+def emit_series(fout, noexcept, sad, platforms):
   fout.write("var theSeries = [\n")
   idx = 0
   for plat_name, cases in sorted(platforms.items()):
     for case_name, data in sorted(cases.items()):
       if noexcept and "throw_" in case_name:
+        continue
+      if sad and "terminate" in case_name:
         continue
       emit_single_series(fout, plat_name, case_name, idx)
       idx = idx + 1
@@ -239,32 +318,46 @@ def emit_series(fout, noexcept, platforms):
 def emit_big_js(file_name, platforms):
   num_charts = 0
   num_noexcept_charts = 0
+  sad = ("sad" in file_name)
   for cases in platforms.values():
-    num_charts = num_charts + len(cases)
     for case_name in cases.keys():
+      if sad and "terminate" in case_name:
+        continue
+      num_charts = num_charts + 1
       if "throw_" in case_name:
         continue
       num_noexcept_charts = num_noexcept_charts + 1
   with open(file_name, 'w') as fout:
     fout.write(HTML_HEADER)
     emit_boilerplate(fout)
-    emit_data(fout, False, platforms)
+    emit_data(fout, False, sad, platforms)
     emit_grids(fout, num_charts)
-    emit_xAxis(fout, num_charts, False, platforms)
+    emit_xAxis(fout, num_charts, False, sad, platforms)
     emit_yAxis(fout, num_charts)
-    emit_series(fout, False, platforms)
+    emit_series(fout, False, sad, platforms)
     fout.write(HTML_FOOTER)
   with open("noexcept_" + file_name, 'w') as fout:
     fout.write(HTML_HEADER)
     emit_boilerplate(fout)
-    emit_data(fout, True, platforms)
+    emit_data(fout, True, sad, platforms)
     emit_grids(fout, num_noexcept_charts)
-    emit_xAxis(fout, num_noexcept_charts, True, platforms)
+    emit_xAxis(fout, num_noexcept_charts, True, sad, platforms)
     emit_yAxis(fout, num_noexcept_charts)
-    emit_series(fout, True, platforms)
+    emit_series(fout, True, sad, platforms)
     fout.write(HTML_FOOTER)
 
 def emit_small_data(fout, data):
+  min_x = 10000000
+  max_x = 0
+  for inners in data:
+    for val in inners:
+      min_x = min(min_x, val)
+      max_x = max(max_x, val)
+  if max_x != min_x:
+    width = calc_width(min_x, max_x)
+  else:
+    width = 1
+
   min_x = 10000000
   max_x = 0
   fout.write("var theData = {\n")
@@ -272,7 +365,7 @@ def emit_small_data(fout, data):
   for idx1 in range(len(data)):
     hist = {}
     for idx2 in range(len(data[idx1])):
-      bucketed = bucket_data(hist, data[idx1][idx2], CYCLE_BIN_WIDTH)
+      bucketed = bucket_data(hist, data[idx1][idx2], width)
       min_x = min(min_x, bucketed)
       max_x = max(max_x, bucketed)
     fout.write("    /*"+str(idx1)+"*/ [\n")
@@ -286,7 +379,7 @@ def emit_small_data(fout, data):
     hist = {}
     for idx2 in range(len(data[idx1])):
       # this is wrong in theory, but fine in practice
-      bucket_data(hist, data[idx2][idx1], CYCLE_BIN_WIDTH)
+      bucket_data(hist, data[idx2][idx1], width)
     fout.write("    /*"+str(idx1)+"*/ [\n")
     for val, count in sorted(hist.items()):
       fout.write("      [" + str(val) + ", " + str(count) + "],\n")
@@ -351,7 +444,7 @@ def main():
   parse_file("happy_sad_recursion.csv", frames)
   for frame, platforms in frames.items():
     emit_big_js(frame + ".html", platforms)
-  #emit_small_js(frames)
+  emit_small_js(frames)
 
 if __name__ == '__main__':
   main()
