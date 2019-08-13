@@ -124,6 +124,10 @@ rule x86_map_link
     command = $x86_LINK_PROG $x86_LINK_FLAGS /MAP:$out.map /OUT:$out $in
     description = x86_MAP_LINK $out
 
+rule codegen
+    command = python replace_VALUE.py $in $out $FRAME
+    description = CODEGEN $out
+
 rule measure_size
     command = python measure_size.py $FLAGS $in $out
     description = SIZE $out
