@@ -65,11 +65,9 @@ def each_case
 end
 
 def each_gauss_bench
-    #["x86", 
-    ["x64"].each do |proc|
+    ["x86", "x64"].each do |proc|
         GAUSS_BENCH_CASE_NAMES .each do |c|
             (TERM_TYPES + ERROR_TYPES).each do |t|
-            #(TERM_TYPES).each do |t|
                 yield TestCase.new(c, t, proc)
             end
         end
@@ -270,7 +268,7 @@ def make_rng_values()
     top_array = []
     (0..GAUSS_CASES).each do |outer|
         bottom_array = []
-        (0..15).each do |v|
+        (0..FRAME_COUNT).each do |v|
             bottom_array << rand(MAX_NOP_1+1)
         end
         ('A'..'D').each do |v|

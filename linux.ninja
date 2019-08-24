@@ -32,10 +32,12 @@ $general_CXXFLAGS $
 gcc_bench_CXXFLAGS= $
 $general_CXXFLAGS $
 -O2 $
+-mtune=ivybridge $
 
 clang_bench_CXXFLAGS= $
 $general_CXXFLAGS $
 -O2 $
+-mtune=ivybridge $
 -stdlib=libc++ $
 
 general_LINK_FLAGS= $
