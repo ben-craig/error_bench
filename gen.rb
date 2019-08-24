@@ -1,6 +1,6 @@
 MAX_NOP_1 = 31
 MAX_NOP_2 = 31
-GAUSS_CASES = 5 #1023
+GAUSS_CASES = 1027
 FRAME_COUNT = 15
 
 TERM_TYPES = [
@@ -8,12 +8,12 @@ TERM_TYPES = [
     #{:dir => "noexcept_terminate", :cc_flags => "/GR /EHs"},
 ]
 ERROR_TYPES = [
-    {:dir => "throw_val_________", :cc_flags => "/GR /EHs"},
-    {:dir => "throw_struct______", :cc_flags => "/GR /EHs"},
+#    {:dir => "throw_val_________", :cc_flags => "/GR /EHs"},
+#    {:dir => "throw_struct______", :cc_flags => "/GR /EHs"},
     {:dir => "throw_exception___", :cc_flags => "/GR /EHs"},
 #    {:dir => "tls_error_val_____", :cc_flags => "/GR"},
 #    {:dir => "tls_error_struct__", :cc_flags => "/GR"},
-#    {:dir => "return_val________", :cc_flags => "/GR"},
+    {:dir => "return_val________", :cc_flags => "/GR"},
 #    {:dir => "return_struct_____", :cc_flags => "/GR"},
 #    {:dir => "ref_struct________", :cc_flags => "/GR"},
 #    {:dir => "ref_val___________", :cc_flags => "/GR"},
@@ -65,7 +65,8 @@ def each_case
 end
 
 def each_gauss_bench
-    ["x86", "x64"].each do |proc|
+    #["x86", 
+    ["x64"].each do |proc|
         GAUSS_BENCH_CASE_NAMES .each do |c|
             (TERM_TYPES + ERROR_TYPES).each do |t|
             #(TERM_TYPES).each do |t|
@@ -342,7 +343,7 @@ def main()
         h.print "    totals\\gauss_times.csv $\n"
         each_gauss_bench do |c|
             for idx in 0..GAUSS_CASES
-                #h.print "    #{c.dest}\\#{idx}\\bench.exe.asm $\n"
+                h.print "    #{c.dest}\\#{idx}\\bench.exe.asm $\n"
             end
         end
         h.print "\n\n"

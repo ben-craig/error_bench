@@ -76,7 +76,7 @@ function myFormatter(params, ticket, callback) {
   mean = means[params.seriesName];
   median = medians[params.seriesName];
   return params.seriesName + "<br />" +
-    params.value[1] + " samples @ " + params.value[0] + " cycles" + "<br />" +
+    params.value[0] + " cycles, " + params.value[1] + " samples" + "<br />" +
     "median: " + median + " cycles, mean: " + mean + " cycles";
 }
 
@@ -87,8 +87,8 @@ option = {
   dataZoom: [
     {
       show: true,
-      start: 0,
-      end: 100,
+      startValue: minXValue,
+      endValue: maxXValue,
       xAxisIndex: xAxisIndices,
     },
   ],
@@ -117,9 +117,8 @@ COLORS = [
 ]
 
 CPU_FREQ = 3.3915
-CYCLE_BIN_WIDTH = 1
 START_PIX = 20
-PIX_HEIGHT=10
+PIX_HEIGHT=30
 
 def parse_line(line, frames):
   [full_case, mood, frame_str, value_str] = line.split(',')
@@ -129,13 +128,13 @@ def parse_line(line, frames):
   plat_name = pieces[0]
   case_name = pieces[2].rstrip('_')
   outer_nop = int(pieces[3])
-  inner_nop = int(pieces[4])
+  inner_nop = 0 #int(pieces[4])
 
   platforms = frames.setdefault(frame_thing, {})
   cases = platforms.setdefault(plat_name, {})
   values = None
   if case_name not in cases:
-    values = [[0 for n in range(32)] for n in range(32)]
+    values = [[0 for n in range(1)] for n in range(1028)]#[[0 for n in range(32)] for n in range(32)]
     cases[case_name] = values
   else:
     values = cases[case_name]
@@ -185,7 +184,7 @@ def aesthetic_round(val):
     new_width = 10.0 * new_width
   return new_width
 
-MAX_DESIRED_BUCKETS = 250.0
+MAX_DESIRED_BUCKETS = 300.0
 def calc_width(min_x, max_x):
   start_width = float(max_x - min_x) / MAX_DESIRED_BUCKETS
   return aesthetic_round(start_width)
@@ -209,8 +208,8 @@ def emit_stats(fout, stats):
   fout.write("};\n")
 
 def emit_data(fout, noexcept, sad, platforms):
-  min_x = 10000000
-  max_x = 0
+  min_x = 10000000.0
+  max_x = 0.0
   stats = {}
   for plat_name, cases in sorted(platforms.items()):
     for case_name, data in sorted(cases.items()):
@@ -229,8 +228,8 @@ def emit_data(fout, noexcept, sad, platforms):
 
   width = calc_width(min_x, max_x)
 
-  min_x = 10000000
-  max_x = 0
+  min_x = 10000000.0
+  max_x = 0.0
 
   fout.write("var theData = {\n")
   for plat_name, cases in sorted(platforms.items()):
@@ -252,8 +251,8 @@ def emit_data(fout, noexcept, sad, platforms):
       fout.write("    ],\n")
     fout.write("  },\n")
   fout.write("};\n")
-  fout.write("var minXValue = " + str(min_x - 2 * CYCLE_BIN_WIDTH) + ";\n")
-  fout.write("var maxXValue = " + str(max_x + 2 * CYCLE_BIN_WIDTH) + ";\n")
+  fout.write("var minXValue = " + str(min_x - 2 * width) + ";\n")
+  fout.write("var maxXValue = " + str(max_x + 2 * width) + ";\n")
 
 def emit_grids(fout, num_charts):
   fout.write("var theGrids = [\n")
@@ -386,8 +385,8 @@ def emit_small_data(fout, data):
     fout.write("    ],\n")
   fout.write("  ],\n")
   fout.write("};\n")
-  fout.write("var minXValue = " + str(min_x - 2 * CYCLE_BIN_WIDTH) + ";\n")
-  fout.write("var maxXValue = " + str(max_x + 2 * CYCLE_BIN_WIDTH) + ";\n")
+  fout.write("var minXValue = " + str(min_x - 2 * width) + ";\n")
+  fout.write("var maxXValue = " + str(max_x + 2 * width) + ";\n")
 
 def emit_small_xAxis(fout, num_charts):
   fout.write("var theXAxes = [\n")
@@ -441,10 +440,10 @@ def emit_small_js(frames):
 
 def main():
   frames = {}
-  parse_file("happy_sad_recursion.csv", frames)
+  parse_file("gauss_times.csv", frames)
   for frame, platforms in frames.items():
     emit_big_js(frame + ".html", platforms)
-  emit_small_js(frames)
+  #emit_small_js(frames)
 
 if __name__ == '__main__':
   main()

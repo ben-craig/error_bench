@@ -49,7 +49,7 @@ bench_CCFLAGS= $
 /Gy $
 /Gw $
 /O2 $
-/MD $
+/MT $
 /d2FH4 $
 /wd4530 $
 /std:c++latest $
@@ -72,7 +72,7 @@ allproc_LINK_FLAGS= $
 /OPT:ICF $
 /NXCOMPAT $
 /DYNAMICBASE $
-/DEBUG $
+/DEBUG:FASTLINK $
 
 x86_LINK_FLAGS= $
 /machine:x86 $

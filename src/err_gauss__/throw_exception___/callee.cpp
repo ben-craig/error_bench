@@ -8,7 +8,7 @@ public:
   const char *what() const noexcept override { return ""; }
 };
 
-void callee(bool do_err) {
+void callee(bool do_err, int &) {
   if(do_err)
     throw err_exception(1);
 }

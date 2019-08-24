@@ -2,9 +2,12 @@
 #include "dtor__VALUE__.tmpl.h"
 #include "common/nop.h"
 
-void caller__VALUE__(bool do_err, int &param) {
+int caller__VALUE__(bool do_err, int &param) {
   NOP_SLED_HEAD___VALUE__;
   Dtor__VALUE__ d;
-  __NEXT_FUNC__(do_err, param);
+  int e = __NEXT_FUNC__(do_err, param);
+  if (e)
+    return e;
   param = 0;
+  return 0;
 }
