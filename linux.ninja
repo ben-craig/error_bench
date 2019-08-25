@@ -86,6 +86,10 @@ rule clang_link
     command = $clang_LINK_PROG $clang_LINK_FLAGS -o $out $in ~/llvm/clang+llvm-8.0.0-x86_64-linux-gnu-ubuntu-14.04/lib/libc++abi.a
     description = clang_LINK $out
 
+rule codegen
+    command = python replace_VALUE.py $in $out $FRAME
+    description = CODEGEN $out
+
 rule measure_size
     command = python3 clang_measure_size.py $FLAGS $in $out
     description = SIZE $out

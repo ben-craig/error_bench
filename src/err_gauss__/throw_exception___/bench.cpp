@@ -23,29 +23,23 @@ int main() {
     }
     NOP_SLED_TAIL_B;
   }
-  #if 0
   for (uint32_t i = 0; i < SLOW_WARMUP_ITERATIONS; ++i) {
     try { caller15(true, param); } catch(...) {}
   }
-  #endif
   {
     TimeLogger logger(SLOW_ITERATIONS);
-    #if 0
     NOP_SLED_HEAD_C;
     for (uint32_t i = 0; i < SLOW_ITERATIONS; ++i) {
       try { caller15(true, param); } catch(...) {}
     }
     NOP_SLED_TAIL_C;
-    #endif
   }
   {
     TimeLogger logger(SLOW_ITERATIONS);
-    #if 0
     NOP_SLED_HEAD_D;
     for (uint32_t i = 0; i < SLOW_ITERATIONS; ++i) {
       try { caller0(true, param); } catch(...) {}
     }
     NOP_SLED_TAIL_D;
-    #endif
   }
 }
