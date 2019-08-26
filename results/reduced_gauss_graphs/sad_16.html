@@ -1,0 +1,287 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <script src="echarts_modified.js"></script>
+    <script type="text/javascript">
+
+var commonYAxis = {
+  splitLine: { show: false },
+  axisLine:  { show: false },
+  axisTick:  { show: false },
+  axisLabel: { show: false },
+}
+var invertYAxis = Object.assign(
+  {
+    inverse:true,
+    position: 'top'
+  },
+  commonYAxis)
+
+function make_xAxis(name, idx, axisLabel, min, max) {
+  if (idx == 0)
+  {
+    return {
+      name: name,
+      gridIndex: 0,
+      axisLine:  { show: false },
+      axisTick:  { show: false },
+      axisLabel: { show: true, inside: true, verticalAlign: 'bottom' },
+      nameLocation: "start",
+      min: min,
+      max: max,
+    };
+  }
+
+  return   {
+    name: name,
+    gridIndex: idx,
+    axisLine:  { show: false },
+    axisTick:  { show: false },
+    axisLabel: { show: axisLabel },
+    nameLocation: "start",
+    min: min,
+    max: max,
+  };
+}
+function make_series(name, idx, data, color) {
+  return {
+    name: name,
+    xAxisIndex: idx,
+    yAxisIndex: idx,
+    itemStyle: {color: color},
+    data: data,
+    barWidth: 4,
+    type: 'bar',
+  };
+}
+var commonGrid = {
+  show: false,
+  left: 200,
+  right: '3%',
+  height: 30,
+}
+var means = {
+  'MSVC_x64.return_val': 307.85,
+  'MSVC_x64.throw_exception': 28725.77,
+  'MSVC_x86.return_val': 307.73,
+  'MSVC_x86.throw_exception': 47591.30,
+  'clang.return_val': 295.88,
+  'clang.throw_exception': 90240.20,
+  'gcc.return_val': 303.64,
+  'gcc.throw_exception': 84755.06,
+};
+var medians = {
+  'MSVC_x64.return_val': 307.76,
+  'MSVC_x64.throw_exception': 28688.87,
+  'MSVC_x86.return_val': 307.57,
+  'MSVC_x86.throw_exception': 47490.83,
+  'clang.return_val': 295.59,
+  'clang.throw_exception': 90359.78,
+  'gcc.return_val': 303.39,
+  'gcc.throw_exception': 84482.64,
+};
+var theData = {
+  MSVC_x64: {
+    return_val: [
+      [500.0, 1028],
+    ],
+    throw_exception: [
+      [27000.0, 3],
+      [27500.0, 7],
+      [28000.0, 121],
+      [28500.0, 463],
+      [29000.0, 314],
+      [29500.0, 109],
+      [30000.0, 4],
+      [30500.0, 3],
+      [31000.0, 4],
+    ],
+  },
+  MSVC_x86: {
+    return_val: [
+      [500.0, 1028],
+    ],
+    throw_exception: [
+      [46000.0, 1],
+      [46500.0, 16],
+      [47000.0, 211],
+      [47500.0, 581],
+      [48000.0, 167],
+      [48500.0, 20],
+      [49500.0, 5],
+      [50000.0, 9],
+      [50500.0, 11],
+      [51000.0, 2],
+      [52500.0, 1],
+      [53500.0, 2],
+      [57000.0, 1],
+      [57500.0, 1],
+    ],
+  },
+  clang: {
+    return_val: [
+      [500.0, 1028],
+    ],
+    throw_exception: [
+      [85000.0, 5],
+      [86500.0, 5],
+      [87000.0, 2],
+      [87500.0, 3],
+      [88000.0, 190],
+      [88500.0, 27],
+      [89000.0, 14],
+      [89500.0, 1],
+      [90000.0, 243],
+      [90500.0, 60],
+      [91000.0, 239],
+      [91500.0, 46],
+      [92000.0, 145],
+      [92500.0, 45],
+      [93000.0, 3],
+    ],
+  },
+  gcc: {
+    return_val: [
+      [500.0, 1028],
+    ],
+    throw_exception: [
+      [80500.0, 9],
+      [81500.0, 12],
+      [82000.0, 4],
+      [82500.0, 3],
+      [83000.0, 172],
+      [83500.0, 1],
+      [84000.0, 87],
+      [84500.0, 329],
+      [85000.0, 66],
+      [85500.0, 140],
+      [86000.0, 24],
+      [86500.0, 61],
+      [87000.0, 61],
+      [87500.0, 57],
+      [88000.0, 2],
+    ],
+  },
+};
+var minXValue = -500.0;
+var maxXValue = 94000.0;
+var theGrids = [
+  Object.assign({top: 20}, commonGrid),
+  Object.assign({top: 50}, commonGrid),
+  Object.assign({top: 80}, commonGrid),
+  Object.assign({top: 110}, commonGrid),
+  Object.assign({top: 140}, commonGrid),
+  Object.assign({top: 170}, commonGrid),
+  Object.assign({top: 200}, commonGrid),
+  Object.assign({top: 230}, commonGrid),
+  Object.assign({top: 260}, commonGrid),
+  Object.assign({top: 290}, commonGrid),
+  Object.assign({top: 320}, commonGrid),
+  Object.assign({top: 350}, commonGrid),
+  Object.assign({top: 380}, commonGrid),
+  Object.assign({top: 410}, commonGrid),
+  Object.assign({top: 440}, commonGrid),
+  Object.assign({top: 470}, commonGrid),
+];
+var gridHeightNeeded = 500;
+var theXAxes = [
+  make_xAxis('MSVC_x64.return_val', 0, false, minXValue, maxXValue),
+  make_xAxis('MSVC_x64.return_val', 1, false, minXValue, maxXValue),
+  make_xAxis('MSVC_x64.throw_exception', 2, false, minXValue, maxXValue),
+  make_xAxis('MSVC_x64.throw_exception', 3, false, minXValue, maxXValue),
+  make_xAxis('MSVC_x86.return_val', 4, false, minXValue, maxXValue),
+  make_xAxis('MSVC_x86.return_val', 5, false, minXValue, maxXValue),
+  make_xAxis('MSVC_x86.throw_exception', 6, false, minXValue, maxXValue),
+  make_xAxis('MSVC_x86.throw_exception', 7, false, minXValue, maxXValue),
+  make_xAxis('clang.return_val', 8, false, minXValue, maxXValue),
+  make_xAxis('clang.return_val', 9, false, minXValue, maxXValue),
+  make_xAxis('clang.throw_exception', 10, false, minXValue, maxXValue),
+  make_xAxis('clang.throw_exception', 11, false, minXValue, maxXValue),
+  make_xAxis('gcc.return_val', 12, false, minXValue, maxXValue),
+  make_xAxis('gcc.return_val', 13, false, minXValue, maxXValue),
+  make_xAxis('gcc.throw_exception', 14, false, minXValue, maxXValue),
+  make_xAxis('gcc.throw_exception', 15, true, minXValue, maxXValue),
+];
+var xAxisIndices = [
+  0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 
+]
+var theYAxes = [
+  Object.assign({gridIndex: 0}, commonYAxis),
+  Object.assign({gridIndex: 1}, invertYAxis),
+  Object.assign({gridIndex: 2}, commonYAxis),
+  Object.assign({gridIndex: 3}, invertYAxis),
+  Object.assign({gridIndex: 4}, commonYAxis),
+  Object.assign({gridIndex: 5}, invertYAxis),
+  Object.assign({gridIndex: 6}, commonYAxis),
+  Object.assign({gridIndex: 7}, invertYAxis),
+  Object.assign({gridIndex: 8}, commonYAxis),
+  Object.assign({gridIndex: 9}, invertYAxis),
+  Object.assign({gridIndex: 10}, commonYAxis),
+  Object.assign({gridIndex: 11}, invertYAxis),
+  Object.assign({gridIndex: 12}, commonYAxis),
+  Object.assign({gridIndex: 13}, invertYAxis),
+  Object.assign({gridIndex: 14}, commonYAxis),
+  Object.assign({gridIndex: 15}, invertYAxis),
+];
+var theSeries = [
+  make_series( 'MSVC_x64.return_val', 0, theData.MSVC_x64.return_val, '#1b9e77'),
+  make_series( 'MSVC_x64.return_val', 1, theData.MSVC_x64.return_val, '#1b9e77'),
+  make_series( 'MSVC_x64.throw_exception', 2, theData.MSVC_x64.throw_exception, '#d95f02'),
+  make_series( 'MSVC_x64.throw_exception', 3, theData.MSVC_x64.throw_exception, '#d95f02'),
+  make_series( 'MSVC_x86.return_val', 4, theData.MSVC_x86.return_val, '#7570b3'),
+  make_series( 'MSVC_x86.return_val', 5, theData.MSVC_x86.return_val, '#7570b3'),
+  make_series( 'MSVC_x86.throw_exception', 6, theData.MSVC_x86.throw_exception, '#e7298a'),
+  make_series( 'MSVC_x86.throw_exception', 7, theData.MSVC_x86.throw_exception, '#e7298a'),
+  make_series( 'clang.return_val', 8, theData.clang.return_val, '#66a61e'),
+  make_series( 'clang.return_val', 9, theData.clang.return_val, '#66a61e'),
+  make_series( 'clang.throw_exception', 10, theData.clang.throw_exception, '#e6ab02'),
+  make_series( 'clang.throw_exception', 11, theData.clang.throw_exception, '#e6ab02'),
+  make_series( 'gcc.return_val', 12, theData.gcc.return_val, '#a6761d'),
+  make_series( 'gcc.return_val', 13, theData.gcc.return_val, '#a6761d'),
+  make_series( 'gcc.throw_exception', 14, theData.gcc.throw_exception, '#666666'),
+  make_series( 'gcc.throw_exception', 15, theData.gcc.throw_exception, '#666666'),
+];
+
+    </script>
+</head>
+<body>
+    <!-- prepare a DOM container with width and height -->
+    <div id="SecondNeutral" style="width: 100%;height:10px;"></div>
+    <script type="text/javascript">
+// based on prepared DOM, initialize echarts instance
+document.getElementById('SecondNeutral').setAttribute("style","height:"+(gridHeightNeeded + 60) + "px");
+var myChart = echarts.init(document.getElementById('SecondNeutral'));
+
+function myFormatter(params, ticket, callback) {
+  mean = means[params.seriesName];
+  median = medians[params.seriesName];
+  return params.seriesName + "<br />" +
+    params.value[0] + " cycles, " + params.value[1] + " samples" + "<br />" +
+    "median: " + median + " cycles, mean: " + mean + " cycles";
+}
+
+option = {
+  tooltip : {
+    formatter: myFormatter,
+  },
+  dataZoom: [
+    {
+      show: true,
+      startValue: minXValue,
+      endValue: maxXValue,
+      xAxisIndex: xAxisIndices,
+    },
+  ],
+  grid: theGrids,
+  xAxis: theXAxes,
+  yAxis: theYAxes,
+  series: theSeries,
+};
+
+myChart.setOption(option);
+</script>
+
+</body>
+</html>
