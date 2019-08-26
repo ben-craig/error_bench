@@ -235,6 +235,11 @@ def gen_gauss_bench(file, test_case, rng_values)
             file.print "    NOP_COUNTS=-I#{dir} -DNOP_COUNT_#{frame}=#{nop1}\n"
         end
     end
+    for nop1 in 0..MAX_NOP_1
+        file.print "build #{dest_dir}/#{nop1}/callee.obj: #{cc} #{dir}/callee.cpp\n"
+        file.print cc_flags
+        file.print "    NOP_COUNTS=-DNOP_COUNT_X=#{nop1}\n"
+    end
     for test_iter in 0..GAUSS_CASES
         rng = rng_values[test_iter]
         file.print "build #{dest_dir}/#{test_iter}/bench.obj: #{cc} #{dir}/bench.cpp\n"
@@ -247,7 +252,7 @@ def gen_gauss_bench(file, test_case, rng_values)
             file.print "    #{dest_dir}/#{rng[frame]}/caller#{frame}.obj $\n"
             file.print "    #{dest_dir}/#{rng[frame]}/dtor#{frame}.obj $\n"
         end
-        file.print "    #{dest_dir}/bench/callee.obj $\n"
+        file.print "    #{dest_dir}/#{rng[FRAME_COUNT+5]}/callee.obj $\n"
         file.print "    #{dest_dir}/bench/LinuxTimeLogger.obj\n"
         file.print "    EXTRA_FLAGS = -lrt\n\n"
 
@@ -264,6 +269,9 @@ def make_rng_values()
             bottom_array << rand(MAX_NOP_1+1)
         end
         ('A'..'D').each do |v|
+            bottom_array << rand(MAX_NOP_1+1)
+        end
+        ('X'..'Z').each do |v|
             bottom_array << rand(MAX_NOP_1+1)
         end
         top_array << bottom_array
