@@ -257,9 +257,11 @@ def gen_gauss_bench(file, test_case, rng_values)
         file.print "    #{dest_dir}\\#{test_iter}\\bench.obj $\n"
         for frame in 0..FRAME_COUNT
             file.print "    #{dest_dir}\\#{rng[frame]}\\caller#{frame}.obj $\n"
-            file.print "    #{dest_dir}\\#{rng[frame]}\\dtor#{frame}.obj $\n"
         end
         file.print "    #{dest_dir}\\#{rng[FRAME_COUNT+5]}\\callee.obj $\n"
+        for frame in 0..FRAME_COUNT
+            file.print "    #{dest_dir}\\#{rng[frame]}\\dtor#{frame}.obj $\n"
+        end
         file.print "    #{dest_dir}\\bench\\TimeLogger.obj\n\n"
 
         file.print "build #{dest_dir}\\#{test_iter}\\bench.exe.asm: asm_dump #{dest_dir}\\#{test_iter}\\bench.exe\n"
