@@ -134,7 +134,7 @@ def parse_line(line, frames):
   cases = platforms.setdefault(plat_name, {})
   values = None
   if case_name not in cases:
-    values = [[0 for n in range(1)] for n in range(128)]#[[0 for n in range(32)] for n in range(32)]
+    values = [[0 for n in range(1)] for n in range(1024)]#[[0 for n in range(32)] for n in range(32)]
     cases[case_name] = values
   else:
     values = cases[case_name]
