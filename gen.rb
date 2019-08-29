@@ -1,6 +1,6 @@
 MAX_NOP_1 = 31
 MAX_NOP_2 = 31
-GAUSS_CASES = 1027
+GAUSS_CASES = 127 #1027
 FRAME_COUNT = 15
 
 TERM_TYPES = [
@@ -21,7 +21,7 @@ ERROR_TYPES = [
 #    {:dir => "expected_val______", :cc_flags => "/GR"},
 #    {:dir => "outcome_struct____", :cc_flags => "/GR-"},
 #    {:dir => "outcome_val_______", :cc_flags => "/GR-"},
-#    {:dir => "outcome_std_error_", :cc_flags => "/GR-"},
+    {:dir => "outcome_std_error_", :cc_flags => "/GR- /WX-"},
 ]
 FULL_CASE_NAMES =   ["one_neutral", "two_neutral", "one_error__", "two_error__"]
 NO_TERM_CASE_NAME = ["one_catch__", "two_catch__"]
