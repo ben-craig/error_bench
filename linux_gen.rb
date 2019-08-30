@@ -1,27 +1,27 @@
 MAX_NOP_1 = 31
 MAX_NOP_2 = 31
-GAUSS_CASES = 1027
+GAUSS_CASES = 1023
 FRAME_COUNT = 15
 
 TERM_TYPES = [
-    {:dir => "terminate_________", :cc_flags => "-fno-exceptions"},
-#    {:dir => "noexcept_terminate", :cc_flags => ""},
+#    {:dir => "terminate_________", :cc_flags => "-fno-exceptions"},
+##    {:dir => "noexcept_terminate", :cc_flags => ""},
 ]
 ERROR_TYPES = [
-#    {:dir => "throw_val_________", :cc_flags => ""},
-#    {:dir => "throw_struct______", :cc_flags => ""},
-    {:dir => "throw_exception___", :cc_flags => ""},
-#    {:dir => "tls_error_val_____", :cc_flags => "-fno-exceptions"},
-#    {:dir => "tls_error_struct__", :cc_flags => "-fno-exceptions"},
-    {:dir => "return_val________", :cc_flags => "-fno-exceptions"},
-#    {:dir => "return_struct_____", :cc_flags => "-fno-exceptions"},
-#    {:dir => "ref_struct________", :cc_flags => "-fno-exceptions"},
-#    {:dir => "ref_val___________", :cc_flags => "-fno-exceptions"},
-#    {:dir => "expected_struct___", :cc_flags => "-fno-exceptions"},
-#    {:dir => "expected_val______", :cc_flags => "-fno-exceptions"},
-#    {:dir => "outcome_struct____", :cc_flags => "-fno-exceptions -fno-rtti"},
-#    {:dir => "outcome_val_______", :cc_flags => "-fno-exceptions -fno-rtti"},
-#    {:dir => "outcome_std_error_", :cc_flags => "-fno-exceptions -fno-rtti"},
+##    {:dir => "throw_val_________", :cc_flags => ""},
+##    {:dir => "throw_struct______", :cc_flags => ""},
+#    {:dir => "throw_exception___", :cc_flags => ""},
+##    {:dir => "tls_error_val_____", :cc_flags => "-fno-exceptions"},
+##    {:dir => "tls_error_struct__", :cc_flags => "-fno-exceptions"},
+#    {:dir => "return_val________", :cc_flags => "-fno-exceptions"},
+    {:dir => "return_struct_____", :cc_flags => "-fno-exceptions"},
+    {:dir => "ref_struct________", :cc_flags => "-fno-exceptions"},
+##    {:dir => "ref_val___________", :cc_flags => "-fno-exceptions"},
+    {:dir => "expected_struct___", :cc_flags => "-fno-exceptions"},
+##    {:dir => "expected_val______", :cc_flags => "-fno-exceptions"},
+##    {:dir => "outcome_struct____", :cc_flags => "-fno-exceptions -fno-rtti"},
+##    {:dir => "outcome_val_______", :cc_flags => "-fno-exceptions -fno-rtti"},
+##    {:dir => "outcome_std_error_", :cc_flags => "-fno-exceptions -fno-rtti"},
 ]
 FULL_CASE_NAMES =   ["one_neutral", "two_neutral", "one_error__", "two_error__"]
 NO_TERM_CASE_NAME = ["one_catch__", "two_catch__"]
