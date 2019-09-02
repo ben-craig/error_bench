@@ -17,35 +17,35 @@ var data_CmpTerm = [
     type: 'bar',
     name: 'throw_exception',
     stack: 'throw_exception',
-    itemStyle: {color: '#1b9e77'},
+    itemStyle: {color: '#9f354d'},
     data: [382891,102620,19990,6140]
   },
   {
     type: 'bar',
     name: 'baremetal.return_val',
     stack: 'return_val',
-    itemStyle: {color: '#d95f02'},
+    itemStyle: {color: '#26735a'},
     data: [20,14,13,9]
   },
   {
     type: 'bar',
     name: 'return_val',
     stack: 'return_val',
-    itemStyle: {color: '#FF9F55'},
+    itemStyle: {color: '#5aad92'},
     data: [57404,42746,6373,9]
-  },
-  {
-    type: 'bar',
-    name: 'noexcept_abort',
-    stack: 'noexcept_abort',
-    itemStyle: {color: '#7570b3'},
-    data: [57376,42732,6360,0]
   },
   {
     type: 'bar',
     name: 'abort',
     stack: 'abort',
-    itemStyle: {color: '#F27DB9'},
+    itemStyle: {color: '#FFAE84'},
+    data: [57376,42732,6360,0]
+  },
+  {
+    type: 'bar',
+    name: 'noexcept_abort',
+    stack: 'noexcept_abort',
+    itemStyle: {color: '#589832'},
     barCategoryGap: '10%',
     data: [57376,42732,6360,0]
   }
@@ -56,42 +56,42 @@ var data_Cost2ndNeutral = [
     type: 'bar',
     name: 'throw_exception',
     stack: 'throw_exception',
-    itemStyle: {color: '#1b9e77'},
+    itemStyle: {color: '#9f354d'},
     data: [140,124,85,105]
   },
   {
     type: 'bar',
     name: 'baremetal.return_val',
     stack: 'return_val',
-    itemStyle: {color: '#d95f02'},
+    itemStyle: {color: '#26735a'},
     data: [55,62,68,63]
   },
   {
     type: 'bar',
     name: 'return_val',
     stack: 'return_val',
-    itemStyle: {color: '#FF9F55'},
+    itemStyle: {color: '#5aad92'},
     data: [135,118,80,63]
-  },
-  {
-    type: 'bar',
-    name: 'noexcept_abort',
-    stack: 'noexcept_abort',
-    itemStyle: {color: '#7570b3'},
-    data: [120,104,61,49]
   },
   {
     type: 'bar',
     name: 'baremetal.abort',
     stack: 'abort',
-    itemStyle: {color: '#e7298a'},
+    itemStyle: {color: '#ae6039'},
     data: [48,48,49,49]
   },
   {
     type: 'bar',
     name: 'abort',
     stack: 'abort',
-    itemStyle: {color: '#F27DB9'},
+    itemStyle: {color: '#FFAE84'},
+    data: [120,104,61,49]
+  },
+  {
+    type: 'bar',
+    name: 'noexcept_abort',
+    stack: 'noexcept_abort',
+    itemStyle: {color: '#589832'},
     barCategoryGap: '10%',
     data: [120,104,61,49]
   }
@@ -102,44 +102,44 @@ var data_Cost1stError = [
     type: 'bar',
     name: 'throw_exception',
     stack: 'throw_exception',
-    itemStyle: {color: '#1b9e77'},
+    itemStyle: {color: '#9f354d'},
     data: [256,2933,827,633]
   },
   {
     type: 'bar',
     name: 'baremetal.return_val',
     stack: 'return_val',
-    itemStyle: {color: '#d95f02'},
+    itemStyle: {color: '#26735a'},
     data: [13,13,13,16]
   },
   {
     type: 'bar',
     name: 'return_val',
     stack: 'return_val',
-    itemStyle: {color: '#FF9F55'},
+    itemStyle: {color: '#5aad92'},
     data: [13,13,13,16]
-  },
-  {
-    type: 'bar',
-    name: 'noexcept_abort',
-    stack: 'noexcept_abort',
-    itemStyle: {color: '#7570b3'},
-    data: [18,21,13647,6100]
   },
   {
     type: 'bar',
     name: 'baremetal.abort',
     stack: 'abort',
-    itemStyle: {color: '#e7298a'},
+    itemStyle: {color: '#ae6039'},
     data: [18,21,21,17]
   },
   {
     type: 'bar',
     name: 'abort',
     stack: 'abort',
-    itemStyle: {color: '#F27DB9'},
-    barCategoryGap: '10%',
+    itemStyle: {color: '#FFAE84'},
     data: [18,21,33,17]
+  },
+  {
+    type: 'bar',
+    name: 'noexcept_abort',
+    stack: 'noexcept_abort',
+    itemStyle: {color: '#589832'},
+    barCategoryGap: '10%',
+    data: [18,21,13647,6100]
   }
 ];
 
@@ -148,45 +148,45 @@ var data_Cost2ndError = [
     type: 'bar',
     name: 'throw_exception',
     stack: 'throw_exception',
-    itemStyle: {color: '#1b9e77'},
+    itemStyle: {color: '#9f354d'},
     data: [66,60,68,41]
   },
   {
     type: 'bar',
     name: 'baremetal.return_val',
     stack: 'return_val',
-    itemStyle: {color: '#d95f02'},
+    itemStyle: {color: '#26735a'},
     data: [19,19,22,15]
   },
   {
     type: 'bar',
     name: 'return_val',
     stack: 'return_val',
-    itemStyle: {color: '#FF9F55'},
+    itemStyle: {color: '#5aad92'},
     data: [19,19,22,15]
-  },
-  {
-    type: 'bar',
-    name: 'noexcept_abort',
-    stack: 'noexcept_abort',
-    itemStyle: {color: '#7570b3'},
-    data: [20,23,60,56]
   },
   {
     type: 'bar',
     name: 'baremetal.abort',
     stack: 'abort',
-    itemStyle: {color: '#e7298a'},
+    itemStyle: {color: '#ae6039'},
     data: [20,23,24,15]
   },
   {
     type: 'bar',
     name: 'abort',
     stack: 'abort',
-    itemStyle: {color: '#F27DB9'},
-    barCategoryGap: '10%',
+    itemStyle: {color: '#FFAE84'},
     data: [20,23,36,15]
-  }
+  },
+  {
+    type: 'bar',
+    name: 'noexcept_abort',
+    stack: 'noexcept_abort',
+    itemStyle: {color: '#589832'},
+    barCategoryGap: '10%',
+    data: [20,23,60,56]
+  },
 ];
 
 var data_Cost1stCatch = [
@@ -194,21 +194,21 @@ var data_Cost1stCatch = [
     type: 'bar',
     name: 'throw_exception',
     stack: 'throw_exception',
-    itemStyle: {color: '#1b9e77'},
+    itemStyle: {color: '#9f354d'},
     data: [53,63,77,126]
   },
   {
     type: 'bar',
     name: 'baremetal.return_val',
     stack: 'return_val',
-    itemStyle: {color: '#d95f02'},
+    itemStyle: {color: '#26735a'},
     data: [14,14,19,18]
   },
   {
     type: 'bar',
     name: 'return_val',
     stack: 'return_val',
-    itemStyle: {color: '#FF9F55'},
+    itemStyle: {color: '#5aad92'},
     data: [14,14,19,18]
   }
 ];
@@ -218,21 +218,21 @@ var data_Cost2ndCatch = [
     type: 'bar',
     name: 'throw_exception',
     stack: 'throw_exception',
-    itemStyle: {color: '#1b9e77'},
+    itemStyle: {color: '#9f354d'},
     data: [29,34,25,64]
   },
   {
     type: 'bar',
     name: 'baremetal.return_val',
     stack: 'return_val',
-    itemStyle: {color: '#d95f02'},
+    itemStyle: {color: '#26735a'},
     data: [20,14,16,16]
   },
   {
     type: 'bar',
     name: 'return_val',
     stack: 'return_val',
-    itemStyle: {color: '#FF9F55'},
+    itemStyle: {color: '#5aad92'},
     data: [28,14,16,16]
   }
 ];
