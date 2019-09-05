@@ -263,7 +263,10 @@ def gen_gauss_bench(file, test_case, rng_values)
         for frame in 0..FRAME_COUNT
             file.print "    #{dest_dir}\\#{rng[frame]}\\dtor#{frame}.obj $\n"
         end
-        file.print "    #{dest_dir}\\bench\\TimeLogger.obj\n\n"
+        file.print "    #{dest_dir}\\bench\\TimeLogger.obj\n"
+        if test_iter == 0
+            file.print "    EXTRA_FLAGS=/DEBUG:FASTLINK\n"
+        end
 
         file.print "build #{dest_dir}\\#{test_iter}\\bench.exe.asm: asm_dump #{dest_dir}\\#{test_iter}\\bench.exe\n"
     end

@@ -72,7 +72,6 @@ allproc_LINK_FLAGS= $
 /OPT:ICF $
 /NXCOMPAT $
 /DYNAMICBASE $
-/DEBUG:FASTLINK $
 
 x86_LINK_FLAGS= $
 /machine:x86 $
@@ -99,7 +98,7 @@ rule x64_bench_compile
     deps = msvc
 
 rule x64_bench_link
-    command = $x64_LINK_PROG $x64_LINK_FLAGS /OUT:$out $in
+    command = $x64_LINK_PROG $x64_LINK_FLAGS $EXTRA_FLAGS /OUT:$out $in
     description = x64_LINK $out
 
 rule x64_map_link
@@ -117,7 +116,7 @@ rule x86_bench_compile
     deps = msvc
 
 rule x86_bench_link
-    command = $x86_LINK_PROG $x86_LINK_FLAGS /OUT:$out $in
+    command = $x86_LINK_PROG $x86_LINK_FLAGS $EXTRA_FLAGS /OUT:$out $in
     description = x86_LINK $out
 
 rule x86_map_link
