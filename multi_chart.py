@@ -127,18 +127,16 @@ def parse_line(line, frames):
   pieces = full_case.split('\\')
   plat_name = pieces[0]
   case_name = pieces[2].rstrip('_')
-  outer_nop = int(pieces[3])
-  inner_nop = 0 #int(pieces[4])
+  iter = int(pieces[3])
 
   platforms = frames.setdefault(frame_thing, {})
   cases = platforms.setdefault(plat_name, {})
-  values = None
+  values = {}
   if case_name not in cases:
-    values = [[0 for n in range(1)] for n in range(1024)]#[[0 for n in range(32)] for n in range(32)]
     cases[case_name] = values
   else:
     values = cases[case_name]
-  values[outer_nop][inner_nop] = value
+  values[iter] = value
 
 def bucket_data(hist, value, width):
   bucket = round(value/width, 0) * width
@@ -212,18 +210,15 @@ def emit_data(fout, noexcept, sad, platforms):
   max_x = 0.0
   stats = {}
   for plat_name, cases in sorted(platforms.items()):
-    for case_name, data in sorted(cases.items()):
+    for case_name, values in sorted(cases.items()):
       if noexcept and "throw_" in case_name:
         continue
       if sad and "terminate" in case_name:
         continue
-      values = []
-      for inner in data:
-        for value in inner:
-          min_x = min(min_x, value)
-          max_x = max(max_x, value)
-          values.append(value)
-      stats[plat_name + "." + case_name] = calc_stats(values)
+      for value in values.values():
+        min_x = min(min_x, value)
+        max_x = max(max_x, value)
+      stats[plat_name + "." + case_name] = calc_stats(values.values())
   emit_stats(fout, stats)
 
   width = calc_width(min_x, max_x)
@@ -234,18 +229,17 @@ def emit_data(fout, noexcept, sad, platforms):
   fout.write("var theData = {\n")
   for plat_name, cases in sorted(platforms.items()):
     fout.write("  " + plat_name + ": {\n")
-    for case_name, data in sorted(cases.items()):
+    for case_name, values in sorted(cases.items()):
       if noexcept and "throw_" in case_name:
         continue
       if sad and "terminate" in case_name:
         continue
       fout.write("    " + case_name + ": [\n")
       hist = {}
-      for inner in data:
-        for value in inner:
-          bucketed = bucket_data(hist, value, width)
-          min_x = min(min_x, bucketed)
-          max_x = max(max_x, bucketed)
+      for value in values.values():
+        bucketed = bucket_data(hist, value, width)
+        min_x = min(min_x, bucketed)
+        max_x = max(max_x, bucketed)
       for val, count in sorted(hist.items()):
         fout.write("      [" + str(val) + ", " + str(count) + "],\n")
       fout.write("    ],\n")
@@ -345,105 +339,11 @@ def emit_big_js(file_name, platforms):
     emit_series(fout, True, sad, platforms)
     fout.write(HTML_FOOTER)
 
-def emit_small_data(fout, data):
-  min_x = 10000000
-  max_x = 0
-  for inners in data:
-    for val in inners:
-      min_x = min(min_x, val)
-      max_x = max(max_x, val)
-  if max_x != min_x:
-    width = calc_width(min_x, max_x)
-  else:
-    width = 1
-
-  min_x = 10000000
-  max_x = 0
-  fout.write("var theData = {\n")
-  fout.write("  outer: [\n")
-  for idx1 in range(len(data)):
-    hist = {}
-    for idx2 in range(len(data[idx1])):
-      bucketed = bucket_data(hist, data[idx1][idx2], width)
-      min_x = min(min_x, bucketed)
-      max_x = max(max_x, bucketed)
-    fout.write("    /*"+str(idx1)+"*/ [\n")
-    for val, count in sorted(hist.items()):
-      fout.write("      [" + str(val) + ", " + str(count) + "],\n")
-    fout.write("    ],\n")
-  fout.write("  ],\n")
-  fout.write("  inner: [\n")
-  # HACK : assuming this is square, as my tests are all doing 32*32
-  for idx1 in range(len(data)):
-    hist = {}
-    for idx2 in range(len(data[idx1])):
-      # this is wrong in theory, but fine in practice
-      bucket_data(hist, data[idx2][idx1], width)
-    fout.write("    /*"+str(idx1)+"*/ [\n")
-    for val, count in sorted(hist.items()):
-      fout.write("      [" + str(val) + ", " + str(count) + "],\n")
-    fout.write("    ],\n")
-  fout.write("  ],\n")
-  fout.write("};\n")
-  fout.write("var minXValue = " + str(min_x - 2 * width) + ";\n")
-  fout.write("var maxXValue = " + str(max_x + 2 * width) + ";\n")
-
-def emit_small_xAxis(fout, num_charts):
-  fout.write("var theXAxes = [\n")
-  idx = 0
-  for stride_name in ["outer", "inner"]:
-    for id in range( int(num_charts/2) ):
-      name = stride_name + "." + str(id)
-      fout.write("  make_xAxis('" + name + "', " + str(2*idx) + ", false, minXValue, maxXValue),\n")
-      showAxis = "false"
-      if idx == num_charts-1:
-        showAxis = "true"
-      fout.write("  make_xAxis('" + name + "', " + str(2*idx+1) + ", " + showAxis + ", minXValue, maxXValue),\n")
-      idx = idx + 1
-  fout.write("];\n")
-  fout.write("var xAxisIndices = [\n  ")
-  for i in range(2*num_charts):
-    fout.write(str(i) + ", ")
-  fout.write("\n]\n")
-
-def emit_single_small_series(fout, stride_name, id, idx):
-  name = stride_name + "." + str(id)
-  dataStr = "theData." + stride_name + "[" + str(id) + "]"
-  color = COLORS[idx % len(COLORS)]
-  fout.write("  make_series( '" +name + "', " + str(2*idx) + ", " + dataStr + ", '#" + color + "'),\n")
-  fout.write("  make_series( '" +name + "', " + str(2*idx+1) + ", " + dataStr + ", '#" + color + "'),\n")
-
-def emit_small_series(fout, num_charts):
-  fout.write("var theSeries = [\n")
-  idx = 0
-  for stride_name in ["outer", "inner"]:
-    for id in range( int(num_charts/2) ):
-      emit_single_small_series(fout, stride_name, id, idx)
-      idx = idx + 1
-  fout.write("];\n")
-
-def emit_small_js(frames):
-  num_charts = 64
-  for frame, platforms in frames.items():
-    for plat_name, cases in platforms.items():
-      for case_name, data in cases.items():
-        fname = frame + "_" + plat_name + "_" + case_name + ".html"
-        with open(fname, 'w') as fout:
-          fout.write(HTML_HEADER)
-          emit_boilerplate(fout)
-          emit_small_data(fout, data)
-          emit_grids(fout, num_charts)
-          emit_small_xAxis(fout, num_charts)
-          emit_yAxis(fout, num_charts)
-          emit_small_series(fout, num_charts)
-          fout.write(HTML_FOOTER)
-
 def main():
   frames = {}
   parse_file("gauss_times.csv", frames)
   for frame, platforms in frames.items():
     emit_big_js(frame + ".html", platforms)
-  #emit_small_js(frames)
 
 if __name__ == '__main__':
   main()

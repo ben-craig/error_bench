@@ -4,21 +4,21 @@ GAUSS_CASES = 1023
 FRAME_COUNT = 15
 
 TERM_TYPES = [
-#    {:dir => "terminate_________", :cc_flags => "/GR"},
+    {:dir => "terminate_________", :cc_flags => "/GR"},
 #    #{:dir => "noexcept_terminate", :cc_flags => "/GR /EHs"},
 ]
 ERROR_TYPES = [
 #    {:dir => "throw_val_________", :cc_flags => "/GR /EHs"},
 #    {:dir => "throw_struct______", :cc_flags => "/GR /EHs"},
-#    {:dir => "throw_exception___", :cc_flags => "/GR /EHs"},
+    {:dir => "throw_exception___", :cc_flags => "/GR /EHs"},
 #    {:dir => "tls_error_val_____", :cc_flags => "/GR"},
 #    {:dir => "tls_error_struct__", :cc_flags => "/GR"},
-#    {:dir => "return_val________", :cc_flags => "/GR"},
-#    {:dir => "return_struct_____", :cc_flags => "/GR"},
+    {:dir => "return_val________", :cc_flags => "/GR"},
+    {:dir => "return_struct_____", :cc_flags => "/GR"},
     {:dir => "return_nt_struct__", :cc_flags => "/GR"},
-#    {:dir => "ref_struct________", :cc_flags => "/GR"},
+    {:dir => "ref_struct________", :cc_flags => "/GR"},
 #    {:dir => "ref_val___________", :cc_flags => "/GR"},
-#    {:dir => "expected_struct___", :cc_flags => "/GR"},
+    {:dir => "expected_struct___", :cc_flags => "/GR"},
 #    {:dir => "expected_val______", :cc_flags => "/GR"},
 #    {:dir => "outcome_struct____", :cc_flags => "/GR-"},
 #    {:dir => "outcome_val_______", :cc_flags => "/GR-"},
