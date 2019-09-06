@@ -1,7 +1,7 @@
 MAX_NOP_1 = 31
 MAX_NOP_2 = 31
 GAUSS_CASES = 1023
-FRAME_COUNT = 15
+FRAME_COUNT = 7
 
 TERM_TYPES = [
     {:dir => "terminate_________", :cc_flags => "/GR"},
@@ -34,7 +34,7 @@ class TestCase
         @error_type = error_type
         dir_part = @error_case + "\\" + @error_type[:dir]
         @proc = proc
-        @dest = "#{@proc}\\#{dir_part}"
+        @dest = "MSVC_#{@proc}\\#{dir_part}"
         @flags = "    EXTRA_FLAGS = " + @error_type[:cc_flags] + "\n"
         @cc = "#{@proc}_compile"
         @bench_cc = "#{@proc}_bench_compile"

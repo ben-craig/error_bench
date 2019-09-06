@@ -1,7 +1,7 @@
 MAX_NOP_1 = 31
 MAX_NOP_2 = 31
 GAUSS_CASES = 1023
-FRAME_COUNT = 15
+FRAME_COUNT = 7
 
 TERM_TYPES = [
     {:dir => "terminate_________", :cc_flags => "-fno-exceptions"},

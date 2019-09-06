@@ -6,7 +6,7 @@ def main():
   with open(sys.argv[2], 'w') as fout:
     with open(sys.argv[1], 'r') as fin:
       current_int = int(sys.argv[3])
-      if current_int == 15:
+      if current_int == 7:
         next_func = "callee"
       else:
         next_val = str(current_int + 1)
