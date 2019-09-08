@@ -11,3 +11,24 @@ error_struct caller__VALUE__(bool do_err) {
   global_val = 0;
   return e;
 }
+
+error_struct param_caller__VALUE__(int *val, bool do_err) {
+  NOP_SLED_HEAD___VALUE__;
+  Dtor__VALUE__ d;
+  error_struct e = param___NEXT_FUNC__(val, do_err);
+  if (e.error)
+    return e;
+  *val = 0;
+  return e;
+}
+
+error_struct ret_caller__VALUE__(int *val, bool do_err) {
+  NOP_SLED_HEAD___VALUE__;
+  Dtor__VALUE__ d;
+  int retval = 0;
+  error_struct e = ret___NEXT_FUNC__(&retval, do_err);
+  if (e.error)
+    return e;
+  *val = retval + 1;
+  return e;
+}

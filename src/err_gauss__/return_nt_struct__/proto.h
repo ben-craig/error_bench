@@ -25,3 +25,40 @@ error_struct caller15(bool do_err);
 error_struct callee(bool do_err);
 
 extern int global_val;
+
+error_struct param_caller0(int *val, bool do_err);
+error_struct param_caller1(int *val, bool do_err);
+error_struct param_caller2(int *val, bool do_err);
+error_struct param_caller3(int *val, bool do_err);
+error_struct param_caller4(int *val, bool do_err);
+error_struct param_caller5(int *val, bool do_err);
+error_struct param_caller6(int *val, bool do_err);
+error_struct param_caller7(int *val, bool do_err);
+error_struct param_caller8(int *val, bool do_err);
+error_struct param_caller9(int *val, bool do_err);
+error_struct param_caller10(int *val, bool do_err);
+error_struct param_caller11(int *val, bool do_err);
+error_struct param_caller12(int *val, bool do_err);
+error_struct param_caller13(int *val, bool do_err);
+error_struct param_caller14(int *val, bool do_err);
+error_struct param_caller15(int *val, bool do_err);
+error_struct param_callee(int *val, bool do_err);
+
+error_struct ret_caller0(int *val, bool do_err);
+error_struct ret_caller1(int *val, bool do_err);
+error_struct ret_caller2(int *val, bool do_err);
+error_struct ret_caller3(int *val, bool do_err);
+error_struct ret_caller4(int *val, bool do_err);
+error_struct ret_caller5(int *val, bool do_err);
+error_struct ret_caller6(int *val, bool do_err);
+error_struct ret_caller7(int *val, bool do_err);
+error_struct ret_caller8(int *val, bool do_err);
+error_struct ret_caller9(int *val, bool do_err);
+error_struct ret_caller10(int *val, bool do_err);
+error_struct ret_caller11(int *val, bool do_err);
+error_struct ret_caller12(int *val, bool do_err);
+error_struct ret_caller13(int *val, bool do_err);
+error_struct ret_caller14(int *val, bool do_err);
+error_struct ret_caller15(int *val, bool do_err);
+error_struct ret_callee(int *val, bool do_err);
+

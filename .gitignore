@@ -2,6 +2,8 @@
 .ninja_log
 x64/
 x86/
+MSVC_x64/
+MSVC_x86/
 clang/
 gcc/
 totals/

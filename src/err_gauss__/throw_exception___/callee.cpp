@@ -14,3 +14,18 @@ void callee(bool do_err) {
   if(do_err)
     throw err_exception(1);
 }
+
+void param_callee(int *val, bool do_err) {
+  (void) val;
+  inline_nop_X X;
+  if(do_err)
+    throw err_exception(1);
+}
+
+int ret_callee(bool do_err) {
+  inline_nop_X X;
+  if(do_err)
+    throw err_exception(1);
+  return 0;
+}
+

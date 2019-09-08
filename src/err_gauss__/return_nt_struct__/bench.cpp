@@ -16,31 +16,65 @@ int main() {
     }
     NOP_SLED_TAIL_A;
   }
-  {
-    TimeLogger logger;
-    NOP_SLED_HEAD_B;
-    for (uint32_t i = 0; i < ITERATIONS; ++i) {
-      (void)caller1(false);
-    }
-    NOP_SLED_TAIL_B;
-  }
   for (uint32_t i = 0; i < WARMUP_ITERATIONS; ++i) {
     (void)caller0(true);
   }
   {
     TimeLogger logger;
-    NOP_SLED_HEAD_C;
+    NOP_SLED_HEAD_B;
     for (uint32_t i = 0; i < ITERATIONS; ++i) {
       (void)caller0(true);
     }
+    NOP_SLED_TAIL_B;
+  }
+
+  for (uint32_t i = 0; i < WARMUP_ITERATIONS; ++i) {
+    (void)param_caller0(&global_val, false);
+  }
+  {
+    TimeLogger logger;
+    NOP_SLED_HEAD_C;
+    for (uint32_t i = 0; i < ITERATIONS; ++i) {
+      (void)param_caller0(&global_val, false);
+    }
     NOP_SLED_TAIL_C;
+  }
+  for (uint32_t i = 0; i < WARMUP_ITERATIONS; ++i) {
+    (void)param_caller0(&global_val, true);
   }
   {
     TimeLogger logger;
     NOP_SLED_HEAD_D;
     for (uint32_t i = 0; i < ITERATIONS; ++i) {
-      (void)caller1(true);
+      (void)param_caller0(&global_val, true);
     }
     NOP_SLED_TAIL_D;
+  }
+
+  for (uint32_t i = 0; i < WARMUP_ITERATIONS; ++i) {
+    int val = 0;
+    (void)ret_caller0(&val, false);
+  }
+  {
+    TimeLogger logger;
+    NOP_SLED_HEAD_E;
+    for (uint32_t i = 0; i < ITERATIONS; ++i) {
+    int val = 0;
+      (void)ret_caller0(&val, false);
+    }
+    NOP_SLED_TAIL_E;
+  }
+  for (uint32_t i = 0; i < WARMUP_ITERATIONS; ++i) {
+    int val = 0;
+    (void)ret_caller0(&val, true);
+  }
+  {
+    TimeLogger logger;
+    NOP_SLED_HEAD_F;
+    for (uint32_t i = 0; i < ITERATIONS; ++i) {
+    int val = 0;
+      (void)ret_caller0(&val, true);
+    }
+    NOP_SLED_TAIL_F;
   }
 }
