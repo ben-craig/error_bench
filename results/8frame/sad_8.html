@@ -122,26 +122,68 @@ var medians = {
   'gcc.return_val': 132.93,
   'gcc.throw_exception': 47587.20,
 };
+var stdevs = {
+  'MSVC_x64.expected_struct': 2.99,
+  'MSVC_x64.outcome_std_error': 3.49,
+  'MSVC_x64.ref_struct': 2.73,
+  'MSVC_x64.return_nt_struct': 3.80,
+  'MSVC_x64.return_struct': 3.63,
+  'MSVC_x64.return_val': 3.15,
+  'MSVC_x64.throw_exception': 615.02,
+  'MSVC_x86.expected_struct': 4.95,
+  'MSVC_x86.outcome_std_error': 4.62,
+  'MSVC_x86.ref_struct': 2.71,
+  'MSVC_x86.return_nt_struct': 4.73,
+  'MSVC_x86.return_struct': 2.93,
+  'MSVC_x86.return_val': 3.42,
+  'MSVC_x86.throw_exception': 419.70,
+  'clang.expected_struct': 4.18,
+  'clang.outcome_std_error': 5.01,
+  'clang.ref_struct': 3.68,
+  'clang.return_nt_struct': 4.08,
+  'clang.return_struct': 3.51,
+  'clang.return_val': 3.32,
+  'clang.throw_exception': 950.11,
+  'gcc.expected_struct': 4.26,
+  'gcc.outcome_std_error': 5.42,
+  'gcc.ref_struct': 2.62,
+  'gcc.return_nt_struct': 4.27,
+  'gcc.return_struct': 3.76,
+  'gcc.return_val': 3.34,
+  'gcc.throw_exception': 636.40,
+};
+var variances = {
+  'MSVC_x64.expected_struct': 8.92,
+  'MSVC_x64.outcome_std_error': 12.21,
+  'MSVC_x64.ref_struct': 7.43,
+  'MSVC_x64.return_nt_struct': 14.45,
+  'MSVC_x64.return_struct': 13.20,
+  'MSVC_x64.return_val': 9.94,
+  'MSVC_x64.throw_exception': 378250.01,
+  'MSVC_x86.expected_struct': 24.46,
+  'MSVC_x86.outcome_std_error': 21.38,
+  'MSVC_x86.ref_struct': 7.36,
+  'MSVC_x86.return_nt_struct': 22.38,
+  'MSVC_x86.return_struct': 8.58,
+  'MSVC_x86.return_val': 11.72,
+  'MSVC_x86.throw_exception': 176149.25,
+  'clang.expected_struct': 17.46,
+  'clang.outcome_std_error': 25.09,
+  'clang.ref_struct': 13.54,
+  'clang.return_nt_struct': 16.63,
+  'clang.return_struct': 12.33,
+  'clang.return_val': 10.99,
+  'clang.throw_exception': 902708.76,
+  'gcc.expected_struct': 18.12,
+  'gcc.outcome_std_error': 29.35,
+  'gcc.ref_struct': 6.88,
+  'gcc.return_nt_struct': 18.25,
+  'gcc.return_struct': 14.12,
+  'gcc.return_val': 11.16,
+  'gcc.throw_exception': 405003.38,
+};
 var theData = {
   MSVC_x64: {
-    expected_struct: [
-      [200.0, 1024],
-    ],
-    outcome_std_error: [
-      [200.0, 1024],
-    ],
-    ref_struct: [
-      [200.0, 1024],
-    ],
-    return_nt_struct: [
-      [200.0, 1024],
-    ],
-    return_struct: [
-      [200.0, 1024],
-    ],
-    return_val: [
-      [200.0, 1024],
-    ],
     throw_exception: [
       [16800.0, 2],
       [17000.0, 6],
@@ -166,12 +208,7 @@ var theData = {
       [24800.0, 1],
       [25600.0, 1],
     ],
-  },
-  MSVC_x86: {
-    expected_struct: [
-      [200.0, 1024],
-    ],
-    outcome_std_error: [
+    return_val: [
       [200.0, 1024],
     ],
     ref_struct: [
@@ -183,9 +220,14 @@ var theData = {
     return_struct: [
       [200.0, 1024],
     ],
-    return_val: [
+    expected_struct: [
       [200.0, 1024],
     ],
+    outcome_std_error: [
+      [200.0, 1024],
+    ],
+  },
+  MSVC_x86: {
     throw_exception: [
       [39400.0, 1],
       [39600.0, 4],
@@ -210,12 +252,7 @@ var theData = {
       [43400.0, 1],
       [43600.0, 2],
     ],
-  },
-  clang: {
-    expected_struct: [
-      [200.0, 1024],
-    ],
-    outcome_std_error: [
+    return_val: [
       [200.0, 1024],
     ],
     ref_struct: [
@@ -227,9 +264,14 @@ var theData = {
     return_struct: [
       [200.0, 1024],
     ],
-    return_val: [
+    expected_struct: [
       [200.0, 1024],
     ],
+    outcome_std_error: [
+      [200.0, 1024],
+    ],
+  },
+  clang: {
     throw_exception: [
       [46400.0, 7],
       [47200.0, 3],
@@ -255,12 +297,7 @@ var theData = {
       [52000.0, 50],
       [52200.0, 1],
     ],
-  },
-  gcc: {
-    expected_struct: [
-      [200.0, 1024],
-    ],
-    outcome_std_error: [
+    return_val: [
       [200.0, 1024],
     ],
     ref_struct: [
@@ -272,9 +309,14 @@ var theData = {
     return_struct: [
       [200.0, 1024],
     ],
-    return_val: [
+    expected_struct: [
       [200.0, 1024],
     ],
+    outcome_std_error: [
+      [200.0, 1024],
+    ],
+  },
+  gcc: {
     throw_exception: [
       [44800.0, 12],
       [45000.0, 11],
@@ -293,6 +335,24 @@ var theData = {
       [48600.0, 17],
       [48800.0, 13],
       [49000.0, 5],
+    ],
+    return_val: [
+      [200.0, 1024],
+    ],
+    ref_struct: [
+      [200.0, 1024],
+    ],
+    return_nt_struct: [
+      [200.0, 1024],
+    ],
+    return_struct: [
+      [200.0, 1024],
+    ],
+    expected_struct: [
+      [200.0, 1024],
+    ],
+    outcome_std_error: [
+      [200.0, 1024],
     ],
   },
 };
@@ -358,62 +418,62 @@ var theGrids = [
 ];
 var gridHeightNeeded = 1700;
 var theXAxes = [
-  make_xAxis('MSVC_x64.expected_struct', 0, false, minXValue, maxXValue),
-  make_xAxis('MSVC_x64.expected_struct', 1, false, minXValue, maxXValue),
-  make_xAxis('MSVC_x64.outcome_std_error', 2, false, minXValue, maxXValue),
-  make_xAxis('MSVC_x64.outcome_std_error', 3, false, minXValue, maxXValue),
+  make_xAxis('MSVC_x64.throw_exception', 0, false, minXValue, maxXValue),
+  make_xAxis('MSVC_x64.throw_exception', 1, false, minXValue, maxXValue),
+  make_xAxis('MSVC_x64.return_val', 2, false, minXValue, maxXValue),
+  make_xAxis('MSVC_x64.return_val', 3, false, minXValue, maxXValue),
   make_xAxis('MSVC_x64.ref_struct', 4, false, minXValue, maxXValue),
   make_xAxis('MSVC_x64.ref_struct', 5, false, minXValue, maxXValue),
   make_xAxis('MSVC_x64.return_nt_struct', 6, false, minXValue, maxXValue),
   make_xAxis('MSVC_x64.return_nt_struct', 7, false, minXValue, maxXValue),
   make_xAxis('MSVC_x64.return_struct', 8, false, minXValue, maxXValue),
   make_xAxis('MSVC_x64.return_struct', 9, false, minXValue, maxXValue),
-  make_xAxis('MSVC_x64.return_val', 10, false, minXValue, maxXValue),
-  make_xAxis('MSVC_x64.return_val', 11, false, minXValue, maxXValue),
-  make_xAxis('MSVC_x64.throw_exception', 12, false, minXValue, maxXValue),
-  make_xAxis('MSVC_x64.throw_exception', 13, false, minXValue, maxXValue),
-  make_xAxis('MSVC_x86.expected_struct', 14, false, minXValue, maxXValue),
-  make_xAxis('MSVC_x86.expected_struct', 15, false, minXValue, maxXValue),
-  make_xAxis('MSVC_x86.outcome_std_error', 16, false, minXValue, maxXValue),
-  make_xAxis('MSVC_x86.outcome_std_error', 17, false, minXValue, maxXValue),
+  make_xAxis('MSVC_x64.expected_struct', 10, false, minXValue, maxXValue),
+  make_xAxis('MSVC_x64.expected_struct', 11, false, minXValue, maxXValue),
+  make_xAxis('MSVC_x64.outcome_std_error', 12, false, minXValue, maxXValue),
+  make_xAxis('MSVC_x64.outcome_std_error', 13, false, minXValue, maxXValue),
+  make_xAxis('MSVC_x86.throw_exception', 14, false, minXValue, maxXValue),
+  make_xAxis('MSVC_x86.throw_exception', 15, false, minXValue, maxXValue),
+  make_xAxis('MSVC_x86.return_val', 16, false, minXValue, maxXValue),
+  make_xAxis('MSVC_x86.return_val', 17, false, minXValue, maxXValue),
   make_xAxis('MSVC_x86.ref_struct', 18, false, minXValue, maxXValue),
   make_xAxis('MSVC_x86.ref_struct', 19, false, minXValue, maxXValue),
   make_xAxis('MSVC_x86.return_nt_struct', 20, false, minXValue, maxXValue),
   make_xAxis('MSVC_x86.return_nt_struct', 21, false, minXValue, maxXValue),
   make_xAxis('MSVC_x86.return_struct', 22, false, minXValue, maxXValue),
   make_xAxis('MSVC_x86.return_struct', 23, false, minXValue, maxXValue),
-  make_xAxis('MSVC_x86.return_val', 24, false, minXValue, maxXValue),
-  make_xAxis('MSVC_x86.return_val', 25, false, minXValue, maxXValue),
-  make_xAxis('MSVC_x86.throw_exception', 26, false, minXValue, maxXValue),
-  make_xAxis('MSVC_x86.throw_exception', 27, false, minXValue, maxXValue),
-  make_xAxis('clang.expected_struct', 28, false, minXValue, maxXValue),
-  make_xAxis('clang.expected_struct', 29, false, minXValue, maxXValue),
-  make_xAxis('clang.outcome_std_error', 30, false, minXValue, maxXValue),
-  make_xAxis('clang.outcome_std_error', 31, false, minXValue, maxXValue),
+  make_xAxis('MSVC_x86.expected_struct', 24, false, minXValue, maxXValue),
+  make_xAxis('MSVC_x86.expected_struct', 25, false, minXValue, maxXValue),
+  make_xAxis('MSVC_x86.outcome_std_error', 26, false, minXValue, maxXValue),
+  make_xAxis('MSVC_x86.outcome_std_error', 27, false, minXValue, maxXValue),
+  make_xAxis('clang.throw_exception', 28, false, minXValue, maxXValue),
+  make_xAxis('clang.throw_exception', 29, false, minXValue, maxXValue),
+  make_xAxis('clang.return_val', 30, false, minXValue, maxXValue),
+  make_xAxis('clang.return_val', 31, false, minXValue, maxXValue),
   make_xAxis('clang.ref_struct', 32, false, minXValue, maxXValue),
   make_xAxis('clang.ref_struct', 33, false, minXValue, maxXValue),
   make_xAxis('clang.return_nt_struct', 34, false, minXValue, maxXValue),
   make_xAxis('clang.return_nt_struct', 35, false, minXValue, maxXValue),
   make_xAxis('clang.return_struct', 36, false, minXValue, maxXValue),
   make_xAxis('clang.return_struct', 37, false, minXValue, maxXValue),
-  make_xAxis('clang.return_val', 38, false, minXValue, maxXValue),
-  make_xAxis('clang.return_val', 39, false, minXValue, maxXValue),
-  make_xAxis('clang.throw_exception', 40, false, minXValue, maxXValue),
-  make_xAxis('clang.throw_exception', 41, false, minXValue, maxXValue),
-  make_xAxis('gcc.expected_struct', 42, false, minXValue, maxXValue),
-  make_xAxis('gcc.expected_struct', 43, false, minXValue, maxXValue),
-  make_xAxis('gcc.outcome_std_error', 44, false, minXValue, maxXValue),
-  make_xAxis('gcc.outcome_std_error', 45, false, minXValue, maxXValue),
+  make_xAxis('clang.expected_struct', 38, false, minXValue, maxXValue),
+  make_xAxis('clang.expected_struct', 39, false, minXValue, maxXValue),
+  make_xAxis('clang.outcome_std_error', 40, false, minXValue, maxXValue),
+  make_xAxis('clang.outcome_std_error', 41, false, minXValue, maxXValue),
+  make_xAxis('gcc.throw_exception', 42, false, minXValue, maxXValue),
+  make_xAxis('gcc.throw_exception', 43, false, minXValue, maxXValue),
+  make_xAxis('gcc.return_val', 44, false, minXValue, maxXValue),
+  make_xAxis('gcc.return_val', 45, false, minXValue, maxXValue),
   make_xAxis('gcc.ref_struct', 46, false, minXValue, maxXValue),
   make_xAxis('gcc.ref_struct', 47, false, minXValue, maxXValue),
   make_xAxis('gcc.return_nt_struct', 48, false, minXValue, maxXValue),
   make_xAxis('gcc.return_nt_struct', 49, false, minXValue, maxXValue),
   make_xAxis('gcc.return_struct', 50, false, minXValue, maxXValue),
   make_xAxis('gcc.return_struct', 51, false, minXValue, maxXValue),
-  make_xAxis('gcc.return_val', 52, false, minXValue, maxXValue),
-  make_xAxis('gcc.return_val', 53, false, minXValue, maxXValue),
-  make_xAxis('gcc.throw_exception', 54, false, minXValue, maxXValue),
-  make_xAxis('gcc.throw_exception', 55, true, minXValue, maxXValue),
+  make_xAxis('gcc.expected_struct', 52, false, minXValue, maxXValue),
+  make_xAxis('gcc.expected_struct', 53, false, minXValue, maxXValue),
+  make_xAxis('gcc.outcome_std_error', 54, false, minXValue, maxXValue),
+  make_xAxis('gcc.outcome_std_error', 55, true, minXValue, maxXValue),
 ];
 var xAxisIndices = [
   0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 
@@ -477,80 +537,171 @@ var theYAxes = [
   Object.assign({gridIndex: 55}, invertYAxis),
 ];
 var theSeries = [
-  make_series( 'MSVC_x64.expected_struct', 0, theData.MSVC_x64.expected_struct, '#1b9e77'),
-  make_series( 'MSVC_x64.expected_struct', 1, theData.MSVC_x64.expected_struct, '#1b9e77'),
-  make_series( 'MSVC_x64.outcome_std_error', 2, theData.MSVC_x64.outcome_std_error, '#d95f02'),
-  make_series( 'MSVC_x64.outcome_std_error', 3, theData.MSVC_x64.outcome_std_error, '#d95f02'),
+  make_series( 'MSVC_x64.throw_exception', 0, theData.MSVC_x64.throw_exception, '#1b9e77'),
+  make_series( 'MSVC_x64.throw_exception', 1, theData.MSVC_x64.throw_exception, '#1b9e77'),
+  make_series( 'MSVC_x64.return_val', 2, theData.MSVC_x64.return_val, '#d95f02'),
+  make_series( 'MSVC_x64.return_val', 3, theData.MSVC_x64.return_val, '#d95f02'),
   make_series( 'MSVC_x64.ref_struct', 4, theData.MSVC_x64.ref_struct, '#7570b3'),
   make_series( 'MSVC_x64.ref_struct', 5, theData.MSVC_x64.ref_struct, '#7570b3'),
   make_series( 'MSVC_x64.return_nt_struct', 6, theData.MSVC_x64.return_nt_struct, '#e7298a'),
   make_series( 'MSVC_x64.return_nt_struct', 7, theData.MSVC_x64.return_nt_struct, '#e7298a'),
   make_series( 'MSVC_x64.return_struct', 8, theData.MSVC_x64.return_struct, '#66a61e'),
   make_series( 'MSVC_x64.return_struct', 9, theData.MSVC_x64.return_struct, '#66a61e'),
-  make_series( 'MSVC_x64.return_val', 10, theData.MSVC_x64.return_val, '#e6ab02'),
-  make_series( 'MSVC_x64.return_val', 11, theData.MSVC_x64.return_val, '#e6ab02'),
-  make_series( 'MSVC_x64.throw_exception', 12, theData.MSVC_x64.throw_exception, '#a6761d'),
-  make_series( 'MSVC_x64.throw_exception', 13, theData.MSVC_x64.throw_exception, '#a6761d'),
-  make_series( 'MSVC_x86.expected_struct', 14, theData.MSVC_x86.expected_struct, '#666666'),
-  make_series( 'MSVC_x86.expected_struct', 15, theData.MSVC_x86.expected_struct, '#666666'),
-  make_series( 'MSVC_x86.outcome_std_error', 16, theData.MSVC_x86.outcome_std_error, '#1b9e77'),
-  make_series( 'MSVC_x86.outcome_std_error', 17, theData.MSVC_x86.outcome_std_error, '#1b9e77'),
+  make_series( 'MSVC_x64.expected_struct', 10, theData.MSVC_x64.expected_struct, '#e6ab02'),
+  make_series( 'MSVC_x64.expected_struct', 11, theData.MSVC_x64.expected_struct, '#e6ab02'),
+  make_series( 'MSVC_x64.outcome_std_error', 12, theData.MSVC_x64.outcome_std_error, '#a6761d'),
+  make_series( 'MSVC_x64.outcome_std_error', 13, theData.MSVC_x64.outcome_std_error, '#a6761d'),
+  make_series( 'MSVC_x86.throw_exception', 14, theData.MSVC_x86.throw_exception, '#666666'),
+  make_series( 'MSVC_x86.throw_exception', 15, theData.MSVC_x86.throw_exception, '#666666'),
+  make_series( 'MSVC_x86.return_val', 16, theData.MSVC_x86.return_val, '#1b9e77'),
+  make_series( 'MSVC_x86.return_val', 17, theData.MSVC_x86.return_val, '#1b9e77'),
   make_series( 'MSVC_x86.ref_struct', 18, theData.MSVC_x86.ref_struct, '#d95f02'),
   make_series( 'MSVC_x86.ref_struct', 19, theData.MSVC_x86.ref_struct, '#d95f02'),
   make_series( 'MSVC_x86.return_nt_struct', 20, theData.MSVC_x86.return_nt_struct, '#7570b3'),
   make_series( 'MSVC_x86.return_nt_struct', 21, theData.MSVC_x86.return_nt_struct, '#7570b3'),
   make_series( 'MSVC_x86.return_struct', 22, theData.MSVC_x86.return_struct, '#e7298a'),
   make_series( 'MSVC_x86.return_struct', 23, theData.MSVC_x86.return_struct, '#e7298a'),
-  make_series( 'MSVC_x86.return_val', 24, theData.MSVC_x86.return_val, '#66a61e'),
-  make_series( 'MSVC_x86.return_val', 25, theData.MSVC_x86.return_val, '#66a61e'),
-  make_series( 'MSVC_x86.throw_exception', 26, theData.MSVC_x86.throw_exception, '#e6ab02'),
-  make_series( 'MSVC_x86.throw_exception', 27, theData.MSVC_x86.throw_exception, '#e6ab02'),
-  make_series( 'clang.expected_struct', 28, theData.clang.expected_struct, '#a6761d'),
-  make_series( 'clang.expected_struct', 29, theData.clang.expected_struct, '#a6761d'),
-  make_series( 'clang.outcome_std_error', 30, theData.clang.outcome_std_error, '#666666'),
-  make_series( 'clang.outcome_std_error', 31, theData.clang.outcome_std_error, '#666666'),
+  make_series( 'MSVC_x86.expected_struct', 24, theData.MSVC_x86.expected_struct, '#66a61e'),
+  make_series( 'MSVC_x86.expected_struct', 25, theData.MSVC_x86.expected_struct, '#66a61e'),
+  make_series( 'MSVC_x86.outcome_std_error', 26, theData.MSVC_x86.outcome_std_error, '#e6ab02'),
+  make_series( 'MSVC_x86.outcome_std_error', 27, theData.MSVC_x86.outcome_std_error, '#e6ab02'),
+  make_series( 'clang.throw_exception', 28, theData.clang.throw_exception, '#a6761d'),
+  make_series( 'clang.throw_exception', 29, theData.clang.throw_exception, '#a6761d'),
+  make_series( 'clang.return_val', 30, theData.clang.return_val, '#666666'),
+  make_series( 'clang.return_val', 31, theData.clang.return_val, '#666666'),
   make_series( 'clang.ref_struct', 32, theData.clang.ref_struct, '#1b9e77'),
   make_series( 'clang.ref_struct', 33, theData.clang.ref_struct, '#1b9e77'),
   make_series( 'clang.return_nt_struct', 34, theData.clang.return_nt_struct, '#d95f02'),
   make_series( 'clang.return_nt_struct', 35, theData.clang.return_nt_struct, '#d95f02'),
   make_series( 'clang.return_struct', 36, theData.clang.return_struct, '#7570b3'),
   make_series( 'clang.return_struct', 37, theData.clang.return_struct, '#7570b3'),
-  make_series( 'clang.return_val', 38, theData.clang.return_val, '#e7298a'),
-  make_series( 'clang.return_val', 39, theData.clang.return_val, '#e7298a'),
-  make_series( 'clang.throw_exception', 40, theData.clang.throw_exception, '#66a61e'),
-  make_series( 'clang.throw_exception', 41, theData.clang.throw_exception, '#66a61e'),
-  make_series( 'gcc.expected_struct', 42, theData.gcc.expected_struct, '#e6ab02'),
-  make_series( 'gcc.expected_struct', 43, theData.gcc.expected_struct, '#e6ab02'),
-  make_series( 'gcc.outcome_std_error', 44, theData.gcc.outcome_std_error, '#a6761d'),
-  make_series( 'gcc.outcome_std_error', 45, theData.gcc.outcome_std_error, '#a6761d'),
+  make_series( 'clang.expected_struct', 38, theData.clang.expected_struct, '#e7298a'),
+  make_series( 'clang.expected_struct', 39, theData.clang.expected_struct, '#e7298a'),
+  make_series( 'clang.outcome_std_error', 40, theData.clang.outcome_std_error, '#66a61e'),
+  make_series( 'clang.outcome_std_error', 41, theData.clang.outcome_std_error, '#66a61e'),
+  make_series( 'gcc.throw_exception', 42, theData.gcc.throw_exception, '#e6ab02'),
+  make_series( 'gcc.throw_exception', 43, theData.gcc.throw_exception, '#e6ab02'),
+  make_series( 'gcc.return_val', 44, theData.gcc.return_val, '#a6761d'),
+  make_series( 'gcc.return_val', 45, theData.gcc.return_val, '#a6761d'),
   make_series( 'gcc.ref_struct', 46, theData.gcc.ref_struct, '#666666'),
   make_series( 'gcc.ref_struct', 47, theData.gcc.ref_struct, '#666666'),
   make_series( 'gcc.return_nt_struct', 48, theData.gcc.return_nt_struct, '#1b9e77'),
   make_series( 'gcc.return_nt_struct', 49, theData.gcc.return_nt_struct, '#1b9e77'),
   make_series( 'gcc.return_struct', 50, theData.gcc.return_struct, '#d95f02'),
   make_series( 'gcc.return_struct', 51, theData.gcc.return_struct, '#d95f02'),
-  make_series( 'gcc.return_val', 52, theData.gcc.return_val, '#7570b3'),
-  make_series( 'gcc.return_val', 53, theData.gcc.return_val, '#7570b3'),
-  make_series( 'gcc.throw_exception', 54, theData.gcc.throw_exception, '#e7298a'),
-  make_series( 'gcc.throw_exception', 55, theData.gcc.throw_exception, '#e7298a'),
+  make_series( 'gcc.expected_struct', 52, theData.gcc.expected_struct, '#7570b3'),
+  make_series( 'gcc.expected_struct', 53, theData.gcc.expected_struct, '#7570b3'),
+  make_series( 'gcc.outcome_std_error', 54, theData.gcc.outcome_std_error, '#e7298a'),
+  make_series( 'gcc.outcome_std_error', 55, theData.gcc.outcome_std_error, '#e7298a'),
+];
+var barSeries = [
+  {
+    type: 'bar',
+    name: 'throw_exception',
+    itemStyle: {color: '#1b9e77'},
+    data: [
+      medians['MSVC_x64.throw_exception'],
+      medians['MSVC_x86.throw_exception'],
+      medians['clang.throw_exception'],
+      medians['gcc.throw_exception'],
+    ]
+  },
+  {
+    type: 'bar',
+    name: 'return_val',
+    itemStyle: {color: '#d95f02'},
+    data: [
+      medians['MSVC_x64.return_val'],
+      medians['MSVC_x86.return_val'],
+      medians['clang.return_val'],
+      medians['gcc.return_val'],
+    ]
+  },
+  {
+    type: 'bar',
+    name: 'ref_struct',
+    itemStyle: {color: '#7570b3'},
+    data: [
+      medians['MSVC_x64.ref_struct'],
+      medians['MSVC_x86.ref_struct'],
+      medians['clang.ref_struct'],
+      medians['gcc.ref_struct'],
+    ]
+  },
+  {
+    type: 'bar',
+    name: 'return_nt_struct',
+    itemStyle: {color: '#e7298a'},
+    data: [
+      medians['MSVC_x64.return_nt_struct'],
+      medians['MSVC_x86.return_nt_struct'],
+      medians['clang.return_nt_struct'],
+      medians['gcc.return_nt_struct'],
+    ]
+  },
+  {
+    type: 'bar',
+    name: 'return_struct',
+    itemStyle: {color: '#66a61e'},
+    data: [
+      medians['MSVC_x64.return_struct'],
+      medians['MSVC_x86.return_struct'],
+      medians['clang.return_struct'],
+      medians['gcc.return_struct'],
+    ]
+  },
+  {
+    type: 'bar',
+    name: 'expected_struct',
+    itemStyle: {color: '#e6ab02'},
+    data: [
+      medians['MSVC_x64.expected_struct'],
+      medians['MSVC_x86.expected_struct'],
+      medians['clang.expected_struct'],
+      medians['gcc.expected_struct'],
+    ]
+  },
+  {
+    type: 'bar',
+    name: 'outcome_std_error',
+    itemStyle: {color: '#a6761d'},
+    data: [
+      medians['MSVC_x64.outcome_std_error'],
+      medians['MSVC_x86.outcome_std_error'],
+      medians['clang.outcome_std_error'],
+      medians['gcc.outcome_std_error'],
+    ]
+  },
+];
+var barYAxisData = [
+  'MSVC_x64',
+  'MSVC_x86',
+  'clang',
+  'gcc',
 ];
 
     </script>
 </head>
 <body>
     <!-- prepare a DOM container with width and height -->
-    <div id="SecondNeutral" style="width: 100%;height:10px;"></div>
+    <div id="Violin" style="width: 100%;height:10px;"></div>
+    <div id="Bar" style="width: 100%;height:10px;"></div>
     <script type="text/javascript">
 // based on prepared DOM, initialize echarts instance
-document.getElementById('SecondNeutral').setAttribute("style","height:"+(gridHeightNeeded + 60) + "px");
-var myChart = echarts.init(document.getElementById('SecondNeutral'));
+document.getElementById('Violin').setAttribute("style","height:"+(gridHeightNeeded + 60) + "px");
+var myChart = echarts.init(document.getElementById('Violin'));
+document.getElementById('Bar').setAttribute("style","height:"+(300) + "px");
+var barChart = echarts.init(document.getElementById('Bar'));
 
 function myFormatter(params, ticket, callback) {
   mean = means[params.seriesName];
   median = medians[params.seriesName];
+  stdev = stdevs[params.seriesName];
+  variance = variances[params.seriesName];
   return params.seriesName + "<br />" +
     params.value[0] + " cycles, " + params.value[1] + " samples" + "<br />" +
-    "median: " + median + " cycles, mean: " + mean + " cycles";
+    "median: " + median + " cycles, mean: " + mean + " cycles"  + "<br />" +
+    "stdev: " + stdev + " cycles, variance: " + variance + " cycles";
 }
 
 option = {
@@ -572,6 +723,32 @@ option = {
 };
 
 myChart.setOption(option);
+
+var barOption = {
+  tooltip: { },
+  calculable : true,
+  legend: {
+    right: 0,
+    top: 0,
+    orient: 'vertical',
+  },
+  yAxis: [{
+    type: 'category',
+    inverse:true,
+    data: barYAxisData
+  }],
+  xAxis: [{
+    type: 'value'
+  }],
+  grid: {
+    top: 0,
+    left: 130,
+  },
+  series: barSeries
+};
+
+barChart.setOption(barOption);
+
 </script>
 
 </body>

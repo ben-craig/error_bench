@@ -2,109 +2,6 @@
 import statistics
 # plat -> {frames, {plat_name, {case_name, [[val]]}}}
 
-HTML_HEADER = """
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="utf-8">
-    <script src="echarts_modified.js"></script>
-    <script type="text/javascript">
-
-var commonYAxis = {
-  splitLine: { show: false },
-  axisLine:  { show: false },
-  axisTick:  { show: false },
-  axisLabel: { show: false },
-}
-var invertYAxis = Object.assign(
-  {
-    inverse:true,
-    position: 'top'
-  },
-  commonYAxis)
-
-function make_xAxis(name, idx, axisLabel, min, max) {
-  if (idx == 0)
-  {
-    return {
-      name: name,
-      gridIndex: 0,
-      axisLine:  { show: false },
-      axisTick:  { show: false },
-      axisLabel: { show: true, inside: true, verticalAlign: 'bottom' },
-      nameLocation: "start",
-      min: min,
-      max: max,
-    };
-  }
-
-  return   {
-    name: name,
-    gridIndex: idx,
-    axisLine:  { show: false },
-    axisTick:  { show: false },
-    axisLabel: { show: axisLabel },
-    nameLocation: "start",
-    min: min,
-    max: max,
-  };
-}
-function make_series(name, idx, data, color) {
-  return {
-    name: name,
-    xAxisIndex: idx,
-    yAxisIndex: idx,
-    itemStyle: {color: color},
-    data: data,
-    barWidth: 4,
-    type: 'bar',
-  };
-}
-"""
-HTML_FOOTER = """
-    </script>
-</head>
-<body>
-    <!-- prepare a DOM container with width and height -->
-    <div id="SecondNeutral" style="width: 100%;height:10px;"></div>
-    <script type="text/javascript">
-// based on prepared DOM, initialize echarts instance
-document.getElementById('SecondNeutral').setAttribute("style","height:"+(gridHeightNeeded + 60) + "px");
-var myChart = echarts.init(document.getElementById('SecondNeutral'));
-
-function myFormatter(params, ticket, callback) {
-  mean = means[params.seriesName];
-  median = medians[params.seriesName];
-  return params.seriesName + "<br />" +
-    params.value[0] + " cycles, " + params.value[1] + " samples" + "<br />" +
-    "median: " + median + " cycles, mean: " + mean + " cycles";
-}
-
-option = {
-  tooltip : {
-    formatter: myFormatter,
-  },
-  dataZoom: [
-    {
-      show: true,
-      startValue: minXValue,
-      endValue: maxXValue,
-      xAxisIndex: xAxisIndices,
-    },
-  ],
-  grid: theGrids,
-  xAxis: theXAxes,
-  yAxis: theYAxes,
-  series: theSeries,
-};
-
-myChart.setOption(option);
-</script>
-
-</body>
-</html>
-"""
-
 COLORS = [
   "1b9e77",
   "d95f02",
@@ -119,6 +16,31 @@ COLORS = [
 CPU_FREQ = 3.3915
 START_PIX = 20
 PIX_HEIGHT=30
+
+CASE_ORDER = [
+  "throw_exception",
+  "throw_struct",
+  "throw_val",
+  "noexcept_terminate",
+  "terminate",
+  "noexcept_abort",
+  "abort",
+  "return_val",
+  "ref_struct",
+  "return_nt_struct",
+  "return_struct",
+  "expected_struct",
+  "outcome_std_error",
+]
+def dict_maker(l):
+  dict = {}
+  for i in range(len(l)):
+    dict[l[i]] = i
+  return dict
+
+CASE_ORDER_DICT = dict_maker(CASE_ORDER)
+def case_sorter(case_name):
+  return CASE_ORDER_DICT[case_name]
 
 def parse_line(line, frames):
   [full_case, mood, frame_str, value_str] = line.split(',')
@@ -190,7 +112,9 @@ def calc_width(min_x, max_x):
 def calc_stats(values):
   mean = statistics.mean(values)
   median = statistics.median(values)
-  return {"mean" : mean, "median" : median}
+  stdev = statistics.stdev(values, mean)
+  variance = statistics.variance(values, mean)
+  return {"mean" : mean, "median" : median, "stdev": stdev, "variance": variance}
 
 def emit_stats(fout, stats):
   fout.write("var means = {\n")
@@ -205,20 +129,33 @@ def emit_stats(fout, stats):
     fout.write("  '" + name + "': " + data_str + ",\n")
   fout.write("};\n")
 
+  fout.write("var stdevs = {\n")
+  for name, stat_struct in sorted(stats.items()):
+    data_str = "{:.2f}".format(stat_struct["stdev"])
+    fout.write("  '" + name + "': " + data_str + ",\n")
+  fout.write("};\n")
+
+  fout.write("var variances = {\n")
+  for name, stat_struct in sorted(stats.items()):
+    data_str = "{:.2f}".format(stat_struct["variance"])
+    fout.write("  '" + name + "': " + data_str + ",\n")
+  fout.write("};\n")
+
 def emit_data(fout, noexcept, sad, platforms):
   min_x = 10000000.0
   max_x = 0.0
   stats = {}
   for plat_name, cases in sorted(platforms.items()):
-    for case_name, values in sorted(cases.items()):
+    for case_name in sorted(cases.keys(), key=case_sorter):
       if noexcept and "throw_" in case_name:
         continue
       if sad and "terminate" in case_name:
         continue
-      for value in values.values():
+      values = cases[case_name].values()
+      for value in values:
         min_x = min(min_x, value)
         max_x = max(max_x, value)
-      stats[plat_name + "." + case_name] = calc_stats(values.values())
+      stats[plat_name + "." + case_name] = calc_stats(values)
   emit_stats(fout, stats)
 
   width = calc_width(min_x, max_x)
@@ -229,14 +166,14 @@ def emit_data(fout, noexcept, sad, platforms):
   fout.write("var theData = {\n")
   for plat_name, cases in sorted(platforms.items()):
     fout.write("  " + plat_name + ": {\n")
-    for case_name, values in sorted(cases.items()):
+    for case_name in sorted(cases.keys(), key=case_sorter):
       if noexcept and "throw_" in case_name:
         continue
       if sad and "terminate" in case_name:
         continue
       fout.write("    " + case_name + ": [\n")
       hist = {}
-      for value in values.values():
+      for value in cases[case_name].values():
         bucketed = bucket_data(hist, value, width)
         min_x = min(min_x, bucketed)
         max_x = max(max_x, bucketed)
@@ -263,7 +200,7 @@ def emit_xAxis(fout, num_charts, noexcept, sad, platforms):
   fout.write("var theXAxes = [\n")
   idx = 0
   for plat_name, cases in sorted(platforms.items()):
-    for case_name, data in sorted(cases.items()):
+    for case_name in sorted(cases.keys(), key=case_sorter):
       if noexcept and "throw_" in case_name:
         continue
       if sad and "terminate" in case_name:
@@ -299,13 +236,40 @@ def emit_series(fout, noexcept, sad, platforms):
   fout.write("var theSeries = [\n")
   idx = 0
   for plat_name, cases in sorted(platforms.items()):
-    for case_name, data in sorted(cases.items()):
+    for case_name in sorted(cases.keys(), key=case_sorter):
       if noexcept and "throw_" in case_name:
         continue
       if sad and "terminate" in case_name:
         continue
       emit_single_series(fout, plat_name, case_name, idx)
       idx = idx + 1
+  fout.write("];\n")
+
+def emit_barSeries(fout, noexcept, sad, platforms):
+  fout.write("var barSeries = [\n")
+  idx = 0
+  for case_name in sorted(platforms["MSVC_x64"].keys(), key=case_sorter):
+    if noexcept and "throw_" in case_name:
+      continue
+    if sad and "terminate" in case_name:
+      continue
+    color = COLORS[idx % len(COLORS)]
+    fout.write("  {\n")
+    fout.write("    type: 'bar',\n")
+    fout.write("    name: '" + case_name + "',\n")
+    fout.write("    itemStyle: {color: '#" + color + "'},\n")
+    fout.write("    data: [\n")
+    for plat_name in sorted(platforms.keys()):
+      fout.write("      medians['" + plat_name + "." + case_name + "'],\n")
+    fout.write("    ]\n")
+    fout.write("  },\n")
+    idx = idx + 1
+  fout.write("];\n")
+
+def emit_barYAxisData(fout, platforms):
+  fout.write("var barYAxisData = [\n")
+  for plat_name in sorted(platforms.keys()):
+    fout.write("  '" + plat_name + "',\n")
   fout.write("];\n")
 
 def emit_big_js(file_name, platforms):
@@ -328,6 +292,8 @@ def emit_big_js(file_name, platforms):
     emit_xAxis(fout, num_charts, False, sad, platforms)
     emit_yAxis(fout, num_charts)
     emit_series(fout, False, sad, platforms)
+    emit_barSeries(fout, False, sad, platforms)
+    emit_barYAxisData(fout, platforms)
     fout.write(HTML_FOOTER)
   with open("noexcept_" + file_name, 'w') as fout:
     fout.write(HTML_HEADER)
@@ -337,6 +303,8 @@ def emit_big_js(file_name, platforms):
     emit_xAxis(fout, num_noexcept_charts, True, sad, platforms)
     emit_yAxis(fout, num_noexcept_charts)
     emit_series(fout, True, sad, platforms)
+    emit_barSeries(fout, True, sad, platforms)
+    emit_barYAxisData(fout, platforms)
     fout.write(HTML_FOOTER)
 
 def main():
@@ -344,6 +312,141 @@ def main():
   parse_file("gauss_times.csv", frames)
   for frame, platforms in frames.items():
     emit_big_js(frame + ".html", platforms)
+
+HTML_HEADER = """
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <script src="echarts_modified.js"></script>
+    <script type="text/javascript">
+
+var commonYAxis = {
+  splitLine: { show: false },
+  axisLine:  { show: false },
+  axisTick:  { show: false },
+  axisLabel: { show: false },
+}
+var invertYAxis = Object.assign(
+  {
+    inverse:true,
+    position: 'top'
+  },
+  commonYAxis)
+
+function make_xAxis(name, idx, axisLabel, min, max) {
+  if (idx == 0)
+  {
+    return {
+      name: name,
+      gridIndex: 0,
+      axisLine:  { show: false },
+      axisTick:  { show: false },
+      axisLabel: { show: true, inside: true, verticalAlign: 'bottom' },
+      nameLocation: "start",
+      min: min,
+      max: max,
+    };
+  }
+
+  return   {
+    name: name,
+    gridIndex: idx,
+    axisLine:  { show: false },
+    axisTick:  { show: false },
+    axisLabel: { show: axisLabel },
+    nameLocation: "start",
+    min: min,
+    max: max,
+  };
+}
+function make_series(name, idx, data, color) {
+  return {
+    name: name,
+    xAxisIndex: idx,
+    yAxisIndex: idx,
+    itemStyle: {color: color},
+    data: data,
+    barWidth: 4,
+    type: 'bar',
+  };
+}
+"""
+HTML_FOOTER = """
+    </script>
+</head>
+<body>
+    <!-- prepare a DOM container with width and height -->
+    <div id="Violin" style="width: 100%;height:10px;"></div>
+    <div id="Bar" style="width: 100%;height:10px;"></div>
+    <script type="text/javascript">
+// based on prepared DOM, initialize echarts instance
+document.getElementById('Violin').setAttribute("style","height:"+(gridHeightNeeded + 60) + "px");
+var myChart = echarts.init(document.getElementById('Violin'));
+document.getElementById('Bar').setAttribute("style","height:"+(300) + "px");
+var barChart = echarts.init(document.getElementById('Bar'));
+
+function myFormatter(params, ticket, callback) {
+  mean = means[params.seriesName];
+  median = medians[params.seriesName];
+  stdev = stdevs[params.seriesName];
+  variance = variances[params.seriesName];
+  return params.seriesName + "<br />" +
+    params.value[0] + " cycles, " + params.value[1] + " samples" + "<br />" +
+    "median: " + median + " cycles, mean: " + mean + " cycles"  + "<br />" +
+    "stdev: " + stdev + " cycles, variance: " + variance + " cycles";
+}
+
+option = {
+  tooltip : {
+    formatter: myFormatter,
+  },
+  dataZoom: [
+    {
+      show: true,
+      startValue: minXValue,
+      endValue: maxXValue,
+      xAxisIndex: xAxisIndices,
+    },
+  ],
+  grid: theGrids,
+  xAxis: theXAxes,
+  yAxis: theYAxes,
+  series: theSeries,
+};
+
+myChart.setOption(option);
+
+var barOption = {
+  tooltip: { },
+  calculable : true,
+  legend: {
+    right: 0,
+    top: 0,
+    orient: 'vertical',
+  },
+  yAxis: [{
+    type: 'category',
+    inverse:true,
+    data: barYAxisData
+  }],
+  xAxis: [{
+    type: 'value'
+  }],
+  grid: {
+    top: 0,
+    left: 130,
+  },
+  series: barSeries
+};
+
+barChart.setOption(barOption);
+
+</script>
+
+</body>
+</html>
+"""
 
 if __name__ == '__main__':
   main()
