@@ -397,6 +397,17 @@ function myFormatter(params, ticket, callback) {
     "stdev: " + stdev + " cycles, variance: " + variance + " cycles";
 }
 
+function myFormatter2(params, ticket, callback) {
+  idx = params.name + "." + params.seriesName;
+  mean = means[idx];
+  median = medians[idx];
+  stdev = stdevs[idx];
+  variance = variances[idx];
+  return idx + "<br />" +
+    "median: " + median + " cycles, mean: " + mean + " cycles"  + "<br />" +
+    "stdev: " + stdev + " cycles, variance: " + variance + " cycles";
+}
+
 option = {
   tooltip : {
     formatter: myFormatter,
@@ -418,7 +429,9 @@ option = {
 myChart.setOption(option);
 
 var barOption = {
-  tooltip: { },
+  tooltip : {
+    formatter: myFormatter2,
+  },
   calculable : true,
   legend: {
     right: 0,
