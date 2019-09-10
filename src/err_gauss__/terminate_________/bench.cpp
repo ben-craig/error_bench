@@ -52,4 +52,21 @@ int main() {
     TimeLogger logger;
     // empty log to satisfy scripts
   }
+
+
+  for (uint32_t i = 0; i < WARMUP_ITERATIONS; ++i) {
+    ret_nd_caller0(false);
+  }
+  {
+    TimeLogger logger;
+    NOP_SLED_HEAD_G;
+    for (uint32_t i = 0; i < ITERATIONS; ++i) {
+      ret_nd_caller0(false);
+    }
+    NOP_SLED_TAIL_G;
+  }
+  {
+    TimeLogger logger;
+    // empty log to satisfy scripts
+  }
 }

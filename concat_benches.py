@@ -2,7 +2,7 @@
 import sys
 import subprocess
 
-CASES = ["happy,8","sad,8","happy_param,8","sad_param,8","happy_ret,8","sad_ret,8"]
+CASES = ["happy,8","sad,8","happy_param,8","sad_param,8","happy_ret,8","sad_ret,8","happy_ret_nd,8","sad_ret_nd,8"]
 
 def main():
   with open(sys.argv[1], 'w') as fout:

@@ -22,3 +22,10 @@ result<int> ret_callee(bool do_err) {
     return outcome::experimental::errc::argument_out_of_domain;
   return outcome::success(0);
 }
+
+result<int> ret_nd_callee(bool do_err) { 
+  inline_nop_X X;
+  if(do_err)
+    return outcome::experimental::errc::argument_out_of_domain;
+  return outcome::success(0);
+}

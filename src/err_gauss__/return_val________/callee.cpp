@@ -23,3 +23,11 @@ int ret_callee(int *val, bool do_err) {
   *val = 0;
   return 0;
 }
+
+int ret_nd_callee(int *val, bool do_err) { 
+  inline_nop_X X;
+  if(do_err)
+    return 1;
+  *val = 0;
+  return 0;
+}

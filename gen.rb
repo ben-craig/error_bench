@@ -252,14 +252,14 @@ def gen_gauss_bench(file, test_case, rng_values)
         rng = rng_values[test_iter]
         file.print "build #{dest_dir}\\#{test_iter}\\bench.obj: #{cc} #{dir}\\bench.cpp\n"
         file.print cc_flags
-        file.print "    NOP_COUNTS=/DNOP_COUNT_A=#{rng[FRAME_COUNT+1]} /DNOP_COUNT_B=#{rng[FRAME_COUNT+2]} /DNOP_COUNT_C=#{rng[FRAME_COUNT+3]} /DNOP_COUNT_D=#{rng[FRAME_COUNT+4]} /DNOP_COUNT_E=#{rng[FRAME_COUNT+5]} /DNOP_COUNT_F=#{rng[FRAME_COUNT+6]}\n"
+        file.print "    NOP_COUNTS=/DNOP_COUNT_A=#{rng[FRAME_COUNT+1]} /DNOP_COUNT_B=#{rng[FRAME_COUNT+2]} /DNOP_COUNT_C=#{rng[FRAME_COUNT+3]} /DNOP_COUNT_D=#{rng[FRAME_COUNT+4]} /DNOP_COUNT_E=#{rng[FRAME_COUNT+5]} /DNOP_COUNT_F=#{rng[FRAME_COUNT+6]} /DNOP_COUNT_G=#{rng[FRAME_COUNT+7]} /DNOP_COUNT_H=#{rng[FRAME_COUNT+8]}\n"
 
         file.print "build #{dest_dir}\\#{test_iter}\\bench.exe : #{test_case.proc}_bench_link $\n"
         file.print "    #{dest_dir}\\#{test_iter}\\bench.obj $\n"
         for frame in 0..FRAME_COUNT
             file.print "    #{dest_dir}\\#{rng[frame]}\\caller#{frame}.obj $\n"
         end
-        file.print "    #{dest_dir}\\#{rng[FRAME_COUNT+7]}\\callee.obj $\n"
+        file.print "    #{dest_dir}\\#{rng[FRAME_COUNT+24]}\\callee.obj $\n"
         for frame in 0..FRAME_COUNT
             file.print "    #{dest_dir}\\#{rng[frame]}\\dtor#{frame}.obj $\n"
         end
@@ -280,10 +280,7 @@ def make_rng_values()
         (0..FRAME_COUNT).each do |v|
             bottom_array << rand(MAX_NOP_1+1)
         end
-        ('A'..'F').each do |v|
-            bottom_array << rand(MAX_NOP_1+1)
-        end
-        ('X'..'Z').each do |v|
+        ('A'..'Z').each do |v|
             bottom_array << rand(MAX_NOP_1+1)
         end
         top_array << bottom_array

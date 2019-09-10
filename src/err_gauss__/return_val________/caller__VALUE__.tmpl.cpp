@@ -32,3 +32,12 @@ int ret_caller__VALUE__(int *val, bool do_err) {
   *val = out_val + 1;
   return 0;
 }
+
+int ret_nd_caller__VALUE__(int *val, bool do_err) {
+  int out_val = 0;
+  int e = ret_nd___NEXT_FUNC__(&out_val, do_err);
+  if (e)
+    return e;
+  *val = out_val + 1;
+  return 0;
+}

@@ -28,3 +28,10 @@ int ret_caller__VALUE__(bool do_err, error_struct &e) {
     return 0;
   return val + 1;
 }
+
+int ret_nd_caller__VALUE__(bool do_err, error_struct &e) {
+  int val = ret_nd___NEXT_FUNC__(do_err, e);
+  if (e.error)
+    return 0;
+  return val + 1;
+}

@@ -30,3 +30,10 @@ tl::expected<int, error_struct> ret_caller__VALUE__(bool do_err) {
     return e;
   return *e+1;
 }
+
+tl::expected<int, error_struct> ret_nd_caller__VALUE__(bool do_err) {
+  tl::expected<int, error_struct> e = ret_nd___NEXT_FUNC__(do_err);
+  if (!e)
+    return e;
+  return *e+1;
+}

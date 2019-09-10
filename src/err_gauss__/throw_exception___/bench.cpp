@@ -76,4 +76,28 @@ int main() {
     NOP_SLED_TAIL_F;
   }
 
+
+
+  for (uint32_t i = 0; i < WARMUP_ITERATIONS; ++i) {
+    ret_nd_caller0(false);
+  }
+  {
+    TimeLogger logger;
+    NOP_SLED_HEAD_G;
+    for (uint32_t i = 0; i < ITERATIONS; ++i) {
+      ret_nd_caller0(false);
+    }
+    NOP_SLED_TAIL_G;
+  }
+  for (uint32_t i = 0; i < SLOW_WARMUP_ITERATIONS; ++i) {
+    try { ret_nd_caller0(true); } catch(...) {}
+  }
+  {
+    TimeLogger logger(SLOW_ITERATIONS);
+    NOP_SLED_HEAD_H;
+    for (uint32_t i = 0; i < SLOW_ITERATIONS; ++i) {
+      try { ret_nd_caller0(true); } catch(...) {}
+    }
+    NOP_SLED_TAIL_H;
+  }
 }

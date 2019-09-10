@@ -24,3 +24,8 @@ result<int> ret_caller__VALUE__(bool do_err) {
   OUTCOME_TRY(res, ret___NEXT_FUNC__(do_err));
   return res + 1;
 }
+
+result<int> ret_nd_caller__VALUE__(bool do_err) {
+  OUTCOME_TRY(res, ret_nd___NEXT_FUNC__(do_err));
+  return res + 1;
+}

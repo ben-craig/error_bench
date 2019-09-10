@@ -39,3 +39,16 @@ error_struct ret_callee(int *val, bool do_err) {
   *val = 0;
   return e;
 }
+
+error_struct ret_nd_callee(int *val, bool do_err) {
+  inline_nop_X X;
+  error_struct e;
+  if(do_err)
+  {
+    e.error = &error_info;
+    e.domain = &error_domain;
+    return e;
+  }
+  *val = 0;
+  return e;
+}

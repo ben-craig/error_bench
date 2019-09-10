@@ -33,3 +33,14 @@ int ret_callee(bool do_err, error_struct &e) {
   }
   return 0;
 }
+
+int ret_nd_callee(bool do_err, error_struct &e) {
+  inline_nop_X X;
+  if(do_err)
+  {
+    e.error = &error_info;
+    e.domain = &error_domain;
+    return 0;
+  }
+  return 0;
+}

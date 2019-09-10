@@ -21,3 +21,7 @@ int ret_caller__VALUE__(bool do_err) {
   Dtor__VALUE__ d;
   return ret___NEXT_FUNC__(do_err) + 1;
 }
+
+int ret_nd_caller__VALUE__(bool do_err) {
+  return ret_nd___NEXT_FUNC__(do_err) + 1;
+}

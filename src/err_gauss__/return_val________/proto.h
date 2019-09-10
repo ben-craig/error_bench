@@ -56,3 +56,21 @@ int ret_caller14(int *val, bool do_err);
 int ret_caller15(int *val, bool do_err);
 int ret_callee(int *val, bool do_err);
 
+int ret_nd_caller0(int *val, bool do_err);
+int ret_nd_caller1(int *val, bool do_err);
+int ret_nd_caller2(int *val, bool do_err);
+int ret_nd_caller3(int *val, bool do_err);
+int ret_nd_caller4(int *val, bool do_err);
+int ret_nd_caller5(int *val, bool do_err);
+int ret_nd_caller6(int *val, bool do_err);
+int ret_nd_caller7(int *val, bool do_err);
+int ret_nd_caller8(int *val, bool do_err);
+int ret_nd_caller9(int *val, bool do_err);
+int ret_nd_caller10(int *val, bool do_err);
+int ret_nd_caller11(int *val, bool do_err);
+int ret_nd_caller12(int *val, bool do_err);
+int ret_nd_caller13(int *val, bool do_err);
+int ret_nd_caller14(int *val, bool do_err);
+int ret_nd_caller15(int *val, bool do_err);
+int ret_nd_callee(int *val, bool do_err);
+

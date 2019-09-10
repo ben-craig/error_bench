@@ -22,3 +22,10 @@ int ret_callee(bool do_err) {
   return 0;
 }
 
+int ret_nd_callee(bool do_err) {
+  inline_nop_X X;
+  if(do_err)
+    abort();
+  return 0;
+}
+

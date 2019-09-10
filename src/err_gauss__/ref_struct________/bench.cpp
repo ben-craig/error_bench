@@ -85,4 +85,32 @@ int main() {
     }
     NOP_SLED_TAIL_F;
   }
+
+  for (uint32_t i = 0; i < WARMUP_ITERATIONS; ++i) {
+    error_struct e;
+    (void)ret_nd_caller0(false, e);
+  }
+  {
+    TimeLogger logger;
+    NOP_SLED_HEAD_G;
+    for (uint32_t i = 0; i < ITERATIONS; ++i) {
+      error_struct e;
+      (void)ret_nd_caller0(false, e);
+    }
+    NOP_SLED_TAIL_G;
+  }
+  for (uint32_t i = 0; i < WARMUP_ITERATIONS; ++i) {
+    error_struct e;
+    (void)ret_nd_caller0(true, e);
+  }
+  {
+    TimeLogger logger;
+    NOP_SLED_HEAD_H;
+    for (uint32_t i = 0; i < ITERATIONS; ++i) {
+      error_struct e;
+      (void)ret_nd_caller0(true, e);
+    }
+    NOP_SLED_TAIL_H;
+  }
+
 }

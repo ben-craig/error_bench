@@ -32,3 +32,12 @@ error_struct ret_caller__VALUE__(int *val, bool do_err) {
   *val = retval + 1;
   return e;
 }
+
+error_struct ret_nd_caller__VALUE__(int *val, bool do_err) {
+  int retval = 0;
+  error_struct e = ret_nd___NEXT_FUNC__(&retval, do_err);
+  if (e.error)
+    return e;
+  *val = retval + 1;
+  return e;
+}
