@@ -1,0 +1,769 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <script src="echarts_modified.js"></script>
+    <script type="text/javascript">
+
+var commonYAxis = {
+  splitLine: { show: false },
+  axisLine:  { show: false },
+  axisTick:  { show: false },
+  axisLabel: { show: false },
+}
+var invertYAxis = Object.assign(
+  {
+    inverse:true,
+    position: 'top'
+  },
+  commonYAxis)
+
+function make_xAxis(name, idx, axisLabel, min, max) {
+  if (idx == 0)
+  {
+    return {
+      name: name,
+      gridIndex: 0,
+      axisLine:  { show: false },
+      axisTick:  { show: false },
+      axisLabel: { show: true, inside: true, verticalAlign: 'bottom' },
+      nameLocation: "start",
+      min: min,
+      max: max,
+    };
+  }
+
+  return   {
+    name: name,
+    gridIndex: idx,
+    axisLine:  { show: false },
+    axisTick:  { show: false },
+    axisLabel: { show: axisLabel },
+    nameLocation: "start",
+    min: min,
+    max: max,
+  };
+}
+function make_series(name, idx, data, color) {
+  return {
+    name: name,
+    xAxisIndex: idx,
+    yAxisIndex: idx,
+    itemStyle: {color: color},
+    data: data,
+    barWidth: 4,
+    type: 'bar',
+  };
+}
+var commonGrid = {
+  show: false,
+  left: 200,
+  right: '3%',
+  height: 30,
+}
+var means = {
+  'MSVC_x64.expected_struct': 154.19,
+  'MSVC_x64.outcome_std_error': 174.16,
+  'MSVC_x64.ref_struct': 139.62,
+  'MSVC_x64.return_nt_struct': 147.23,
+  'MSVC_x64.return_struct': 147.77,
+  'MSVC_x64.return_val': 134.67,
+  'MSVC_x64.throw_exception': 18333.40,
+  'MSVC_x86.expected_struct': 152.24,
+  'MSVC_x86.outcome_std_error': 180.00,
+  'MSVC_x86.ref_struct': 135.10,
+  'MSVC_x86.return_nt_struct': 156.01,
+  'MSVC_x86.return_struct': 151.72,
+  'MSVC_x86.return_val': 136.65,
+  'MSVC_x86.throw_exception': 40661.15,
+  'clang.expected_struct': 138.91,
+  'clang.outcome_std_error': 185.04,
+  'clang.ref_struct': 136.06,
+  'clang.return_nt_struct': 137.56,
+  'clang.return_struct': 140.44,
+  'clang.return_val': 132.06,
+  'clang.throw_exception': 50151.22,
+  'gcc.expected_struct': 141.80,
+  'gcc.outcome_std_error': 166.45,
+  'gcc.ref_struct': 127.92,
+  'gcc.return_nt_struct': 139.59,
+  'gcc.return_struct': 144.27,
+  'gcc.return_val': 134.30,
+  'gcc.throw_exception': 47391.20,
+};
+var medians = {
+  'MSVC_x64.expected_struct': 154.08,
+  'MSVC_x64.outcome_std_error': 174.23,
+  'MSVC_x64.ref_struct': 139.69,
+  'MSVC_x64.return_nt_struct': 146.84,
+  'MSVC_x64.return_struct': 147.36,
+  'MSVC_x64.return_val': 134.30,
+  'MSVC_x64.throw_exception': 18302.89,
+  'MSVC_x86.expected_struct': 151.86,
+  'MSVC_x86.outcome_std_error': 179.89,
+  'MSVC_x86.ref_struct': 135.23,
+  'MSVC_x86.return_nt_struct': 155.68,
+  'MSVC_x86.return_struct': 151.60,
+  'MSVC_x86.return_val': 136.62,
+  'MSVC_x86.throw_exception': 40597.21,
+  'clang.expected_struct': 138.52,
+  'clang.outcome_std_error': 184.97,
+  'clang.ref_struct': 135.77,
+  'clang.return_nt_struct': 137.32,
+  'clang.return_struct': 140.09,
+  'clang.return_val': 131.58,
+  'clang.throw_exception': 49937.74,
+  'gcc.expected_struct': 141.57,
+  'gcc.outcome_std_error': 166.59,
+  'gcc.ref_struct': 127.82,
+  'gcc.return_nt_struct': 139.13,
+  'gcc.return_struct': 144.13,
+  'gcc.return_val': 134.06,
+  'gcc.throw_exception': 47397.20,
+};
+var stdevs = {
+  'MSVC_x64.expected_struct': 2.93,
+  'MSVC_x64.outcome_std_error': 3.68,
+  'MSVC_x64.ref_struct': 2.79,
+  'MSVC_x64.return_nt_struct': 4.28,
+  'MSVC_x64.return_struct': 3.76,
+  'MSVC_x64.return_val': 3.67,
+  'MSVC_x64.throw_exception': 367.85,
+  'MSVC_x86.expected_struct': 4.38,
+  'MSVC_x86.outcome_std_error': 4.97,
+  'MSVC_x86.ref_struct': 3.33,
+  'MSVC_x86.return_nt_struct': 4.63,
+  'MSVC_x86.return_struct': 3.39,
+  'MSVC_x86.return_val': 3.80,
+  'MSVC_x86.throw_exception': 548.94,
+  'clang.expected_struct': 4.17,
+  'clang.outcome_std_error': 4.95,
+  'clang.ref_struct': 3.90,
+  'clang.return_nt_struct': 4.00,
+  'clang.return_struct': 3.61,
+  'clang.return_val': 3.65,
+  'clang.throw_exception': 1008.76,
+  'gcc.expected_struct': 4.27,
+  'gcc.outcome_std_error': 4.88,
+  'gcc.ref_struct': 2.92,
+  'gcc.return_nt_struct': 4.35,
+  'gcc.return_struct': 4.29,
+  'gcc.return_val': 4.04,
+  'gcc.throw_exception': 984.48,
+};
+var variances = {
+  'MSVC_x64.expected_struct': 8.58,
+  'MSVC_x64.outcome_std_error': 13.53,
+  'MSVC_x64.ref_struct': 7.79,
+  'MSVC_x64.return_nt_struct': 18.34,
+  'MSVC_x64.return_struct': 14.13,
+  'MSVC_x64.return_val': 13.44,
+  'MSVC_x64.throw_exception': 135310.18,
+  'MSVC_x86.expected_struct': 19.20,
+  'MSVC_x86.outcome_std_error': 24.75,
+  'MSVC_x86.ref_struct': 11.11,
+  'MSVC_x86.return_nt_struct': 21.41,
+  'MSVC_x86.return_struct': 11.51,
+  'MSVC_x86.return_val': 14.47,
+  'MSVC_x86.throw_exception': 301333.74,
+  'clang.expected_struct': 17.40,
+  'clang.outcome_std_error': 24.51,
+  'clang.ref_struct': 15.25,
+  'clang.return_nt_struct': 16.04,
+  'clang.return_struct': 13.04,
+  'clang.return_val': 13.32,
+  'clang.throw_exception': 1017599.56,
+  'gcc.expected_struct': 18.22,
+  'gcc.outcome_std_error': 23.78,
+  'gcc.ref_struct': 8.51,
+  'gcc.return_nt_struct': 18.93,
+  'gcc.return_struct': 18.38,
+  'gcc.return_val': 16.35,
+  'gcc.throw_exception': 969193.52,
+};
+var theData = {
+  MSVC_x64: {
+    throw_exception: [
+      [17000.0, 3],
+      [17200.0, 6],
+      [17400.0, 6],
+      [17600.0, 4],
+      [17800.0, 83],
+      [18000.0, 136],
+      [18200.0, 270],
+      [18400.0, 232],
+      [18600.0, 140],
+      [18800.0, 75],
+      [19000.0, 25],
+      [19200.0, 35],
+      [19400.0, 3],
+      [19600.0, 3],
+      [19800.0, 2],
+      [20200.0, 1],
+    ],
+    return_val: [
+      [200.0, 1024],
+    ],
+    ref_struct: [
+      [200.0, 1024],
+    ],
+    return_nt_struct: [
+      [200.0, 1024],
+    ],
+    return_struct: [
+      [200.0, 1024],
+    ],
+    expected_struct: [
+      [200.0, 1024],
+    ],
+    outcome_std_error: [
+      [200.0, 1024],
+    ],
+  },
+  MSVC_x86: {
+    throw_exception: [
+      [39400.0, 4],
+      [39600.0, 7],
+      [39800.0, 6],
+      [40000.0, 5],
+      [40200.0, 64],
+      [40400.0, 274],
+      [40600.0, 298],
+      [40800.0, 242],
+      [41000.0, 76],
+      [41200.0, 14],
+      [41400.0, 5],
+      [41600.0, 4],
+      [41800.0, 4],
+      [42000.0, 4],
+      [42200.0, 3],
+      [42600.0, 1],
+      [42800.0, 3],
+      [43400.0, 1],
+      [43600.0, 1],
+      [45000.0, 2],
+      [45200.0, 1],
+      [45400.0, 2],
+      [45600.0, 1],
+      [45800.0, 1],
+      [46000.0, 1],
+    ],
+    return_val: [
+      [200.0, 1024],
+    ],
+    ref_struct: [
+      [200.0, 1024],
+    ],
+    return_nt_struct: [
+      [200.0, 1024],
+    ],
+    return_struct: [
+      [200.0, 1024],
+    ],
+    expected_struct: [
+      [200.0, 1024],
+    ],
+    outcome_std_error: [
+      [200.0, 1024],
+    ],
+  },
+  clang: {
+    throw_exception: [
+      [45600.0, 2],
+      [45800.0, 2],
+      [46600.0, 2],
+      [46800.0, 2],
+      [47400.0, 4],
+      [47600.0, 4],
+      [47800.0, 1],
+      [48400.0, 7],
+      [48600.0, 47],
+      [48800.0, 95],
+      [49000.0, 24],
+      [49400.0, 3],
+      [49600.0, 95],
+      [49800.0, 209],
+      [50000.0, 32],
+      [50200.0, 1],
+      [50400.0, 21],
+      [50600.0, 118],
+      [50800.0, 101],
+      [51000.0, 50],
+      [51200.0, 36],
+      [51400.0, 88],
+      [51600.0, 80],
+    ],
+    return_val: [
+      [200.0, 1024],
+    ],
+    ref_struct: [
+      [200.0, 1024],
+    ],
+    return_nt_struct: [
+      [200.0, 1024],
+    ],
+    return_struct: [
+      [200.0, 1024],
+    ],
+    expected_struct: [
+      [200.0, 1024],
+    ],
+    outcome_std_error: [
+      [200.0, 1024],
+    ],
+  },
+  gcc: {
+    throw_exception: [
+      [43600.0, 4],
+      [43800.0, 10],
+      [44000.0, 6],
+      [44200.0, 1],
+      [44400.0, 2],
+      [46200.0, 3],
+      [46400.0, 145],
+      [46600.0, 177],
+      [46800.0, 79],
+      [47000.0, 44],
+      [47200.0, 37],
+      [47400.0, 8],
+      [47800.0, 7],
+      [48000.0, 210],
+      [48200.0, 108],
+      [48400.0, 103],
+      [48600.0, 20],
+      [48800.0, 47],
+      [49000.0, 10],
+      [49400.0, 1],
+      [50200.0, 2],
+    ],
+    return_val: [
+      [200.0, 1024],
+    ],
+    ref_struct: [
+      [200.0, 1024],
+    ],
+    return_nt_struct: [
+      [200.0, 1024],
+    ],
+    return_struct: [
+      [200.0, 1024],
+    ],
+    expected_struct: [
+      [200.0, 1024],
+    ],
+    outcome_std_error: [
+      [200.0, 1024],
+    ],
+  },
+};
+var minXValue = -200.0;
+var maxXValue = 52000.0;
+var theGrids = [
+  Object.assign({top: 20}, commonGrid),
+  Object.assign({top: 50}, commonGrid),
+  Object.assign({top: 80}, commonGrid),
+  Object.assign({top: 110}, commonGrid),
+  Object.assign({top: 140}, commonGrid),
+  Object.assign({top: 170}, commonGrid),
+  Object.assign({top: 200}, commonGrid),
+  Object.assign({top: 230}, commonGrid),
+  Object.assign({top: 260}, commonGrid),
+  Object.assign({top: 290}, commonGrid),
+  Object.assign({top: 320}, commonGrid),
+  Object.assign({top: 350}, commonGrid),
+  Object.assign({top: 380}, commonGrid),
+  Object.assign({top: 410}, commonGrid),
+  Object.assign({top: 440}, commonGrid),
+  Object.assign({top: 470}, commonGrid),
+  Object.assign({top: 500}, commonGrid),
+  Object.assign({top: 530}, commonGrid),
+  Object.assign({top: 560}, commonGrid),
+  Object.assign({top: 590}, commonGrid),
+  Object.assign({top: 620}, commonGrid),
+  Object.assign({top: 650}, commonGrid),
+  Object.assign({top: 680}, commonGrid),
+  Object.assign({top: 710}, commonGrid),
+  Object.assign({top: 740}, commonGrid),
+  Object.assign({top: 770}, commonGrid),
+  Object.assign({top: 800}, commonGrid),
+  Object.assign({top: 830}, commonGrid),
+  Object.assign({top: 860}, commonGrid),
+  Object.assign({top: 890}, commonGrid),
+  Object.assign({top: 920}, commonGrid),
+  Object.assign({top: 950}, commonGrid),
+  Object.assign({top: 980}, commonGrid),
+  Object.assign({top: 1010}, commonGrid),
+  Object.assign({top: 1040}, commonGrid),
+  Object.assign({top: 1070}, commonGrid),
+  Object.assign({top: 1100}, commonGrid),
+  Object.assign({top: 1130}, commonGrid),
+  Object.assign({top: 1160}, commonGrid),
+  Object.assign({top: 1190}, commonGrid),
+  Object.assign({top: 1220}, commonGrid),
+  Object.assign({top: 1250}, commonGrid),
+  Object.assign({top: 1280}, commonGrid),
+  Object.assign({top: 1310}, commonGrid),
+  Object.assign({top: 1340}, commonGrid),
+  Object.assign({top: 1370}, commonGrid),
+  Object.assign({top: 1400}, commonGrid),
+  Object.assign({top: 1430}, commonGrid),
+  Object.assign({top: 1460}, commonGrid),
+  Object.assign({top: 1490}, commonGrid),
+  Object.assign({top: 1520}, commonGrid),
+  Object.assign({top: 1550}, commonGrid),
+  Object.assign({top: 1580}, commonGrid),
+  Object.assign({top: 1610}, commonGrid),
+  Object.assign({top: 1640}, commonGrid),
+  Object.assign({top: 1670}, commonGrid),
+];
+var gridHeightNeeded = 1700;
+var theXAxes = [
+  make_xAxis('MSVC_x64.throw_exception', 0, false, minXValue, maxXValue),
+  make_xAxis('MSVC_x64.throw_exception', 1, false, minXValue, maxXValue),
+  make_xAxis('MSVC_x64.return_val', 2, false, minXValue, maxXValue),
+  make_xAxis('MSVC_x64.return_val', 3, false, minXValue, maxXValue),
+  make_xAxis('MSVC_x64.ref_struct', 4, false, minXValue, maxXValue),
+  make_xAxis('MSVC_x64.ref_struct', 5, false, minXValue, maxXValue),
+  make_xAxis('MSVC_x64.return_nt_struct', 6, false, minXValue, maxXValue),
+  make_xAxis('MSVC_x64.return_nt_struct', 7, false, minXValue, maxXValue),
+  make_xAxis('MSVC_x64.return_struct', 8, false, minXValue, maxXValue),
+  make_xAxis('MSVC_x64.return_struct', 9, false, minXValue, maxXValue),
+  make_xAxis('MSVC_x64.expected_struct', 10, false, minXValue, maxXValue),
+  make_xAxis('MSVC_x64.expected_struct', 11, false, minXValue, maxXValue),
+  make_xAxis('MSVC_x64.outcome_std_error', 12, false, minXValue, maxXValue),
+  make_xAxis('MSVC_x64.outcome_std_error', 13, false, minXValue, maxXValue),
+  make_xAxis('MSVC_x86.throw_exception', 14, false, minXValue, maxXValue),
+  make_xAxis('MSVC_x86.throw_exception', 15, false, minXValue, maxXValue),
+  make_xAxis('MSVC_x86.return_val', 16, false, minXValue, maxXValue),
+  make_xAxis('MSVC_x86.return_val', 17, false, minXValue, maxXValue),
+  make_xAxis('MSVC_x86.ref_struct', 18, false, minXValue, maxXValue),
+  make_xAxis('MSVC_x86.ref_struct', 19, false, minXValue, maxXValue),
+  make_xAxis('MSVC_x86.return_nt_struct', 20, false, minXValue, maxXValue),
+  make_xAxis('MSVC_x86.return_nt_struct', 21, false, minXValue, maxXValue),
+  make_xAxis('MSVC_x86.return_struct', 22, false, minXValue, maxXValue),
+  make_xAxis('MSVC_x86.return_struct', 23, false, minXValue, maxXValue),
+  make_xAxis('MSVC_x86.expected_struct', 24, false, minXValue, maxXValue),
+  make_xAxis('MSVC_x86.expected_struct', 25, false, minXValue, maxXValue),
+  make_xAxis('MSVC_x86.outcome_std_error', 26, false, minXValue, maxXValue),
+  make_xAxis('MSVC_x86.outcome_std_error', 27, false, minXValue, maxXValue),
+  make_xAxis('clang.throw_exception', 28, false, minXValue, maxXValue),
+  make_xAxis('clang.throw_exception', 29, false, minXValue, maxXValue),
+  make_xAxis('clang.return_val', 30, false, minXValue, maxXValue),
+  make_xAxis('clang.return_val', 31, false, minXValue, maxXValue),
+  make_xAxis('clang.ref_struct', 32, false, minXValue, maxXValue),
+  make_xAxis('clang.ref_struct', 33, false, minXValue, maxXValue),
+  make_xAxis('clang.return_nt_struct', 34, false, minXValue, maxXValue),
+  make_xAxis('clang.return_nt_struct', 35, false, minXValue, maxXValue),
+  make_xAxis('clang.return_struct', 36, false, minXValue, maxXValue),
+  make_xAxis('clang.return_struct', 37, false, minXValue, maxXValue),
+  make_xAxis('clang.expected_struct', 38, false, minXValue, maxXValue),
+  make_xAxis('clang.expected_struct', 39, false, minXValue, maxXValue),
+  make_xAxis('clang.outcome_std_error', 40, false, minXValue, maxXValue),
+  make_xAxis('clang.outcome_std_error', 41, false, minXValue, maxXValue),
+  make_xAxis('gcc.throw_exception', 42, false, minXValue, maxXValue),
+  make_xAxis('gcc.throw_exception', 43, false, minXValue, maxXValue),
+  make_xAxis('gcc.return_val', 44, false, minXValue, maxXValue),
+  make_xAxis('gcc.return_val', 45, false, minXValue, maxXValue),
+  make_xAxis('gcc.ref_struct', 46, false, minXValue, maxXValue),
+  make_xAxis('gcc.ref_struct', 47, false, minXValue, maxXValue),
+  make_xAxis('gcc.return_nt_struct', 48, false, minXValue, maxXValue),
+  make_xAxis('gcc.return_nt_struct', 49, false, minXValue, maxXValue),
+  make_xAxis('gcc.return_struct', 50, false, minXValue, maxXValue),
+  make_xAxis('gcc.return_struct', 51, false, minXValue, maxXValue),
+  make_xAxis('gcc.expected_struct', 52, false, minXValue, maxXValue),
+  make_xAxis('gcc.expected_struct', 53, false, minXValue, maxXValue),
+  make_xAxis('gcc.outcome_std_error', 54, false, minXValue, maxXValue),
+  make_xAxis('gcc.outcome_std_error', 55, true, minXValue, maxXValue),
+];
+var xAxisIndices = [
+  0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 
+]
+var theYAxes = [
+  Object.assign({gridIndex: 0}, commonYAxis),
+  Object.assign({gridIndex: 1}, invertYAxis),
+  Object.assign({gridIndex: 2}, commonYAxis),
+  Object.assign({gridIndex: 3}, invertYAxis),
+  Object.assign({gridIndex: 4}, commonYAxis),
+  Object.assign({gridIndex: 5}, invertYAxis),
+  Object.assign({gridIndex: 6}, commonYAxis),
+  Object.assign({gridIndex: 7}, invertYAxis),
+  Object.assign({gridIndex: 8}, commonYAxis),
+  Object.assign({gridIndex: 9}, invertYAxis),
+  Object.assign({gridIndex: 10}, commonYAxis),
+  Object.assign({gridIndex: 11}, invertYAxis),
+  Object.assign({gridIndex: 12}, commonYAxis),
+  Object.assign({gridIndex: 13}, invertYAxis),
+  Object.assign({gridIndex: 14}, commonYAxis),
+  Object.assign({gridIndex: 15}, invertYAxis),
+  Object.assign({gridIndex: 16}, commonYAxis),
+  Object.assign({gridIndex: 17}, invertYAxis),
+  Object.assign({gridIndex: 18}, commonYAxis),
+  Object.assign({gridIndex: 19}, invertYAxis),
+  Object.assign({gridIndex: 20}, commonYAxis),
+  Object.assign({gridIndex: 21}, invertYAxis),
+  Object.assign({gridIndex: 22}, commonYAxis),
+  Object.assign({gridIndex: 23}, invertYAxis),
+  Object.assign({gridIndex: 24}, commonYAxis),
+  Object.assign({gridIndex: 25}, invertYAxis),
+  Object.assign({gridIndex: 26}, commonYAxis),
+  Object.assign({gridIndex: 27}, invertYAxis),
+  Object.assign({gridIndex: 28}, commonYAxis),
+  Object.assign({gridIndex: 29}, invertYAxis),
+  Object.assign({gridIndex: 30}, commonYAxis),
+  Object.assign({gridIndex: 31}, invertYAxis),
+  Object.assign({gridIndex: 32}, commonYAxis),
+  Object.assign({gridIndex: 33}, invertYAxis),
+  Object.assign({gridIndex: 34}, commonYAxis),
+  Object.assign({gridIndex: 35}, invertYAxis),
+  Object.assign({gridIndex: 36}, commonYAxis),
+  Object.assign({gridIndex: 37}, invertYAxis),
+  Object.assign({gridIndex: 38}, commonYAxis),
+  Object.assign({gridIndex: 39}, invertYAxis),
+  Object.assign({gridIndex: 40}, commonYAxis),
+  Object.assign({gridIndex: 41}, invertYAxis),
+  Object.assign({gridIndex: 42}, commonYAxis),
+  Object.assign({gridIndex: 43}, invertYAxis),
+  Object.assign({gridIndex: 44}, commonYAxis),
+  Object.assign({gridIndex: 45}, invertYAxis),
+  Object.assign({gridIndex: 46}, commonYAxis),
+  Object.assign({gridIndex: 47}, invertYAxis),
+  Object.assign({gridIndex: 48}, commonYAxis),
+  Object.assign({gridIndex: 49}, invertYAxis),
+  Object.assign({gridIndex: 50}, commonYAxis),
+  Object.assign({gridIndex: 51}, invertYAxis),
+  Object.assign({gridIndex: 52}, commonYAxis),
+  Object.assign({gridIndex: 53}, invertYAxis),
+  Object.assign({gridIndex: 54}, commonYAxis),
+  Object.assign({gridIndex: 55}, invertYAxis),
+];
+var theSeries = [
+  make_series( 'MSVC_x64.throw_exception', 0, theData.MSVC_x64.throw_exception, '#1b9e77'),
+  make_series( 'MSVC_x64.throw_exception', 1, theData.MSVC_x64.throw_exception, '#1b9e77'),
+  make_series( 'MSVC_x64.return_val', 2, theData.MSVC_x64.return_val, '#d95f02'),
+  make_series( 'MSVC_x64.return_val', 3, theData.MSVC_x64.return_val, '#d95f02'),
+  make_series( 'MSVC_x64.ref_struct', 4, theData.MSVC_x64.ref_struct, '#7570b3'),
+  make_series( 'MSVC_x64.ref_struct', 5, theData.MSVC_x64.ref_struct, '#7570b3'),
+  make_series( 'MSVC_x64.return_nt_struct', 6, theData.MSVC_x64.return_nt_struct, '#e7298a'),
+  make_series( 'MSVC_x64.return_nt_struct', 7, theData.MSVC_x64.return_nt_struct, '#e7298a'),
+  make_series( 'MSVC_x64.return_struct', 8, theData.MSVC_x64.return_struct, '#66a61e'),
+  make_series( 'MSVC_x64.return_struct', 9, theData.MSVC_x64.return_struct, '#66a61e'),
+  make_series( 'MSVC_x64.expected_struct', 10, theData.MSVC_x64.expected_struct, '#e6ab02'),
+  make_series( 'MSVC_x64.expected_struct', 11, theData.MSVC_x64.expected_struct, '#e6ab02'),
+  make_series( 'MSVC_x64.outcome_std_error', 12, theData.MSVC_x64.outcome_std_error, '#a6761d'),
+  make_series( 'MSVC_x64.outcome_std_error', 13, theData.MSVC_x64.outcome_std_error, '#a6761d'),
+  make_series( 'MSVC_x86.throw_exception', 14, theData.MSVC_x86.throw_exception, '#666666'),
+  make_series( 'MSVC_x86.throw_exception', 15, theData.MSVC_x86.throw_exception, '#666666'),
+  make_series( 'MSVC_x86.return_val', 16, theData.MSVC_x86.return_val, '#1b9e77'),
+  make_series( 'MSVC_x86.return_val', 17, theData.MSVC_x86.return_val, '#1b9e77'),
+  make_series( 'MSVC_x86.ref_struct', 18, theData.MSVC_x86.ref_struct, '#d95f02'),
+  make_series( 'MSVC_x86.ref_struct', 19, theData.MSVC_x86.ref_struct, '#d95f02'),
+  make_series( 'MSVC_x86.return_nt_struct', 20, theData.MSVC_x86.return_nt_struct, '#7570b3'),
+  make_series( 'MSVC_x86.return_nt_struct', 21, theData.MSVC_x86.return_nt_struct, '#7570b3'),
+  make_series( 'MSVC_x86.return_struct', 22, theData.MSVC_x86.return_struct, '#e7298a'),
+  make_series( 'MSVC_x86.return_struct', 23, theData.MSVC_x86.return_struct, '#e7298a'),
+  make_series( 'MSVC_x86.expected_struct', 24, theData.MSVC_x86.expected_struct, '#66a61e'),
+  make_series( 'MSVC_x86.expected_struct', 25, theData.MSVC_x86.expected_struct, '#66a61e'),
+  make_series( 'MSVC_x86.outcome_std_error', 26, theData.MSVC_x86.outcome_std_error, '#e6ab02'),
+  make_series( 'MSVC_x86.outcome_std_error', 27, theData.MSVC_x86.outcome_std_error, '#e6ab02'),
+  make_series( 'clang.throw_exception', 28, theData.clang.throw_exception, '#a6761d'),
+  make_series( 'clang.throw_exception', 29, theData.clang.throw_exception, '#a6761d'),
+  make_series( 'clang.return_val', 30, theData.clang.return_val, '#666666'),
+  make_series( 'clang.return_val', 31, theData.clang.return_val, '#666666'),
+  make_series( 'clang.ref_struct', 32, theData.clang.ref_struct, '#1b9e77'),
+  make_series( 'clang.ref_struct', 33, theData.clang.ref_struct, '#1b9e77'),
+  make_series( 'clang.return_nt_struct', 34, theData.clang.return_nt_struct, '#d95f02'),
+  make_series( 'clang.return_nt_struct', 35, theData.clang.return_nt_struct, '#d95f02'),
+  make_series( 'clang.return_struct', 36, theData.clang.return_struct, '#7570b3'),
+  make_series( 'clang.return_struct', 37, theData.clang.return_struct, '#7570b3'),
+  make_series( 'clang.expected_struct', 38, theData.clang.expected_struct, '#e7298a'),
+  make_series( 'clang.expected_struct', 39, theData.clang.expected_struct, '#e7298a'),
+  make_series( 'clang.outcome_std_error', 40, theData.clang.outcome_std_error, '#66a61e'),
+  make_series( 'clang.outcome_std_error', 41, theData.clang.outcome_std_error, '#66a61e'),
+  make_series( 'gcc.throw_exception', 42, theData.gcc.throw_exception, '#e6ab02'),
+  make_series( 'gcc.throw_exception', 43, theData.gcc.throw_exception, '#e6ab02'),
+  make_series( 'gcc.return_val', 44, theData.gcc.return_val, '#a6761d'),
+  make_series( 'gcc.return_val', 45, theData.gcc.return_val, '#a6761d'),
+  make_series( 'gcc.ref_struct', 46, theData.gcc.ref_struct, '#666666'),
+  make_series( 'gcc.ref_struct', 47, theData.gcc.ref_struct, '#666666'),
+  make_series( 'gcc.return_nt_struct', 48, theData.gcc.return_nt_struct, '#1b9e77'),
+  make_series( 'gcc.return_nt_struct', 49, theData.gcc.return_nt_struct, '#1b9e77'),
+  make_series( 'gcc.return_struct', 50, theData.gcc.return_struct, '#d95f02'),
+  make_series( 'gcc.return_struct', 51, theData.gcc.return_struct, '#d95f02'),
+  make_series( 'gcc.expected_struct', 52, theData.gcc.expected_struct, '#7570b3'),
+  make_series( 'gcc.expected_struct', 53, theData.gcc.expected_struct, '#7570b3'),
+  make_series( 'gcc.outcome_std_error', 54, theData.gcc.outcome_std_error, '#e7298a'),
+  make_series( 'gcc.outcome_std_error', 55, theData.gcc.outcome_std_error, '#e7298a'),
+];
+var barSeries = [
+  {
+    type: 'bar',
+    name: 'throw_exception',
+    itemStyle: {color: '#1b9e77'},
+    data: [
+      medians['MSVC_x64.throw_exception'],
+      medians['MSVC_x86.throw_exception'],
+      medians['clang.throw_exception'],
+      medians['gcc.throw_exception'],
+    ]
+  },
+  {
+    type: 'bar',
+    name: 'return_val',
+    itemStyle: {color: '#d95f02'},
+    data: [
+      medians['MSVC_x64.return_val'],
+      medians['MSVC_x86.return_val'],
+      medians['clang.return_val'],
+      medians['gcc.return_val'],
+    ]
+  },
+  {
+    type: 'bar',
+    name: 'ref_struct',
+    itemStyle: {color: '#7570b3'},
+    data: [
+      medians['MSVC_x64.ref_struct'],
+      medians['MSVC_x86.ref_struct'],
+      medians['clang.ref_struct'],
+      medians['gcc.ref_struct'],
+    ]
+  },
+  {
+    type: 'bar',
+    name: 'return_nt_struct',
+    itemStyle: {color: '#e7298a'},
+    data: [
+      medians['MSVC_x64.return_nt_struct'],
+      medians['MSVC_x86.return_nt_struct'],
+      medians['clang.return_nt_struct'],
+      medians['gcc.return_nt_struct'],
+    ]
+  },
+  {
+    type: 'bar',
+    name: 'return_struct',
+    itemStyle: {color: '#66a61e'},
+    data: [
+      medians['MSVC_x64.return_struct'],
+      medians['MSVC_x86.return_struct'],
+      medians['clang.return_struct'],
+      medians['gcc.return_struct'],
+    ]
+  },
+  {
+    type: 'bar',
+    name: 'expected_struct',
+    itemStyle: {color: '#e6ab02'},
+    data: [
+      medians['MSVC_x64.expected_struct'],
+      medians['MSVC_x86.expected_struct'],
+      medians['clang.expected_struct'],
+      medians['gcc.expected_struct'],
+    ]
+  },
+  {
+    type: 'bar',
+    name: 'outcome_std_error',
+    itemStyle: {color: '#a6761d'},
+    data: [
+      medians['MSVC_x64.outcome_std_error'],
+      medians['MSVC_x86.outcome_std_error'],
+      medians['clang.outcome_std_error'],
+      medians['gcc.outcome_std_error'],
+    ]
+  },
+];
+var barYAxisData = [
+  'MSVC_x64',
+  'MSVC_x86',
+  'clang',
+  'gcc',
+];
+
+    </script>
+</head>
+<body>
+    <!-- prepare a DOM container with width and height -->
+    <div id="Violin" style="width: 100%;height:10px;"></div>
+    <div id="Bar" style="width: 100%;height:10px;"></div>
+    <script type="text/javascript">
+// based on prepared DOM, initialize echarts instance
+document.getElementById('Violin').setAttribute("style","height:"+(gridHeightNeeded + 60) + "px");
+var myChart = echarts.init(document.getElementById('Violin'));
+document.getElementById('Bar').setAttribute("style","height:"+(300) + "px");
+var barChart = echarts.init(document.getElementById('Bar'));
+
+function myFormatter(params, ticket, callback) {
+  mean = means[params.seriesName];
+  median = medians[params.seriesName];
+  stdev = stdevs[params.seriesName];
+  variance = variances[params.seriesName];
+  return params.seriesName + "<br />" +
+    params.value[0] + " cycles, " + params.value[1] + " samples" + "<br />" +
+    "median: " + median + " cycles, mean: " + mean + " cycles"  + "<br />" +
+    "stdev: " + stdev + " cycles, variance: " + variance + " cycles";
+}
+
+function myFormatter2(params, ticket, callback) {
+  idx = params.name + "." + params.seriesName;
+  mean = means[idx];
+  median = medians[idx];
+  stdev = stdevs[idx];
+  variance = variances[idx];
+  return idx + "<br />" +
+    "median: " + median + " cycles, mean: " + mean + " cycles"  + "<br />" +
+    "stdev: " + stdev + " cycles, variance: " + variance + " cycles";
+}
+
+option = {
+  tooltip : {
+    formatter: myFormatter,
+  },
+  dataZoom: [
+    {
+      show: true,
+      startValue: minXValue,
+      endValue: maxXValue,
+      xAxisIndex: xAxisIndices,
+    },
+  ],
+  grid: theGrids,
+  xAxis: theXAxes,
+  yAxis: theYAxes,
+  series: theSeries,
+};
+
+myChart.setOption(option);
+
+var barOption = {
+  tooltip : {
+    formatter: myFormatter2,
+  },
+  calculable : true,
+  legend: {
+    right: 0,
+    top: 0,
+    orient: 'vertical',
+  },
+  yAxis: [{
+    type: 'category',
+    inverse:true,
+    data: barYAxisData
+  }],
+  xAxis: [{
+    type: 'value'
+  }],
+  grid: {
+    top: 0,
+    left: 130,
+  },
+  series: barSeries
+};
+
+barChart.setOption(barOption);
+
+</script>
+
+</body>
+</html>
