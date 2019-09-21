@@ -1,0 +1,481 @@
+<pre class='metadata'>
+Title: Error speed benchmarking
+Shortname: D????
+Revision: 0.0
+Audience: WG21; DG
+Status: D
+Group: WG21
+URL: https://wg21.link/P????
+!Source: <a href="https://github.com/ben-craig/error_bench/blob/master/bench_blog.bs">???</a>
+Editor: Ben Craig, National Instruments, ben.craig@gmail.com
+Abstract: The author measures the speed of various error handling approaches.  Abort and x64 exceptions are fast on the happy path.  Error code strategies are fast on the sad path.
+Markup Shorthands: markdown yes
+</pre>
+<script src="echarts_modified.js"></script>
+<script type="text/javascript">
+</script>
+
+<style>
+blockquote.book {
+  display: block;
+  border-width: 2px 0;
+  border-style: solid;
+  border-color: #eee;
+  padding: 1.5em 5em 0.5em 5em;
+  margin: 1.5em 0;
+  position: relative;
+  text-align: justify;
+}
+blockquote.book:before {
+  content: '\201C';
+  position: absolute;
+  top: 0em;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: #fff;
+  width: 3rem;
+  height: 2rem;
+  font: 6em/1.08em 'PT Sans', sans-serif;
+  color: #666;
+  text-align: center;
+}
+blockquote.book:after {
+  content: '\201D';
+  position: absolute;
+  bottom: -0.25em;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: #fff;
+  width: 3rem;
+  height: 2rem;
+  font: 6em/1.08em 'PT Sans', sans-serif;
+  color: #666;
+  text-align: center;
+}
+cite {
+  display: block;
+  text-align: right;
+  color: #e74c3c;
+  margin: 0 -5em 1em 0;
+}
+</style>
+
+Introduction {#intro}
+====================================
+In this paper, we will look at the relative speeds of error handling strategies in micro-benchmarking scenarios.  "Happy" and "sad" path timings will be presented.
+
+Measuring methodology {#methodology}
+====================================
+All benchmarks lie.  It's important to know how a benchmark is set up so that the useful parts can be distinguished from the misleading parts.
+
+Gathering representative timings for very small pieces of code is difficult on modern hardware.  One type of micro-architectural quirk that makes these measurements very painful is code alignment [[Bakhvalov]].  Each call and each branch can introduce stalls if jumping to a poorly aligned location.  These stalls can dominate the timings.  The author has seen code alignment differences swing a benchmark running at 451 cycles per iteration to 310 cycles per iteration, for a 45% increase in execution time.  This involved no system calls, no atomic operations, no divisions, or any other highly expensive operations being performed.
+
+This research used a novel technique to get representative timings across a wide range of jump alignments.  At the beginning of each function, a random number of `nop` instructions (0 to 31 inclusive) were inserted.  A matching set of `nop` instructions were inserted at a later point in the execution path so that a total of 31 user inserted `nop` instructions were always executed.  1024 instances of this program, all with different layouts of nops, were then built and run.
+
+Tests were built to optimize for speed.  The test case optimizes away in the face of link-time optimizations (LTO) / whole program optimizations, so they were not used.  Some compilers only support profile-guided optimizations (PGO) after turning on link-time optimizations, so PGO wasn't used either.  Only the exception cases were built with exceptions turned on.
+
+For all but the exception failure cases, 16K warm-up iterations were run before starting timing.  Within the timer bounds, 512K iterations of the test case were run.  The exception failure cases only had 256 warm-up iterations and 16K timed iterations, due to just how slow throwing an exception can be.
+
+All tests were run on the same machine. TODO DETAILS.  C-States, Hyper-threading, and Turbo Boost were all disabled in order to improve benchmark reproducibility.
+
+Starter test case for on-line analysis {#starter_case}
+=====================
+To start with, we will look at code similar to the following:
+```
+struct Dtor\[N] {
+  extern ~Dtor\[N]() {
+    /* Random number of NOPs K\[N] := [0,31] */
+  }
+};
+struct inline_nops {
+  inline inline_nops() {
+    /* Random number of NOPs Z := [0,31] */
+  }
+  inline ~inline_nops() {
+    /* 31 - Z NOPs */
+  }
+};
+int global_int = 0;
+int callee(bool do_err) {
+  inline_nops n;
+  if(do_err)
+    return 1;
+  return 0;
+}
+int caller\[N](bool do_err) {
+  /* 31 - K\[N] NOPs */
+  Dtor\[N] d;
+  /* NEXT_FUNC is callee when N == 7, or caller[N+1] otherwise */
+  int e = NEXT_FUNC(do_err);
+  if(e) return e;
+  global_int = 0;
+  return 0;
+}
+int main() { 
+  /* Test happy path */
+  for (int i = 0; i < WARMUP_ITERATIONS; ++i)
+    (void)caller\[0](false);
+  
+  startTimer();
+  /* X NOPs */
+  for (int i = 0; i < ITERATIONS; ++i) {
+    (void)caller\[0](false);
+  }
+  /* 31 - X NOPs */
+  endTimer();
+  print(duration() / ITERATIONS);
+
+  /* Test sad path */
+  for (int i = 0; i < WARMUP_ITERATIONS; ++i)
+    (void)caller\[0](true);
+  
+  startTimer();
+  /* Y NOPs */
+  for (int i = 0; i < ITERATIONS; ++i) {
+    (void)caller\[0](true);
+  }
+  /* 31 - Y NOPs */
+  endTimer();
+  print(duration() / ITERATIONS);
+}
+```
+This code has some important properties for future comparisons.
+* `callee()` will raise an error based off of runtime state
+* `caller\[N]()` needs to clean up the `d` object in error and non-error conditions.
+* `caller\[N]()` should only set `global_int` in success cases.
+* The inserted NOPs allow us to sample various alignments while keeping the same program structure.
+
+In the actual tests all the function bodies are in separate .cpp files, and link-time / whole-program optimizations aren't used.  If they had been used, the entire program would get optimized away, removing our ability to measure error handling differences.
+
+The initial part of this paper is only looking at three types of error handling.
+* abort: When an error is encountered, kill the program with `std::abort`.  No "sad" path benchmarks were taken for this case.
+* return_val: Return an integer error code, where zero represents success.
+* throw_exception: Throw an exception deriving from std::exception, that contains only an int.  This should represent typical exception usage cases.  The exception is only caught with a `catch(...)`.
+
+The actual code used for the benchmark can be found [on my github](https://github.com/ben-craig/error_bench/tree/err_gauss/src/err_gauss__) TODO.
+
+Happy path measurements {#happy_path_measurements}
+============================
+
+Abort and x64 exceptions are consistently faster than return codes.  Windows x86 exceptions are slower than both return codes and abort semantics.  While return codes are slower than abort and x64 exceptions, they aren't much slower.  The cost ranges from less than a cycle per function to four cycles per function in my experiments.
+
+Write to a global {#write_to_a_global}
+-----------------------
+<p align="center">Write to global: Median cycles per iteration.  A histogram can be found [here](#TODO)</p>
+TODO: INSERT CHART
+
+
+Write through an argument {#write_through_an_argument}
+---------------------------------------------
+Instead of writing to a global, we write through a pointer argument. 
+```
+int callee(int *val, bool do_err) {
+  (void)val;
+  inline_nops n;
+  if(do_err)
+    return 1;
+  return 0;
+}
+int caller\[N](int *val, bool do_err) {
+  /* 31 - K\[N] NOPs */
+  Dtor\[N] d;
+  /* NEXT_FUNC is callee when N == 7, or caller[N+1] otherwise */
+  int e = NEXT_FUNC(val, do_err);
+  if(e) return e;
+  *val = 0;
+  return 0;
+}
+```
+<p align="center">Write through argument: Median cycles per iteration.  A histogram can be found [here](#TODO)</p>
+TODO: INSERT CHART
+
+"Return" a value {#write_through_an_argument}
+---------------------------------------------
+In this case, we'll use the output channel available to us to "return" an incremented value.  When handling errors in an error code fashion, we end up using an output parameter.
+```
+int callee(int *val, bool do_err) {
+  inline_nops n;
+  if(do_err)
+    return 1;
+  *val = 0;
+  return 0;
+}
+int caller\[N](int *val, bool do_err) {
+  /* 31 - K\[N] NOPs */
+  Dtor\[N] d;
+  int out_val; /* TODO: Bench this version without the init */
+  /* NEXT_FUNC is callee when N == 7, or caller[N+1] otherwise */
+  int e = NEXT_FUNC(&out_val, do_err);
+  if(e) return e;
+  *val = out_val + 1;
+  return 0;
+}
+```
+<p align="center">Return a value: Median cycles per iteration.  A histogram can be found [here](#TODO)</p>
+TODO: INSERT CHART
+
+Sad path measurements {#happy_path_measurements}
+============================
+
+Sad path timings for abort aren't shown, as the recovery path is very system specific.  Throwing an exception is more than 100x slower than returning an error code.
+
+Write to a global {#sad_write_to_a_global}
+-----------------------
+<p align="center">Write to a global, sad path: Median cycles per iteration.  A histogram can be found [here](#TODO)</p>
+TODO: INSERT CHART
+
+Write through an argument {#sad_write_through_an_argument}
+---------------------------------------------
+<p align="center">Write through an argument, sad path: Median cycles per iteration.  A histogram can be found [here](#TODO)</p>
+TODO: INSERT CHART
+
+"Return" a value {#sad_return_a_value}
+---------------------------------------------
+<p align="center">Return a value, sad path: Median cycles per iteration.  A histogram can be found [here](#TODO)</p>
+TODO: INSERT CHART
+
+Happy path off-line analysis {#happy_path_analysis}
+============================
+
+LLVM-MCA is a tool that will analyze assembly and provide statistics on a hypothetical execution on a specific simulated CPU.  This can be used to provide a hardware independent analysis of generated code.  There is at least one substantial limitation though, in that calls and returns are typically not modeled.  Regardless, the analysis is still useful.
+
+I focused on analyzing the difference between exception builds and abort / no exception builds, all in an error neutral function.  In the off-line analysis, I'm only focused on 64-bit x86-64 (Clang, GCC, and MSVC) and 64-bit ARM (Clang and GCC).  Exceptions on 32-bit x86 on Windows is so much slower in the happy path that it isn't interesting to dive in at the assembly level.
+
+In general, there are some minor missed optimization opportunities in some of the smallest error handling examples.
+
+I will be looking at this code snippet:
+```
+struct Dtor {~Dtor();};
+void callee();
+int global;
+void caller() {
+  Dtor d;
+  callee();
+  global = 0;
+}
+```
+
+
+
+
+Conclusion {#conclusion}
+========================
+
+Conclusion {#TODO}
+========================
+
+Acknowledgments {#ack}
+======================
+
+Charts generated with [[ECharts]].
+
+Appendix B: The build flags {#build_flags}
+============================
+MSVC {#msvc}
+--------------------
+The compiler and flags are the same for 32-bit and 64-bit builds, except that the 32-bit linker uses /machine:x86 and the 64-bit linker uses /machine:x64
+
+Compiler marketing version: Visual Studio 2019
+
+Compiler toolkit version: 14.20.27508
+
+cl.exe version: 19.20.27508.1
+
+Compiler codegen flags (no exceptions): /GR /Gy /Gw /O1 /MT /d2FH4 /std:c++latest /permissive- /DNDEBUG
+
+Compiler codegen flags (with exceptions): /EHs /GR /Gy /Gw /O1 /MT /d2FH4 /std:c++latest /permissive- /DNDEBUG
+
+Linker flags: /OPT:REF /release /subsystem:CONSOLE /incremental:no /OPT:ICF /NXCOMPAT /DYNAMICBASE /DEBUG *.obj
+
+Clang x64 {#clang_x64}
+----------------------
+Toolchains used:
+* Clang 8.0.0 and libc++
+* System linker from Ubuntu 14.04.3's GCC 4.8.4 installation
+
+Compiler codegen flags (no exceptions): -fno-exceptions -Os -ffunction-sections -fdata-sections -std=c++17 -stdlib=libc++ -static -DNDEBUG
+
+Compiler codegen flags (exceptions): -Os -ffunction-sections -fdata-sections -std=c++17 -stdlib=libc++ -static -DNDEBUG
+
+Linking flags: -Wl,--gc-sections -pthread -static -static-libgcc -stdlib=libc++ *.o libc++abi.a
+
+GCC x64 {#gcc_x64}
+------------------
+Toolchain used: GCC 7.3.1 from the Red Hat Developer Toolset 7.1
+
+Compiler codegen flags (no exceptions): -fno-exceptions -Os -ffunction-sections -fdata-sections -std=c++17 -static
+
+Compiler codegen flags (exceptions): -Os -ffunction-sections -fdata-sections -std=c++17 -static
+
+Linking flags: -Wl,--gc-sections -pthread -static -static-libgcc -static-libstdc++ *.o
+
+Appendix C: The code {#code}
+============================
+As stated before, this isn't the exact code that was benchmarked.  In the benchmarked code, functions were placed in distinct translation units in order to avoid inlining.  The following code is provided to demonstrate what the error handling code looks like.
+
+Common support code {#code_support}
+---------------------------------------
+<details>
+<summary>Expand to see code snippets</summary>
+**All cases**
+```
+struct Dtor {~Dtor() {}};
+int global_int = 0;
+```
+
+**throw_exception**
+```
+class err_exception : public std::exception {
+public:
+  int val;
+  explicit err_exception(int e) : val(e) {}
+  const char *what() const noexcept override { return ""; }
+};
+```
+</details>
+
+Initial error neutral functions  {#code_neutral1}
+---------------------------------------
+This section lays the groundwork for future comparisons.  All of these cases are capable of transporting error information from a future signaling site (`callee`) to a future catching site (`main`).  No errors are signaled here, but the plumbing is in place.
+
+<details>
+<summary>Expand to see code snippets</summary>
+**Default main function**
+
+```
+int main() {
+  caller();
+  return global_int;
+}
+```
+**abort, throw_exception**
+```
+void callee() {/* will raise an error one day*/}
+void caller() {
+  Dtor d;
+  callee();
+  global_int = 0;
+}
+```
+**noexcept_abort**
+```
+void callee() noexcept {/* will raise an error one day*/}
+void caller() noexcept {
+  Dtor d;
+  callee();
+  global_int = 0;
+}
+```
+**return_val**
+```
+int callee() noexcept {return 0;}
+int caller() noexcept {
+  Dtor d;
+  int e = callee();
+  if (e)
+    return e;
+  global_int = 0;
+  return e;
+}
+```
+</details>
+
+Appendix D: Histograms and alternative return code benchmarks {#histograms}
+==========================================
+Initial error neutral cost, linear {#linearneutral1}
+----------------------------------------------------
+<div id="CmpTermLinear" style="width: 100%;height:300px;"></div>
+<script type="text/javascript">
+  // based on prepared DOM, initialize echarts instance
+  var myChart = echarts.init(document.getElementById('CmpTermLinear'));
+
+  // specify chart configuration item and data
+  var option = {
+    tooltip: { formatter: myFormatter },
+    calculable : true,
+    legend: {
+      type: 'scroll',
+      right: 0,
+      top: 0,
+      orient: 'vertical',
+    },
+    xAxis: [{ type: 'value' }],
+    yAxis: [{
+      type: 'category',
+      data: ['Clang','GCC','MSVC x64','MSVC x86']
+    }],
+    grid: {
+      top: 0,
+      left: 65,
+      right: 200
+    },
+    dataZoom: [{show: true}],
+    series: data_CmpTerm
+  };
+
+  // use configuration item and data specified to show chart
+  myChart.setOption(option);
+</script>
+Initial cost of signaling an error, linear {#linearerror1}
+------------------------------------
+<div id="FirstErrorLinear" style="width: 100%;height:300px;"></div>
+<script type="text/javascript">
+  // based on prepared DOM, initialize echarts instance
+  var myChart = echarts.init(document.getElementById('FirstErrorLinear'));
+
+  // specify chart configuration item and data
+  var option = {
+    tooltip: { formatter: myFormatter },
+    calculable : true,
+    legend: {
+      type: 'scroll',
+      right: 0,
+      top: 0,
+      orient: 'vertical',
+    },
+    xAxis: [{type: 'value'}],
+    yAxis: [{
+      type: 'category',
+      data: ['Clang','GCC','MSVC x64','MSVC x86']
+    }],
+    grid: {
+      top: 0,
+      left: 65,
+      right: 200
+    },
+    dataZoom: [{show: true}],
+    series: data_Cost1stError
+  };
+
+  // use configuration item and data specified to show chart
+  myChart.setOption(option);
+</script>
+
+<pre class=biblio>
+{
+    "MoFH4": {
+        "authors": ["Modi Mo"],
+        "href": "https://devblogs.microsoft.com/cppblog/making-cpp-exception-handling-smaller-x64/",
+        "title": "Making C++ Exception Handling Smaller On x64"
+    },
+    "P0939R2": {
+        "authors": ["H. Hinnant", "R. Orr", "B. Stroustrup", "D. Vandevoorde", "M. Wong"],
+        "href": "http://wg21.link/P0939R2",
+        "title": "Direction for ISO C++"
+    },
+    "Bakhvalov": {
+        "authors": ["Denis Bakhvalov"],
+        "href": "https://dendibakh.github.io/blog/2018/01/18/Code_alignment_issues",
+        "title": "Code alignment issues."
+    },
+    "MCA": {
+      "href": "https://llvm.org/docs/CommandGuide/llvm-mca.html",
+      "title": "llvm-mca - LLVM Machine Code Analyzer"
+    },
+    "ECharts": {
+      "href": "https://ecomfe.github.io/echarts-doc/public/en/index.html",
+      "title": "ECharts"
+    }
+     
+}
+</pre>
