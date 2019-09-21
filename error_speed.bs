@@ -672,7 +672,93 @@ void callee(int *, bool do_err) {
 }
 ```
 </details>
-TODO: return value
+
+"Return" a value {#code_return_a_value}
+----------------------------------------
+<details>
+<summary>Expand to see code snippets</summary>
+**return_val**
+```
+int callee(int *val, bool do_err) {
+  inline_nops n;
+  if(do_err)
+    return 1;
+  *val = 0;
+  return 0;
+}
+int caller\[N](int *val, bool do_err) {
+  /* 31 - K\[N] NOPs */
+  Dtor\[N] d;
+  int out_val; /* TODO: Bench this version without the init */
+  /* NEXT_FUNC is callee when N == 7, or caller[N+1] otherwise */
+  int e = NEXT_FUNC(&out_val, do_err);
+  if(e) return e;
+  *val = out_val + 1;
+  return 0;
+}
+int main() { 
+  /* Test happy path */
+  for (int i = 0; i < WARMUP_ITERATIONS; ++i) {
+    int val=0;
+    (void)caller\[0](&val, false);
+  }
+  
+  startTimer();
+  /* X NOPs */
+  for (int i = 0; i < ITERATIONS; ++i) {
+    int val=0;
+    (void)caller\[0](&val, false);
+  }
+  /* 31 - X NOPs */
+  endTimer();
+  print(duration() / ITERATIONS);
+
+  /* Test sad path */
+  for (int i = 0; i < WARMUP_ITERATIONS; ++i) {
+    int val=0;
+    (void)caller\[0](&val, true);
+  }
+  
+  startTimer();
+  /* Y NOPs */
+  for (int i = 0; i < ITERATIONS; ++i) {
+    int val=0;
+    (void)caller\[0](&val, true);
+  }
+  /* 31 - Y NOPs */
+  endTimer();
+  print(duration() / ITERATIONS);
+}
+```
+
+**abort, throw_exception**
+```
+int caller\[N](bool do_err) {
+  /* 31 - K\[N] NOPs */
+  Dtor\[N] d;
+  /* NEXT_FUNC is callee when N == 7, or caller[N+1] otherwise */
+  return 1 + NEXT_FUNC(do_err);
+}
+```
+**abort**
+```
+int callee(bool do_err) {
+  inline_nops n;
+  if(do_err)
+    abort();
+  return 0;
+}
+```
+**throw_exception**
+```
+int callee(bool do_err) {
+  inline_nops n;
+  if(do_err)
+    throw err_exception(1);
+  return 0;
+}
+```
+</details>
 
 Appendix D: Histograms and alternative return code benchmarks {#histograms}
 ==========================================
