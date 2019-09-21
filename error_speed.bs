@@ -255,8 +255,168 @@ void caller() {
 }
 ```
 
+<table>
+  <tr>
+    <th>Compiler</th>
+    <th>Exceptions</th>
+    <th>No exceptions</th>
+  </tr>
+  <tr>
+    <td>MSVC x64</td>
+    <td><code><pre>sub rsp, 40
+call void callee(void)<b>
+; Note the ordering difference
+mov DWORD PTR int global, 0
+lea rcx, QWORD PTR d$[rsp]</b>
+call Dtor::~Dtor(void)
+add rsp, 40
+ret 0</pre></code></td>
+    <td><code><pre>sub rsp, 40
+call void callee(void)<b>
+; Note the ordering difference
+lea rcx, QWORD PTR d$[rsp]
+mov DWORD PTR int global, 0</b>
+call Dtor::~Dtor(void)
+add rsp, 40
+ret 0</pre></code></td>
+  </tr>
+</table>
+With MSVC x64, we get almost identical codegen between code with exceptions and without.  On MSVC x64, there are some optimization passes that don't run when exceptions are turned on, and one of those passes is responsible for switching the order of the `lea` and `mov` instructions.  I have observed a 1-3 cycle difference in benchmark results just from switching the order of those two instructions.  In the data I am providing, this results in the exception based code being slightly faster than the abort based code.
 
+<table>
+  <tr>
+    <th>Compiler</th>
+    <th>Exceptions</th>
+    <th>No exceptions</th>
+  </tr>
+  <tr>
+    <td>Clang 9.0 x64</td>
 
+    <td>1397 cycles over 100 iterations.<br/>
+Counts on Intel IvyBridge architecture
+<code><pre>pushq %rbx
+subq $16, %rsp
+callq callee()
+movl $0, global(%rip)
+leaq 8(%rsp), %rdi
+callq Dtor::~Dtor()
+addq $16, %rsp
+popq %rbx
+retq</pre></code></td>
+
+    <td>1199 cycles over 100 iterations.<br/>
+Counts on Intel IvyBridge architecture
+<code><pre>pushq %rax
+; no subq here
+callq callee()
+movl $0, global(%rip)
+movq %rsp, %rdi ; movq instead of leaq
+callq Dtor::~Dtor()
+; no addq here
+popq %rax
+retq</pre></code></td>
+
+  </tr>
+  <tr>
+    <td>GCC 8.2 x64</td>
+    <td>1397 cycles over 100 iterations.<br/>
+Counts on Intel IvyBridge architecture
+<code><pre>pushq %rbx
+subq $16, %rsp
+call callee()
+; ordering difference
+movl $0, global(%rip)
+leaq 15(%rsp), %rdi
+call Dtor::~Dtor()
+addq $16, %rsp
+popq %rbx
+ret</pre></code></td>
+    
+    <td>752 cycles over 100 iterations.<br/>
+Counts on Intel IvyBridge architecture
+<code><pre>; no pushq
+subq $24, %rsp
+call callee()
+; ordering difference
+leaq 15(%rsp), %rdi
+movl $0, global(%rip)
+call Dtor::~Dtor()
+addq $24, %rsp
+; no popq
+ret</pre></code></td>
+
+  </tr>
+</table>
+x64 GCC and Clang both generate slower code for this use case when exceptions are enabled.  This is a missed optimization, but isn't inherent to the design of exceptions.
+
+In my timings, GCC's abort code was 2 cycles faster than GCC's exception code.  Clang's abort code was 5 cycles faster than Clang's exception code.
+
+<table>
+  <tr>
+    <th>Compiler</th>
+    <th>Exceptions</th>
+    <th>No exceptions</th>
+  </tr>
+  <tr>
+    <td>Clang 9.0 ARM64</td>
+
+    <td>684 cycles over 100 iterations.<br/>
+Counts on exynos-m5 architecture
+<code><pre>str x19, [sp, #-32]!
+stp x29, x30, [sp, #16]
+add x29, sp, #16
+bl callee()
+adrp x8, global
+add x0, sp, #8
+str wzr, [x8, :lo12:global]
+bl Dtor::~Dtor()
+ldp x29, x30, [sp, #16]
+ldr x19, [sp], #32
+ret</pre></code></td>
+
+    <td>665 cycles over 100 iterations.<br/>
+Counts on exynos-m5 architecture
+<code><pre>sub sp, sp, #32 // sub instead of str
+stp x29, x30, [sp, #16]
+add x29, sp, #16
+bl callee()
+adrp x8, global
+add x0, sp, #8
+str wzr, [x8, :lo12:global]
+bl Dtor::~Dtor()
+ldp x29, x30, [sp, #16]
+add sp, sp, #32 // add instead of ldr
+ret</pre></code></td>
+
+  </tr>
+  <tr>
+    <td>GCC 8.2 ARM64</td>
+    <td>639 cycles over 100 iterations.<br/>
+Counts on exynos-m5 architecture
+<code><pre>stp x29, x30, [sp, -48]!
+mov x29, sp
+bl callee()
+adrp x1, .LANCHOR0
+add x0, sp, 40
+str wzr, [x1, #:lo12:.LANCHOR0]
+bl Dtor::~Dtor()
+ldp x29, x30, [sp], 48
+ret</pre></code></td>
+    
+    <td>639 cycles over 100 iterations.<br/>
+Counts on exynos-m5 architecture
+<code><pre>stp x29, x30, [sp, -32]! // different constant
+mov x29, sp
+bl callee()
+adrp x1, .LANCHOR0
+add x0, sp, 24 // different constant
+str wzr, [x1, #:lo12:.LANCHOR0]
+bl Dtor::~Dtor()
+ldp x29, x30, [sp], 32 // different constant
+ret</pre></code></td>
+
+  </tr>
+</table>
 
 Conclusion {#conclusion}
 ========================
