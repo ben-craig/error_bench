@@ -480,8 +480,47 @@ Common support code {#code_support}
 <summary>Expand to see code snippets</summary>
 **All cases**
 ```
-struct Dtor {~Dtor() {}};
-int global_int = 0;
+struct Dtor\[N] {
+  extern ~Dtor\[N]() {
+    /* Random number of NOPs K\[N] := [0,31] */
+  }
+};
+struct inline_nops {
+  inline inline_nops() {
+    /* Random number of NOPs Z := [0,31] */
+  }
+  inline ~inline_nops() {
+    /* 31 - Z NOPs */
+  }
+};
+
+int main() { 
+  /* Test happy path */
+  for (int i = 0; i < WARMUP_ITERATIONS; ++i)
+    (void)caller\[0](false);
+  
+  startTimer();
+  /* X NOPs */
+  for (int i = 0; i < ITERATIONS; ++i) {
+    (void)caller\[0](false);
+  }
+  /* 31 - X NOPs */
+  endTimer();
+  print(duration() / ITERATIONS);
+
+  /* Test sad path */
+  for (int i = 0; i < WARMUP_ITERATIONS; ++i)
+    (void)caller\[0](true);
+  
+  startTimer();
+  /* Y NOPs */
+  for (int i = 0; i < ITERATIONS; ++i) {
+    (void)caller\[0](true);
+  }
+  /* 31 - Y NOPs */
+  endTimer();
+  print(duration() / ITERATIONS);
+}
 ```
 
 **throw_exception**
@@ -495,51 +534,145 @@ public:
 ```
 </details>
 
-Initial error neutral functions  {#code_neutral1}
+Write to a global {#code_write_to_a_global}
 ---------------------------------------
-This section lays the groundwork for future comparisons.  All of these cases are capable of transporting error information from a future signaling site (`callee`) to a future catching site (`main`).  No errors are signaled here, but the plumbing is in place.
-
 <details>
 <summary>Expand to see code snippets</summary>
-**Default main function**
+**All cases**
+```
+int global_int = 0;
+```
 
-```
-int main() {
-  caller();
-  return global_int;
-}
-```
-**abort, throw_exception**
-```
-void callee() {/* will raise an error one day*/}
-void caller() {
-  Dtor d;
-  callee();
-  global_int = 0;
-}
-```
-**noexcept_abort**
-```
-void callee() noexcept {/* will raise an error one day*/}
-void caller() noexcept {
-  Dtor d;
-  callee();
-  global_int = 0;
-}
-```
 **return_val**
 ```
-int callee() noexcept {return 0;}
-int caller() noexcept {
-  Dtor d;
-  int e = callee();
-  if (e)
-    return e;
+int callee(bool do_err) {
+  inline_nops n;
+  if(do_err)
+    return 1;
+  return 0;
+}
+int caller\[N](bool do_err) {
+  /* 31 - K\[N] NOPs */
+  Dtor\[N] d;
+  /* NEXT_FUNC is callee when N == 7, or caller[N+1] otherwise */
+  int e = NEXT_FUNC(do_err);
+  if(e) return e;
   global_int = 0;
-  return e;
+  return 0;
+}
+```
+
+**abort, throw_exception**
+```
+void caller\[N](bool do_err) {
+  /* 31 - K\[N] NOPs */
+  Dtor\[N] d;
+  /* NEXT_FUNC is callee when N == 7, or caller[N+1] otherwise */
+  NEXT_FUNC(do_err);
+  global_int = 0;
+}
+```
+**abort**
+```
+void callee(bool do_err) {
+  inline_nops n;
+  if(do_err)
+    abort();
+}
+```
+**throw_exception**
+```
+void callee(bool do_err) {
+  inline_nops n;
+  if(do_err)
+    throw err_exception(1);
 }
 ```
 </details>
+
+Write through an argument {#code_write_through_an_argument}
+---------------------------------------
+<details>
+<summary>Expand to see code snippets</summary>
+**Common main**
+```
+int main() { 
+  int val=0;
+  /* Test happy path */
+  for (int i = 0; i < WARMUP_ITERATIONS; ++i)
+    (void)caller\[0](&val, false);
+  
+  startTimer();
+  /* X NOPs */
+  for (int i = 0; i < ITERATIONS; ++i) {
+    (void)caller\[0](&val, false);
+  }
+  /* 31 - X NOPs */
+  endTimer();
+  print(duration() / ITERATIONS);
+
+  /* Test sad path */
+  for (int i = 0; i < WARMUP_ITERATIONS; ++i)
+    (void)caller\[0](&val, true);
+  
+  startTimer();
+  /* Y NOPs */
+  for (int i = 0; i < ITERATIONS; ++i) {
+    (void)caller\[0](&val, true);
+  }
+  /* 31 - Y NOPs */
+  endTimer();
+  print(duration() / ITERATIONS);
+}
+```
+
+**return_val**
+```
+int callee(int *, bool do_err) {
+  inline_nops n;
+  if(do_err)
+    return 1;
+  return 0;
+}
+int caller\[N](int *val, bool do_err) {
+  /* 31 - K\[N] NOPs */
+  Dtor\[N] d;
+  /* NEXT_FUNC is callee when N == 7, or caller[N+1] otherwise */
+  int e = NEXT_FUNC(val, do_err);
+  if(e) return e;
+  *val = 0;
+  return 0;
+}
+```
+
+**abort, throw_exception**
+```
+void caller\[N](int *val, bool do_err) {
+  /* 31 - K\[N] NOPs */
+  Dtor\[N] d;
+  /* NEXT_FUNC is callee when N == 7, or caller[N+1] otherwise */
+  NEXT_FUNC(val, do_err);
+  *val = 0;
+}
+```
+**abort**
+```
+void callee(int *, bool do_err) {
+  inline_nops n;
+  if(do_err)
+    abort();
+}
+```
+**throw_exception**
+```
+void callee(int *, bool do_err) {
+  inline_nops n;
+  if(do_err)
+    throw err_exception(1);
+}
+```
+</details>
+TODO: return value
 
 Appendix D: Histograms and alternative return code benchmarks {#histograms}
 ==========================================
