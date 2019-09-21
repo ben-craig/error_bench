@@ -189,7 +189,7 @@ int caller\[N](int *val, bool do_err) {
 <p align="center">Write through argument: Median cycles per iteration.  A histogram can be found [here](#TODO)</p>
 TODO: INSERT CHART
 
-"Return" a value {#write_through_an_argument}
+"Return" a value {#return_a_value}
 ---------------------------------------------
 In this case, we'll use the output channel available to us to "return" an incremented value.  When handling errors in an error code fashion, we end up using an output parameter.
 ```
@@ -214,7 +214,7 @@ int caller\[N](int *val, bool do_err) {
 <p align="center">Return a value: Median cycles per iteration.  A histogram can be found [here](#TODO)</p>
 TODO: INSERT CHART
 
-Sad path measurements {#happy_path_measurements}
+Sad path measurements {#sad_path_measurements}
 ============================
 
 Sad path timings for abort aren't shown, as the recovery path is very system specific.  Throwing an exception is more than 100x slower than returning an error code.
@@ -237,7 +237,7 @@ TODO: INSERT CHART
 Happy path off-line analysis {#happy_path_analysis}
 ============================
 
-LLVM-MCA is a tool that will analyze assembly and provide statistics on a hypothetical execution on a specific simulated CPU.  This can be used to provide a hardware independent analysis of generated code.  There is at least one substantial limitation though, in that calls and returns are typically not modeled.  Regardless, the analysis is still useful.
+LLVM-MCA [[MCA]] is a tool that will analyze assembly and provide statistics on a hypothetical execution on a specific simulated CPU.  This can be used to provide a hardware independent analysis of generated code.  There is at least one substantial limitation though, in that calls and returns are typically not modeled.  Regardless, the analysis is still useful.
 
 I focused on analyzing the difference between exception builds and abort / no exception builds, all in an error neutral function.  In the off-line analysis, I'm only focused on 64-bit x86-64 (Clang, GCC, and MSVC) and 64-bit ARM (Clang and GCC).  Exceptions on 32-bit x86 on Windows is so much slower in the happy path that it isn't interesting to dive in at the assembly level.
 
@@ -417,6 +417,7 @@ ret</pre></code></td>
 
   </tr>
 </table>
+ARM64 GCC and Clang both generate different code for this use case when exceptions are enabled.  This is likely another missed optimization.  With GCC, the only penalty that is paid is slightly more stack usage.
 
 Conclusion {#conclusion}
 ========================
