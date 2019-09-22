@@ -203,7 +203,7 @@ int callee(int *val, bool do_err) {
 int caller\[N](int *val, bool do_err) {
   /* 31 - K\[N] NOPs */
   Dtor\[N] d;
-  int out_val; /* TODO: Bench this version without the init */
+  int out_val = 0;
   /* NEXT_FUNC is callee when N == 7, or caller[N+1] otherwise */
   int e = NEXT_FUNC(&out_val, do_err);
   if(e) return e;
@@ -430,6 +430,56 @@ Acknowledgments {#ack}
 
 Charts generated with [[ECharts]].
 
+Appendix A: Additional error handling types {#additional_error_handling}
+===================================================================
+While researching this paper, I gathered data on some additional error handling mechanisms.  I will provide a brief description of the error handling mechanism, and I will provide the data.  Only a minimal amount of code and explanation will be provided though.  This data could be useful in future error handling discussions.
+
+In each of these cases, the struct involved is of the following form:
+```
+struct error_struct {
+  void *error = nullptr;
+  void *domain = nullptr;
+};
+```
+A null error pointer indicates no error.
+* ref_struct: Pass an `error_struct` by reference, and check `error` after each call.
+* return_struct: Like return_val, but with an `error_struct` instead.
+* return_nt_struct: Like return_struct, but `error_struct` has a destructor of the form `~error_struct() {}`.  "nt" means "non-trivial".
+* expected_struct: This uses Sy Brand's [[Expected]] library with `error_struct` as the error type.  This should closely resemble the proposed `std::expected`.
+* outcome_std_error: This uses a branch of Niall Douglas's [[Outcome]] library.  This branch is specially optimized for GCC.
+
+In the sad path graphs, exceptions are omitted so that the remaining values can be easily compared.
+
+Write to a global (happy path) {#big_happy_write_to_a_global}
+-----------------------
+<p align="center">Write to global: Median cycles per iteration.  A histogram can be found [here](#TODO)</p>
+TODO: INSERT CHART
+
+Write through an argument (happy path)  {#big_happy_write_through_an_argument}
+---------------------------------------------
+<p align="center">Write to global: Median cycles per iteration.  A histogram can be found [here](#TODO)</p>
+TODO: INSERT CHART
+
+"Return" a value (happy path) {#big_happy_return_a_value}
+----------------------------------------
+<p align="center">Write to global: Median cycles per iteration.  A histogram can be found [here](#TODO)</p>
+TODO: INSERT CHART
+
+Write to a global (sad path) {#sad_happy_write_to_a_global}
+-----------------------
+<p align="center">Write to global: Median cycles per iteration.  A histogram can be found [here](#TODO)</p>
+TODO: INSERT CHART
+
+Write through an argument (sad path)  {#big_sad_write_through_an_argument}
+---------------------------------------------
+<p align="center">Write to global: Median cycles per iteration.  A histogram can be found [here](#TODO)</p>
+TODO: INSERT CHART
+
+"Return" a value (sad path) {#big_sad_return_a_value}
+----------------------------------------
+<p align="center">Write to global: Median cycles per iteration.  A histogram can be found [here](#TODO)</p>
+TODO: INSERT CHART
+
 Appendix B: The build flags {#build_flags}
 ============================
 MSVC {#msvc}
@@ -474,6 +524,8 @@ Appendix C: The code {#code}
 ============================
 As stated before, this isn't the exact code that was benchmarked.  In the benchmarked code, functions were placed in distinct translation units in order to avoid inlining.  The following code is provided to demonstrate what the error handling code looks like.
 
+TODO: put in catch statements!!!
+
 Common support code {#code_support}
 ---------------------------------------
 <details>
@@ -493,7 +545,10 @@ struct inline_nops {
     /* 31 - Z NOPs */
   }
 };
+```
 
+**abort, return_val**
+```
 int main() { 
   /* Test happy path */
   for (int i = 0; i < WARMUP_ITERATIONS; ++i)
@@ -531,6 +586,33 @@ public:
   explicit err_exception(int e) : val(e) {}
   const char *what() const noexcept override { return ""; }
 };
+int main() { 
+  /* Test happy path */
+  for (int i = 0; i < WARMUP_ITERATIONS; ++i)
+    try { (void)caller\[0](false); } catch(...){}
+  
+  startTimer();
+  /* X NOPs */
+  for (int i = 0; i < ITERATIONS; ++i) {
+    try { (void)caller\[0](false); } catch(...){}
+  }
+  /* 31 - X NOPs */
+  endTimer();
+  print(duration() / ITERATIONS);
+
+  /* Test sad path */
+  for (int i = 0; i < WARMUP_ITERATIONS; ++i)
+    try { (void)caller\[0](true); } catch(...){}
+  
+  startTimer();
+  /* Y NOPs */
+  for (int i = 0; i < ITERATIONS; ++i) {
+    try { (void)caller\[0](true); } catch(...){}
+  }
+  /* 31 - Y NOPs */
+  endTimer();
+  print(duration() / ITERATIONS);
+}
 ```
 </details>
 
@@ -594,7 +676,7 @@ Write through an argument {#code_write_through_an_argument}
 ---------------------------------------
 <details>
 <summary>Expand to see code snippets</summary>
-**Common main**
+**abort, return_val**
 ```
 int main() { 
   int val=0;
@@ -669,6 +751,34 @@ void callee(int *, bool do_err) {
   inline_nops n;
   if(do_err)
     throw err_exception(1);
+}
+int main() { 
+  int val=0;
+  /* Test happy path */
+  for (int i = 0; i < WARMUP_ITERATIONS; ++i)
+    try { (void)caller\[0](&val, false); } catch(...) {}
+  
+  startTimer();
+  /* X NOPs */
+  for (int i = 0; i < ITERATIONS; ++i) {
+    try { (void)caller\[0](&val, false); } catch(...) {}
+  }
+  /* 31 - X NOPs */
+  endTimer();
+  print(duration() / ITERATIONS);
+
+  /* Test sad path */
+  for (int i = 0; i < WARMUP_ITERATIONS; ++i)
+    try { (void)caller\[0](&val, true); } catch(...) {}
+  
+  startTimer();
+  /* Y NOPs */
+  for (int i = 0; i < ITERATIONS; ++i) {
+    try { (void)caller\[0](&val, true); } catch(...) {}
+  }
+  /* 31 - Y NOPs */
+  endTimer();
+  print(duration() / ITERATIONS);
 }
 ```
 </details>
@@ -760,76 +870,9 @@ int callee(bool do_err) {
 ```
 </details>
 
-Appendix D: Histograms and alternative return code benchmarks {#histograms}
+Appendix D: Histograms {#histograms}
 ==========================================
-Initial error neutral cost, linear {#linearneutral1}
-----------------------------------------------------
-<div id="CmpTermLinear" style="width: 100%;height:300px;"></div>
-<script type="text/javascript">
-  // based on prepared DOM, initialize echarts instance
-  var myChart = echarts.init(document.getElementById('CmpTermLinear'));
 
-  // specify chart configuration item and data
-  var option = {
-    tooltip: { formatter: myFormatter },
-    calculable : true,
-    legend: {
-      type: 'scroll',
-      right: 0,
-      top: 0,
-      orient: 'vertical',
-    },
-    xAxis: [{ type: 'value' }],
-    yAxis: [{
-      type: 'category',
-      data: ['Clang','GCC','MSVC x64','MSVC x86']
-    }],
-    grid: {
-      top: 0,
-      left: 65,
-      right: 200
-    },
-    dataZoom: [{show: true}],
-    series: data_CmpTerm
-  };
-
-  // use configuration item and data specified to show chart
-  myChart.setOption(option);
-</script>
-Initial cost of signaling an error, linear {#linearerror1}
-------------------------------------
-<div id="FirstErrorLinear" style="width: 100%;height:300px;"></div>
-<script type="text/javascript">
-  // based on prepared DOM, initialize echarts instance
-  var myChart = echarts.init(document.getElementById('FirstErrorLinear'));
-
-  // specify chart configuration item and data
-  var option = {
-    tooltip: { formatter: myFormatter },
-    calculable : true,
-    legend: {
-      type: 'scroll',
-      right: 0,
-      top: 0,
-      orient: 'vertical',
-    },
-    xAxis: [{type: 'value'}],
-    yAxis: [{
-      type: 'category',
-      data: ['Clang','GCC','MSVC x64','MSVC x86']
-    }],
-    grid: {
-      top: 0,
-      left: 65,
-      right: 200
-    },
-    dataZoom: [{show: true}],
-    series: data_Cost1stError
-  };
-
-  // use configuration item and data specified to show chart
-  myChart.setOption(option);
-</script>
 
 <pre class=biblio>
 {
@@ -855,6 +898,16 @@ Initial cost of signaling an error, linear {#linearerror1}
     "ECharts": {
       "href": "https://ecomfe.github.io/echarts-doc/public/en/index.html",
       "title": "ECharts"
+    },
+    "Outcome": {
+      "author": ["Niall Douglas"],
+      "href": "https://github.com/ned14/outcome",
+      "title": "outcome: Provides very lightweight outcome<T> and result<T> (non-Boost edition)"
+    },
+    "Expected": {
+      "author": ["Sy Brand"],
+      "href": "https://github.com/TartanLlama/expected",
+      "title": "expected: C++11/14/17 std::expected with functional-style extensions"
     }
      
 }
