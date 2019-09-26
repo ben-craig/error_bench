@@ -151,7 +151,7 @@ def emit_xAxis(fout, df):
   fout.write("  xAxis: [\n")
   idx = 0
   showAxis = "false"
-  
+
   the_min = min(df.time)
   the_max = max(df.time)
   width = calc_width(the_min, the_max)
@@ -168,7 +168,7 @@ def emit_xAxis(fout, df):
     fout.write("    make_xAxis('" + name + "', " + str(2*idx+1) +", " + showAxis + ", " + min_max + "),\n")
     idx = idx + 1
   fout.write("  ],\n")
-    
+
 def emit_yAxis(fout, df):
   fout.write("  yAxis: [\n")
   for i in range(len(df.groupby(['plat','case']))):
@@ -196,6 +196,13 @@ def emit_violin_formatters(fout, df):
     fout.write("  return violin_formatter_impl(\"" + mood + "\", params, ticket, callback);\n")
     fout.write("}\n")
 
+def emit_bar_formatters(fout, df):
+  mood_groups = df.groupby('mood')
+  for mood, data in mood_groups:
+    fout.write("function " + mood + "_bar_formatter(params, ticket, callback) {\n")
+    fout.write("  return bar_formatter_impl(\"" + mood + "\", params, ticket, callback);\n")
+    fout.write("}\n")
+
 def emit_violins(fout, modifier, df):
   emit_violin_data(fout, modifier, df)
   mood_groups = df.groupby('mood')
@@ -218,27 +225,87 @@ def emit_all_violins(fout, df):
   emit_violins(fout, "reduced_sad_", reduced_sad_df)
   emit_violins(fout, "noexcept_sad_", noexcept_sad_df)
 
-#def emit_all_bars(fout, df):
-#  emit_bar_formatters(fout, df) #TODO
-#  
-#  happy_df = df[(df.mood == "happy") | (df.mood == "happy_param") | (df.mood == "happy_ret")]
-#  reduced_happy_df = df[(sad_df.case == "throw_exception") | (sad_df.case == "terminate") | (sad_df.case == "return_val")]
-#  
-#  sad_df = df[(df.mood == "sad") | (df.mood == "sad_param") | (df.mood == "sad_ret")]
-#  reduced_sad_df = sad_df[(sad_df.case == "throw_exception") | (sad_df.case == "return_val")]
-#  noexcept_sad_df = sad_df[~(sad_df.case == "throw_exception")]
-#  
-#  emit_bars(fout, "", happy_df)
-#  emit_bars(fout, "reduced_", reduced_happy_df)
-#  emit_bars(fout, "reduced_sad_", reduced_sad_df)
-#  emit_bars(fout, "noexcept_sad_", noexcept_sad_df)
+def emit_bar_yAxis(fout, df):
+  fout.write("var barYAxisData = [\n")
+  plat_groups = df.groupby('plat')
+  for plat, data in plat_groups:
+    fout.write("  '" + plat + "',\n")
+  fout.write("];\n")
+
+def emit_bar_series(fout, mood, df):
+  case_groups = df.groupby('case')
+  fout.write("  series: [\n")
+  idx = 0
+  for case, case_data in case_groups:
+    fout.write("    {\n")
+    fout.write("      type: 'bar',\n")
+    fout.write("      name: '" + case + "',\n")
+    fout.write("      itemStyle: {color: '#" + COLORS[idx] + "'},\n")
+    fout.write("      data: [\n")
+    plat_groups = case_data.groupby('plat')
+    for plat, plat_data in plat_groups:
+      fout.write("        medians['" + plat + "." + case + "." + mood + "'],\n")
+    fout.write("      ],\n")
+    fout.write("    },\n")
+    idx = idx + 1
+    if idx == len(COLORS):
+      idx = 0
+  fout.write("  ],\n")
+
+def emit_bars(fout, modifier, df):
+  mood_groups = df.groupby('mood')
+
+  boilerplate = """
+  calculable : true,
+  legend: {
+    right: 0,
+    top: 0,
+    orient: 'vertical',
+  },
+  xAxis: [{
+    type: 'value'
+  }],
+  grid: {
+    top: 0,
+    left: 80,
+    right: 150,
+  },
+  yAxis: [{
+    type: 'category',
+    inverse:true,
+    data: barYAxisData
+  }],
+"""
+
+  emit_bar_yAxis(fout, df)
+  for mood, data in mood_groups:
+    fout.write("var bar_" + modifier + mood + " = {\n")
+    fout.write("  tooltip : { formatter: " + mood + "_bar_formatter },\n")
+    emit_bar_series(fout, mood, data)
+    fout.write(boilerplate)
+    fout.write("};\n\n")
+
+def emit_all_bars(fout, df):
+  emit_bar_formatters(fout, df)
+
+  happy_df = df[(df.mood == "happy") | (df.mood == "happy_param") | (df.mood == "happy_ret")]
+  reduced_happy_df = happy_df[(happy_df.case == "throw_exception") | (happy_df.case == "terminate") | (happy_df.case == "return_val")]
+
+  sad_df = df[(df.mood == "sad") | (df.mood == "sad_param") | (df.mood == "sad_ret")]
+  reduced_sad_df = sad_df[(sad_df.case == "throw_exception") | (sad_df.case == "return_val")]
+  noexcept_sad_df = sad_df[~(sad_df.case == "throw_exception")]
+
+  emit_bars(fout, "", happy_df)
+  emit_bars(fout, "reduced_", reduced_happy_df)
+  emit_bars(fout, "reduced_sad_", reduced_sad_df)
+  emit_bars(fout, "noexcept_sad_", noexcept_sad_df)
 
 def emit_single_js(fout, df):
   fout.write(JS_HEADER)
   emit_boilerplate(fout)
   emit_stats(fout, df)
   emit_all_violins(fout, df)
-#  emit_all_bars(fout, df)
+  emit_all_bars(fout, df)
 
 def main():
   df = pd.read_csv('gauss_times.csv')
@@ -316,13 +383,14 @@ function violin_formatter_impl(mood, params, ticket, callback) {
     "stdev: " + stdev + " cycles, variance: " + variance + " cycles";
 }
 
-function myFormatter2(params, ticket, callback) {
-  idx = params.name + "." + params.seriesName;
+function bar_formatter_impl(mood, params, ticket, callback) {
+  id = params.name + "." + params.seriesName;
+  idx = id + "." + mood
   mean = means[idx];
   median = medians[idx];
   stdev = stdevs[idx];
   variance = variances[idx];
-  return idx + "<br />" +
+  return id + "<br />" +
     "median: " + median + " cycles, mean: " + mean + " cycles"  + "<br />" +
     "stdev: " + stdev + " cycles, variance: " + variance + " cycles";
 }
