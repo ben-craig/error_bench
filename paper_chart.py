@@ -18,6 +18,13 @@ CPU_FREQ = 3.3915
 START_PIX = 20
 PIX_HEIGHT=20
 
+PLAT_ORDER = [
+  "gcc",
+  "clang",
+  "MSVC_x64",
+  "MSVC_x86",
+]
+
 CASE_ORDER = [
   "throw_exception",
   "throw_struct",
@@ -40,8 +47,19 @@ def dict_maker(l):
   return dict
 
 CASE_ORDER_DICT = dict_maker(CASE_ORDER)
-def case_sorter(case_name):
+PLAT_ORDER_DICT = dict_maker(PLAT_ORDER)
+def case_group_sorter(case_group):
+  case_name, _ = case_group
   return CASE_ORDER_DICT[case_name]
+
+def plat_case_sorter(plat_case_group):
+  idx, _ = plat_case_group
+  plat_name, case_name = idx
+  return PLAT_ORDER_DICT[plat_name] * len(CASE_ORDER_DICT) + CASE_ORDER_DICT[case_name]
+
+def plat_group_sorter(plat_group):
+  plat_name, _ = plat_group
+  return PLAT_ORDER_DICT[plat_name]
 
 def calc_bucket(value, width):
   return round(value/width, 0) * width
@@ -160,7 +178,7 @@ def emit_xAxis(fout, df):
   min_max = bucketed_min + ", " + bucketed_max
 
   row_groups = df.groupby(['plat','case'])
-  for row_name, row_data in row_groups:
+  for row_name, row_data in sorted(row_groups, key=plat_case_sorter):
     name = str.join(".",row_name)
     if idx == len(row_groups)-1:
       showAxis = "true"
@@ -180,7 +198,7 @@ def emit_series(fout, modifier, mood, df):
   fout.write("  series: [\n")
   idx = 0
   groups = df.groupby(['plat','case'])
-  for ident, data in groups:
+  for ident, data in sorted(groups, key=plat_case_sorter):
     name = str.join(".",ident)
     dataStr = modifier + "violin_data." + mood + "." + name #TODO
     color = COLORS[idx % len(COLORS)]
@@ -228,7 +246,7 @@ def emit_all_violins(fout, df):
 def emit_bar_yAxis(fout, df):
   fout.write("var barYAxisData = [\n")
   plat_groups = df.groupby('plat')
-  for plat, data in plat_groups:
+  for plat, data in sorted(plat_groups, key=plat_group_sorter):
     fout.write("  '" + plat + "',\n")
   fout.write("];\n")
 
@@ -236,14 +254,14 @@ def emit_bar_series(fout, mood, df):
   case_groups = df.groupby('case')
   fout.write("  series: [\n")
   idx = 0
-  for case, case_data in case_groups:
+  for case, case_data in sorted(case_groups, key=case_group_sorter):
     fout.write("    {\n")
     fout.write("      type: 'bar',\n")
     fout.write("      name: '" + case + "',\n")
     fout.write("      itemStyle: {color: '#" + COLORS[idx] + "'},\n")
     fout.write("      data: [\n")
     plat_groups = case_data.groupby('plat')
-    for plat, plat_data in plat_groups:
+    for plat, plat_data in sorted(plat_groups, key=plat_group_sorter):
       fout.write("        medians['" + plat + "." + case + "." + mood + "'],\n")
     fout.write("      ],\n")
     fout.write("    },\n")
