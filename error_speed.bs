@@ -12,8 +12,7 @@ Abstract: The author measures the speed of various error handling approaches.  A
 Markup Shorthands: markdown yes
 </pre>
 <script src="echarts_modified.js"></script>
-<script type="text/javascript">
-</script>
+<script src="data.js"></script>
 
 <style>
 blockquote.book {
@@ -111,11 +110,8 @@ int caller\[N](bool do_err) {
   global_int = 0;
   return 0;
 }
-int main() { 
+int main() {
   /* Test happy path */
-  for (int i = 0; i < WARMUP_ITERATIONS; ++i)
-    (void)caller\[0](false);
-  
   startTimer();
   /* X NOPs */
   for (int i = 0; i < ITERATIONS; ++i) {
@@ -125,10 +121,6 @@ int main() {
   endTimer();
   print(duration() / ITERATIONS);
 
-  /* Test sad path */
-  for (int i = 0; i < WARMUP_ITERATIONS; ++i)
-    (void)caller\[0](true);
-  
   startTimer();
   /* Y NOPs */
   for (int i = 0; i < ITERATIONS; ++i) {
@@ -162,12 +154,17 @@ Abort and x64 exceptions are consistently faster than return codes.  Windows x86
 Write to a global {#write_to_a_global}
 -----------------------
 <p align="center">Write to global: Median cycles per iteration.  A histogram can be found [here](#TODO)</p>
-TODO: INSERT CHART
+<div id="bar_reduced_happy_div" style="width: 100%;height:300px;"></div>
+<script type="text/javascript">
+echarts.
+  init(document.getElementById('bar_reduced_happy_div')).
+  setOption(bar_reduced_happy);
+</script>
 
 
 Write through an argument {#write_through_an_argument}
 ---------------------------------------------
-Instead of writing to a global, we write through a pointer argument. 
+Instead of writing to a global, we write through a pointer argument.
 ```
 int callee(int *val, bool do_err) {
   (void)val;
@@ -187,7 +184,12 @@ int caller\[N](int *val, bool do_err) {
 }
 ```
 <p align="center">Write through argument: Median cycles per iteration.  A histogram can be found [here](#TODO)</p>
-TODO: INSERT CHART
+<div id="bar_reduced_happy_param_div" style="width: 100%;height:300px;"></div>
+<script type="text/javascript">
+echarts.
+  init(document.getElementById('bar_reduced_happy_param_div')).
+  setOption(bar_reduced_happy_param);
+</script>
 
 "Return" a value {#return_a_value}
 ---------------------------------------------
@@ -212,7 +214,12 @@ int caller\[N](int *val, bool do_err) {
 }
 ```
 <p align="center">Return a value: Median cycles per iteration.  A histogram can be found [here](#TODO)</p>
-TODO: INSERT CHART
+<div id="bar_reduced_happy_ret_div" style="width: 100%;height:300px;"></div>
+<script type="text/javascript">
+echarts.
+  init(document.getElementById('bar_reduced_happy_ret_div')).
+  setOption(bar_reduced_happy_ret);
+</script>
 
 Sad path measurements {#sad_path_measurements}
 ============================
@@ -222,17 +229,32 @@ Sad path timings for abort aren't shown, as the recovery path is very system spe
 Write to a global {#sad_write_to_a_global}
 -----------------------
 <p align="center">Write to a global, sad path: Median cycles per iteration.  A histogram can be found [here](#TODO)</p>
-TODO: INSERT CHART
+<div id="bar_reduced_sad_sad_div" style="width: 100%;height:300px;"></div>
+<script type="text/javascript">
+echarts.
+  init(document.getElementById('bar_reduced_sad_sad_div')).
+  setOption(bar_reduced_sad_sad);
+</script>
 
 Write through an argument {#sad_write_through_an_argument}
 ---------------------------------------------
 <p align="center">Write through an argument, sad path: Median cycles per iteration.  A histogram can be found [here](#TODO)</p>
-TODO: INSERT CHART
+<div id="bar_reduced_sad_sad_param_div" style="width: 100%;height:300px;"></div>
+<script type="text/javascript">
+echarts.
+  init(document.getElementById('bar_reduced_sad_sad_param_div')).
+  setOption(bar_reduced_sad_sad_param);
+</script>
 
 "Return" a value {#sad_return_a_value}
 ---------------------------------------------
 <p align="center">Return a value, sad path: Median cycles per iteration.  A histogram can be found [here](#TODO)</p>
-TODO: INSERT CHART
+<div id="bar_reduced_sad_sad_ret_div" style="width: 100%;height:300px;"></div>
+<script type="text/javascript">
+echarts.
+  init(document.getElementById('bar_reduced_sad_sad_ret_div')).
+  setOption(bar_reduced_sad_sad_ret);
+</script>
 
 Happy path off-line analysis {#happy_path_analysis}
 ============================
@@ -331,7 +353,7 @@ call Dtor::~Dtor()
 addq $16, %rsp
 popq %rbx
 ret</pre></code></td>
-    
+
     <td>752 cycles over 100 iterations.<br/>
 Counts on Intel IvyBridge architecture
 <code><pre>; no pushq
@@ -402,7 +424,7 @@ str wzr, [x1, #:lo12:.LANCHOR0]
 bl Dtor::~Dtor()
 ldp x29, x30, [sp], 48
 ret</pre></code></td>
-    
+
     <td>639 cycles over 100 iterations.<br/>
 Counts on exynos-m5 architecture
 <code><pre>stp x29, x30, [sp, -32]! // different constant
@@ -453,32 +475,62 @@ In the sad path graphs, exceptions are omitted so that the remaining values can 
 Write to a global (happy path) {#big_happy_write_to_a_global}
 -----------------------
 <p align="center">Write to global: Median cycles per iteration.  A histogram can be found [here](#TODO)</p>
-TODO: INSERT CHART
+<div id="bar_happy_div" style="width: 100%;height:300px;"></div>
+<script type="text/javascript">
+echarts.
+  init(document.getElementById('bar_happy_div')).
+  setOption(bar_happy);
+</script>
 
 Write through an argument (happy path)  {#big_happy_write_through_an_argument}
 ---------------------------------------------
 <p align="center">Write to global: Median cycles per iteration.  A histogram can be found [here](#TODO)</p>
-TODO: INSERT CHART
+<div id="bar_happy_param_div" style="width: 100%;height:300px;"></div>
+<script type="text/javascript">
+echarts.
+  init(document.getElementById('bar_happy_param_div')).
+  setOption(bar_happy_param);
+</script>
 
 "Return" a value (happy path) {#big_happy_return_a_value}
 ----------------------------------------
 <p align="center">Write to global: Median cycles per iteration.  A histogram can be found [here](#TODO)</p>
-TODO: INSERT CHART
+<div id="bar_happy_ret_div" style="width: 100%;height:300px;"></div>
+<script type="text/javascript">
+echarts.
+  init(document.getElementById('bar_happy_ret_div')).
+  setOption(bar_happy_ret);
+</script>
 
 Write to a global (sad path) {#sad_happy_write_to_a_global}
 -----------------------
 <p align="center">Write to global: Median cycles per iteration.  A histogram can be found [here](#TODO)</p>
-TODO: INSERT CHART
+<div id="bar_noexcept_sad_sad_div" style="width: 100%;height:300px;"></div>
+<script type="text/javascript">
+echarts.
+  init(document.getElementById('bar_noexcept_sad_sad_div')).
+  setOption(bar_noexcept_sad_sad);
+</script>
 
 Write through an argument (sad path)  {#big_sad_write_through_an_argument}
 ---------------------------------------------
 <p align="center">Write to global: Median cycles per iteration.  A histogram can be found [here](#TODO)</p>
-TODO: INSERT CHART
+<div id="bar_noexcept_sad_sad_param_div" style="width: 100%;height:300px;"></div>
+<script type="text/javascript">
+echarts.
+  init(document.getElementById('bar_noexcept_sad_sad_param_div')).
+  setOption(bar_noexcept_sad_sad_param);
+</script>
 
 "Return" a value (sad path) {#big_sad_return_a_value}
 ----------------------------------------
 <p align="center">Write to global: Median cycles per iteration.  A histogram can be found [here](#TODO)</p>
-TODO: INSERT CHART
+<div id="bar_noexcept_sad_sad_ret_div" style="width: 100%;height:300px;"></div>
+<script type="text/javascript">
+echarts.
+  init(document.getElementById('bar_noexcept_sad_sad_ret_div')).
+  setOption(bar_noexcept_sad_sad_ret);
+</script>
 
 Appendix B: The build flags {#build_flags}
 ============================
@@ -524,8 +576,6 @@ Appendix C: The code {#code}
 ============================
 As stated before, this isn't the exact code that was benchmarked.  In the benchmarked code, functions were placed in distinct translation units in order to avoid inlining.  The following code is provided to demonstrate what the error handling code looks like.
 
-TODO: put in catch statements!!!
-
 Common support code {#code_support}
 ---------------------------------------
 <details>
@@ -549,11 +599,8 @@ struct inline_nops {
 
 **abort, return_val**
 ```
-int main() { 
+int main() {
   /* Test happy path */
-  for (int i = 0; i < WARMUP_ITERATIONS; ++i)
-    (void)caller\[0](false);
-  
   startTimer();
   /* X NOPs */
   for (int i = 0; i < ITERATIONS; ++i) {
@@ -563,10 +610,6 @@ int main() {
   endTimer();
   print(duration() / ITERATIONS);
 
-  /* Test sad path */
-  for (int i = 0; i < WARMUP_ITERATIONS; ++i)
-    (void)caller\[0](true);
-  
   startTimer();
   /* Y NOPs */
   for (int i = 0; i < ITERATIONS; ++i) {
@@ -586,11 +629,8 @@ public:
   explicit err_exception(int e) : val(e) {}
   const char *what() const noexcept override { return ""; }
 };
-int main() { 
+int main() {
   /* Test happy path */
-  for (int i = 0; i < WARMUP_ITERATIONS; ++i)
-    try { (void)caller\[0](false); } catch(...){}
-  
   startTimer();
   /* X NOPs */
   for (int i = 0; i < ITERATIONS; ++i) {
@@ -601,9 +641,6 @@ int main() {
   print(duration() / ITERATIONS);
 
   /* Test sad path */
-  for (int i = 0; i < WARMUP_ITERATIONS; ++i)
-    try { (void)caller\[0](true); } catch(...){}
-  
   startTimer();
   /* Y NOPs */
   for (int i = 0; i < ITERATIONS; ++i) {
@@ -678,12 +715,9 @@ Write through an argument {#code_write_through_an_argument}
 <summary>Expand to see code snippets</summary>
 **abort, return_val**
 ```
-int main() { 
+int main() {
   int val=0;
   /* Test happy path */
-  for (int i = 0; i < WARMUP_ITERATIONS; ++i)
-    (void)caller\[0](&val, false);
-  
   startTimer();
   /* X NOPs */
   for (int i = 0; i < ITERATIONS; ++i) {
@@ -694,9 +728,6 @@ int main() {
   print(duration() / ITERATIONS);
 
   /* Test sad path */
-  for (int i = 0; i < WARMUP_ITERATIONS; ++i)
-    (void)caller\[0](&val, true);
-  
   startTimer();
   /* Y NOPs */
   for (int i = 0; i < ITERATIONS; ++i) {
@@ -752,12 +783,9 @@ void callee(int *, bool do_err) {
   if(do_err)
     throw err_exception(1);
 }
-int main() { 
+int main() {
   int val=0;
   /* Test happy path */
-  for (int i = 0; i < WARMUP_ITERATIONS; ++i)
-    try { (void)caller\[0](&val, false); } catch(...) {}
-  
   startTimer();
   /* X NOPs */
   for (int i = 0; i < ITERATIONS; ++i) {
@@ -768,9 +796,6 @@ int main() {
   print(duration() / ITERATIONS);
 
   /* Test sad path */
-  for (int i = 0; i < WARMUP_ITERATIONS; ++i)
-    try { (void)caller\[0](&val, true); } catch(...) {}
-  
   startTimer();
   /* Y NOPs */
   for (int i = 0; i < ITERATIONS; ++i) {
@@ -806,13 +831,8 @@ int caller\[N](int *val, bool do_err) {
   *val = out_val + 1;
   return 0;
 }
-int main() { 
+int main() {
   /* Test happy path */
-  for (int i = 0; i < WARMUP_ITERATIONS; ++i) {
-    int val=0;
-    (void)caller\[0](&val, false);
-  }
-  
   startTimer();
   /* X NOPs */
   for (int i = 0; i < ITERATIONS; ++i) {
@@ -824,11 +844,6 @@ int main() {
   print(duration() / ITERATIONS);
 
   /* Test sad path */
-  for (int i = 0; i < WARMUP_ITERATIONS; ++i) {
-    int val=0;
-    (void)caller\[0](&val, true);
-  }
-  
   startTimer();
   /* Y NOPs */
   for (int i = 0; i < ITERATIONS; ++i) {
@@ -900,15 +915,15 @@ Appendix D: Histograms {#histograms}
       "title": "ECharts"
     },
     "Outcome": {
-      "author": ["Niall Douglas"],
+      "authors": ["Niall Douglas"],
       "href": "https://github.com/ned14/outcome",
       "title": "outcome: Provides very lightweight outcome<T> and result<T> (non-Boost edition)"
     },
     "Expected": {
-      "author": ["Sy Brand"],
+      "authors": ["Sy Brand"],
       "href": "https://github.com/TartanLlama/expected",
       "title": "expected: C++11/14/17 std::expected with functional-style extensions"
     }
-     
+
 }
 </pre>
