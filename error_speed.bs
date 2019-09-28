@@ -14,51 +14,6 @@ Markup Shorthands: markdown yes
 <script src="echarts_modified.js"></script>
 <script src="data.js"></script>
 
-<style>
-blockquote.book {
-  display: block;
-  border-width: 2px 0;
-  border-style: solid;
-  border-color: #eee;
-  padding: 1.5em 5em 0.5em 5em;
-  margin: 1.5em 0;
-  position: relative;
-  text-align: justify;
-}
-blockquote.book:before {
-  content: '\201C';
-  position: absolute;
-  top: 0em;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  background: #fff;
-  width: 3rem;
-  height: 2rem;
-  font: 6em/1.08em 'PT Sans', sans-serif;
-  color: #666;
-  text-align: center;
-}
-blockquote.book:after {
-  content: '\201D';
-  position: absolute;
-  bottom: -0.25em;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  background: #fff;
-  width: 3rem;
-  height: 2rem;
-  font: 6em/1.08em 'PT Sans', sans-serif;
-  color: #666;
-  text-align: center;
-}
-cite {
-  display: block;
-  text-align: right;
-  color: #e74c3c;
-  margin: 0 -5em 1em 0;
-}
-</style>
-
 Introduction {#intro}
 ====================================
 In this paper, we will look at the relative speeds of error handling strategies in micro-benchmarking scenarios.  "Happy" and "sad" path timings will be presented.
@@ -75,7 +30,7 @@ Tests were built to optimize for speed.  The test case optimizes away in the fac
 
 For all but the exception failure cases, 16K warm-up iterations were run before starting timing.  Within the timer bounds, 512K iterations of the test case were run.  The exception failure cases only had 256 warm-up iterations and 16K timed iterations, due to just how slow throwing an exception can be.
 
-All tests were run on the same machine. TODO DETAILS.  C-States, Hyper-threading, and Turbo Boost were all disabled in order to improve benchmark reproducibility.
+All tests were run on the same machine.  The processor was an Intel Core i7-3770 running at 3.3915 GHz.  The Core i7-3770 has an Ivy Bridge microarchitecture, and was released in April 2012.  C-states, Hyper-Threading, and Turbo Boost were all disabled in order to improve benchmark reproducibility. (TODO: verify)
 
 Starter test case for on-line analysis {#starter_case}
 =====================
@@ -121,6 +76,7 @@ int main() {
   endTimer();
   print(duration() / ITERATIONS);
 
+  /* Test sad path */
   startTimer();
   /* Y NOPs */
   for (int i = 0; i < ITERATIONS; ++i) {
@@ -131,10 +87,10 @@ int main() {
   print(duration() / ITERATIONS);
 }
 ```
-This code has some important properties for future comparisons.
+This code has some important properties.
 * `callee()` will raise an error based off of runtime state
-* `caller\[N]()` needs to clean up the `d` object in error and non-error conditions.
-* `caller\[N]()` should only set `global_int` in success cases.
+* `caller[N]()` needs to clean up the `d` object in error and non-error conditions.
+* `caller[N]()` should only set `global_int` in success cases.
 * The inserted NOPs allow us to sample various alignments while keeping the same program structure.
 
 In the actual tests all the function bodies are in separate .cpp files, and link-time / whole-program optimizations aren't used.  If they had been used, the entire program would get optimized away, removing our ability to measure error handling differences.
@@ -144,7 +100,7 @@ The initial part of this paper is only looking at three types of error handling.
 * return_val: Return an integer error code, where zero represents success.
 * throw_exception: Throw an exception deriving from std::exception, that contains only an int.  This should represent typical exception usage cases.  The exception is only caught with a `catch(...)`.
 
-The actual code used for the benchmark can be found [on my github](https://github.com/ben-craig/error_bench/tree/err_gauss/src/err_gauss__) TODO.
+The actual code used for the benchmark can be found [on my github](https://github.com/ben-craig/error_bench/tree/err_gauss).
 
 Happy path measurements {#happy_path_measurements}
 ============================
@@ -153,14 +109,13 @@ Abort and x64 exceptions are consistently faster than return codes.  Windows x86
 
 Write to a global {#write_to_a_global}
 -----------------------
-<p align="center">Write to global: Median cycles per iteration.  A histogram can be found [here](#TODO)</p>
+<p align="center">Write to global: Median cycles per iteration.  A histogram can be found [here](#happy_write_to_a_global_histogram)</p>
 <div id="bar_reduced_happy_div" style="width: 100%;height:300px;"></div>
 <script type="text/javascript">
 echarts.
   init(document.getElementById('bar_reduced_happy_div')).
   setOption(bar_reduced_happy);
 </script>
-
 
 Write through an argument {#write_through_an_argument}
 ---------------------------------------------
@@ -183,7 +138,7 @@ int caller\[N](int *val, bool do_err) {
   return 0;
 }
 ```
-<p align="center">Write through argument: Median cycles per iteration.  A histogram can be found [here](#TODO)</p>
+<p align="center">Write through argument: Median cycles per iteration.  A histogram can be found [here](#happy_write_through_an_argument_histogram)</p>
 <div id="bar_reduced_happy_param_div" style="width: 100%;height:300px;"></div>
 <script type="text/javascript">
 echarts.
@@ -213,7 +168,7 @@ int caller\[N](int *val, bool do_err) {
   return 0;
 }
 ```
-<p align="center">Return a value: Median cycles per iteration.  A histogram can be found [here](#TODO)</p>
+<p align="center">Return a value: Median cycles per iteration.  A histogram can be found [here](#happy_return_a_value_histogram)</p>
 <div id="bar_reduced_happy_ret_div" style="width: 100%;height:300px;"></div>
 <script type="text/javascript">
 echarts.
@@ -228,7 +183,7 @@ Sad path timings for abort aren't shown, as the recovery path is very system spe
 
 Write to a global {#sad_write_to_a_global}
 -----------------------
-<p align="center">Write to a global, sad path: Median cycles per iteration.  A histogram can be found [here](#TODO)</p>
+<p align="center">Write to a global, sad path: Median cycles per iteration.  A histogram can be found [here](#sad_exception_write_to_a_global_histogram)</p>
 <div id="bar_reduced_sad_sad_div" style="width: 100%;height:300px;"></div>
 <script type="text/javascript">
 echarts.
@@ -238,7 +193,7 @@ echarts.
 
 Write through an argument {#sad_write_through_an_argument}
 ---------------------------------------------
-<p align="center">Write through an argument, sad path: Median cycles per iteration.  A histogram can be found [here](#TODO)</p>
+<p align="center">Write through an argument, sad path: Median cycles per iteration.  A histogram can be found [here](#sad_exception_write_through_an_argument_histogram)</p>
 <div id="bar_reduced_sad_sad_param_div" style="width: 100%;height:300px;"></div>
 <script type="text/javascript">
 echarts.
@@ -248,7 +203,7 @@ echarts.
 
 "Return" a value {#sad_return_a_value}
 ---------------------------------------------
-<p align="center">Return a value, sad path: Median cycles per iteration.  A histogram can be found [here](#TODO)</p>
+<p align="center">Return a value, sad path: Median cycles per iteration.  A histogram can be found [here](#sad_exception_return_a_value_histogram)</p>
 <div id="bar_reduced_sad_sad_ret_div" style="width: 100%;height:300px;"></div>
 <script type="text/javascript">
 echarts.
@@ -256,8 +211,12 @@ echarts.
   setOption(bar_reduced_sad_sad_ret);
 </script>
 
-Happy path off-line analysis {#happy_path_analysis}
-============================
+Off-line analysis {#offline_analysis}
+=====================================
+The following analysis is done by examining assembly, but not running it.  This analysis is valuable, but is no substitute for data on real machines.
+
+LLVM-MCA happy path off-line analysis {#happy_path_analysis}
+-------------------------------------------------------------
 
 LLVM-MCA [[MCA]] is a tool that will analyze assembly and provide statistics on a hypothetical execution on a specific simulated CPU.  This can be used to provide a hardware independent analysis of generated code.  There is at least one substantial limitation though, in that calls and returns are typically not modeled.  Regardless, the analysis is still useful.
 
@@ -315,7 +274,7 @@ With MSVC x64, we get almost identical codegen between code with exceptions and 
     <td>Clang 9.0 x64</td>
 
     <td>1397 cycles over 100 iterations.<br/>
-Counts on Intel IvyBridge architecture
+Counts on Intel Ivy Bridge microarchitecture
 <code><pre>pushq %rbx
 subq $16, %rsp
 callq callee()
@@ -327,7 +286,7 @@ popq %rbx
 retq</pre></code></td>
 
     <td>1199 cycles over 100 iterations.<br/>
-Counts on Intel IvyBridge architecture
+Counts on Intel Ivy Bridge microarchitecture
 <code><pre>pushq %rax
 ; no subq here
 callq callee()
@@ -342,7 +301,7 @@ retq</pre></code></td>
   <tr>
     <td>GCC 8.2 x64</td>
     <td>1397 cycles over 100 iterations.<br/>
-Counts on Intel IvyBridge architecture
+Counts on Intel Ivy Bridge microarchitecture
 <code><pre>pushq %rbx
 subq $16, %rsp
 call callee()
@@ -355,7 +314,7 @@ popq %rbx
 ret</pre></code></td>
 
     <td>752 cycles over 100 iterations.<br/>
-Counts on Intel IvyBridge architecture
+Counts on Intel Ivy Bridge microarchitecture
 <code><pre>; no pushq
 subq $24, %rsp
 call callee()
@@ -441,11 +400,86 @@ ret</pre></code></td>
 </table>
 ARM64 GCC and Clang both generate different code for this use case when exceptions are enabled.  This is likely another missed optimization.  With GCC, the only penalty that is paid is slightly more stack usage.
 
+Sad path affecting the happy path and macro-benchmark theorizing {#sad_path_theorizing}
+-------------------------------------------------------------
+GCC and Clang x64 place an exception "landing pad" at the end of each function that needs to run user code.  I'll be looking at the assembly, including the landing pad, of the following code:
+```
+struct Dtor {~Dtor();};
+void callee();
+int global;
+void caller() {
+  Dtor d;
+  callee();
+  global = 0;
+}
+```
+<table>
+  <tr>
+    <th>Clang 9.0</th>
+    <th>GCC 7.4</th>
+    <th>GCC 9.2</th>
+  </tr>
+  <tr>
+    <td><code><pre>push    rbx
+sub     rsp, 16
+call    callee()
+mov     dword ptr [rip + global], 0
+lea     rdi, [rsp + 8]
+call    Dtor::~Dtor()
+add     rsp, 16
+pop     rbx
+ret<b>
+; Begin landing pad
+mov     rbx, rax
+lea     rdi, [rsp + 8]
+call    Dtor::~Dtor()
+mov     rdi, rbx
+call    _Unwind_Resume</b></pre></code></td>
+
+    <td><code><pre>push    rbx
+sub     rsp, 16
+call    callee()
+lea     rdi, [rsp+15]
+mov     DWORD PTR global[rip], 0
+call    Dtor::~Dtor()
+add     rsp, 16
+pop     rbx
+ret<b>
+; Begin landing pad
+lea     rdi, [rsp+15]
+mov     rbx, rax
+call    Dtor::~Dtor()
+mov     rdi, rbx
+call    _Unwind_Resume</b></pre></code></td>
+
+    <td><code><pre>push    rbp
+sub     rsp, 16
+call    callee()
+mov     DWORD PTR global[rip], 0
+lea     rdi, [rsp+15]
+call    Dtor::~Dtor()
+add     rsp, 16
+pop     rbp
+ret<b>
+; Begin landing pad
+mov     rbp, rax
+jmp     .L2
+caller() [clone .cold]:
+.L2:
+lea     rdi, [rsp+15]
+call    Dtor::~Dtor()
+mov     rdi, rbp
+call    _Unwind_Resume</b></pre></code></td>
+  </tr>
+</table>
+
+In all three cases, some cold landing pad code is directly adjacent to hot happy path code.  This doesn't cause any problems in microbenchmarks, but in theory, it could reduce instruction cache utilization in larger benchmarks.  Starting in GCC 8.1, GCC will only put a tiny trampoline in the landing pad.  The bulk of the landing pad code is moved into a different, cold location.  This should, in theory, improve instruction cache utilization in the happy path compared to Clang and earlier GCCs, though it will still be at a minor disadvantage compared to terminate based implementations.  I have no measurements to confirm or reject this theory though. [[Spencer18]] measured a small, non-zero performance degradation ( <1% ) in the happy path in a AAA game when turning on exceptions.
+
+The MSVC x64 /d2FH4 implementation does not place any exception handling code near the happy path.  The MSVC x86 sad path exception handling code is also far away from the happy path, but the happy path does exception bookkeeping.
+
 Conclusion {#conclusion}
 ========================
-
-Conclusion {#TODO}
-========================
+Exceptions are reasonable error handling strategies in many environments, but they don't serve all needs in all use cases.  C++ needs good performance, standards conforming ways to signal failures in constructors and operator overloads.  Currently, exceptions do well on the happy path, but there is no good answer for the sad path.  C++ is built on the foundation that you don't pay for what you don't use, and that you can't write the language abstractions better by hand.  This paper provides evidence that you can write error handling code by hand that results in faster code on the sad path than the equivalent exception throwing code.  In each of the sad path test cases, return values beat exceptions by more than a factor of 100.
 
 Acknowledgments {#ack}
 ======================
@@ -474,7 +508,7 @@ In the sad path graphs, exceptions are omitted so that the remaining values can 
 
 Write to a global (happy path) {#big_happy_write_to_a_global}
 -----------------------
-<p align="center">Write to global: Median cycles per iteration.  A histogram can be found [here](#TODO)</p>
+<p align="center">Write to global: Median cycles per iteration.  A histogram can be found [here](#happy_write_to_a_global_histogram)</p>
 <div id="bar_happy_div" style="width: 100%;height:300px;"></div>
 <script type="text/javascript">
 echarts.
@@ -484,7 +518,7 @@ echarts.
 
 Write through an argument (happy path)  {#big_happy_write_through_an_argument}
 ---------------------------------------------
-<p align="center">Write to global: Median cycles per iteration.  A histogram can be found [here](#TODO)</p>
+<p align="center">Write to global: Median cycles per iteration.  A histogram can be found [here](#happy_write_through_an_argument_histogram)</p>
 <div id="bar_happy_param_div" style="width: 100%;height:300px;"></div>
 <script type="text/javascript">
 echarts.
@@ -494,7 +528,7 @@ echarts.
 
 "Return" a value (happy path) {#big_happy_return_a_value}
 ----------------------------------------
-<p align="center">Write to global: Median cycles per iteration.  A histogram can be found [here](#TODO)</p>
+<p align="center">Write to global: Median cycles per iteration.  A histogram can be found [here](#happy_return_a_value_histogram)</p>
 <div id="bar_happy_ret_div" style="width: 100%;height:300px;"></div>
 <script type="text/javascript">
 echarts.
@@ -504,7 +538,7 @@ echarts.
 
 Write to a global (sad path) {#sad_happy_write_to_a_global}
 -----------------------
-<p align="center">Write to global: Median cycles per iteration.  A histogram can be found [here](#TODO)</p>
+<p align="center">Write to global: Median cycles per iteration.  A histogram can be found [here](#sad_write_to_a_global_histogram)</p>
 <div id="bar_noexcept_sad_sad_div" style="width: 100%;height:300px;"></div>
 <script type="text/javascript">
 echarts.
@@ -514,7 +548,7 @@ echarts.
 
 Write through an argument (sad path)  {#big_sad_write_through_an_argument}
 ---------------------------------------------
-<p align="center">Write to global: Median cycles per iteration.  A histogram can be found [here](#TODO)</p>
+<p align="center">Write to global: Median cycles per iteration.  A histogram can be found [here](#sad_write_through_an_argument_histogram)</p>
 <div id="bar_noexcept_sad_sad_param_div" style="width: 100%;height:300px;"></div>
 <script type="text/javascript">
 echarts.
@@ -524,7 +558,7 @@ echarts.
 
 "Return" a value (sad path) {#big_sad_return_a_value}
 ----------------------------------------
-<p align="center">Write to global: Median cycles per iteration.  A histogram can be found [here](#TODO)</p>
+<p align="center">Write to global: Median cycles per iteration.  A histogram can be found [here](#sad_return_a_value_histogram)</p>
 <div id="bar_noexcept_sad_sad_ret_div" style="width: 100%;height:300px;"></div>
 <script type="text/javascript">
 echarts.
@@ -538,17 +572,21 @@ MSVC {#msvc}
 --------------------
 The compiler and flags are the same for 32-bit and 64-bit builds, except that the 32-bit linker uses /machine:x86 and the 64-bit linker uses /machine:x64
 
+/d2FH4 is a critical flag for these benchmarks.  Without it, the results are drastically different.  See [[MoFH4]] for a description of this flag.
+
 Compiler marketing version: Visual Studio 2019
 
-Compiler toolkit version: 14.20.27508
+Compiler toolkit version: 14.22.27905
 
-cl.exe version: 19.20.27508.1
+cl.exe version: 19.22.27905
 
-Compiler codegen flags (no exceptions): /GR /Gy /Gw /O1 /MT /d2FH4 /std:c++latest /permissive- /DNDEBUG
+Compiler codegen flags (no exceptions): /GR /Gy /Gw /O2 /MT /d2FH4 /std:c++latest /permissive- /DNDEBUG
 
-Compiler codegen flags (with exceptions): /EHs /GR /Gy /Gw /O1 /MT /d2FH4 /std:c++latest /permissive- /DNDEBUG
+Compiler codegen flags (with exceptions): /EHs /GR /Gy /Gw /O2 /MT /d2FH4 /std:c++latest /permissive- /DNDEBUG
 
-Linker flags: /OPT:REF /release /subsystem:CONSOLE /incremental:no /OPT:ICF /NXCOMPAT /DYNAMICBASE /DEBUG *.obj
+Compiler codegen flags (outcome): /GR- /Gy /Gw /O2 /MT /d2FH4 /std:c++latest /permissive- /DNDEBUG
+
+Linker flags: /OPT:REF /release /subsystem:CONSOLE /incremental:no /OPT:ICF /NXCOMPAT /DYNAMICBASE *.obj
 
 Clang x64 {#clang_x64}
 ----------------------
@@ -556,9 +594,11 @@ Toolchains used:
 * Clang 8.0.0 and libc++
 * System linker from Ubuntu 14.04.3's GCC 4.8.4 installation
 
-Compiler codegen flags (no exceptions): -fno-exceptions -Os -ffunction-sections -fdata-sections -std=c++17 -stdlib=libc++ -static -DNDEBUG
+Compiler codegen flags (no exceptions): -fno-exceptions -O2 -mtune=ivybridge -ffunction-sections -fdata-sections -std=c++17 -stdlib=libc++ -static -DNDEBUG
 
-Compiler codegen flags (exceptions): -Os -ffunction-sections -fdata-sections -std=c++17 -stdlib=libc++ -static -DNDEBUG
+Compiler codegen flags (exceptions): -O2 -mtune=ivybridge -ffunction-sections -fdata-sections -std=c++17 -stdlib=libc++ -static -DNDEBUG
+
+Compiler codegen flags (outcome): -fno-exceptions -fno-rtti -O2 -mtune=ivybridge -ffunction-sections -fdata-sections -std=c++17 -stdlib=libc++ -static -DNDEBUG
 
 Linking flags: -Wl,--gc-sections -pthread -static -static-libgcc -stdlib=libc++ *.o libc++abi.a
 
@@ -566,9 +606,11 @@ GCC x64 {#gcc_x64}
 ------------------
 Toolchain used: GCC 7.3.1 from the Red Hat Developer Toolset 7.1
 
-Compiler codegen flags (no exceptions): -fno-exceptions -Os -ffunction-sections -fdata-sections -std=c++17 -static
+Compiler codegen flags (no exceptions): -fno-exceptions -O2 -mtune=ivybridge -ffunction-sections -fdata-sections -std=c++17 -static -DNDEBUG
 
-Compiler codegen flags (exceptions): -Os -ffunction-sections -fdata-sections -std=c++17 -static
+Compiler codegen flags (exceptions): -O2 -mtune=ivybridge -ffunction-sections -fdata-sections -std=c++17 -static -DNDEBUG
+
+Compiler codegen flags (outcome): -fno-exceptions -fno-rtti -O2 -mtune=ivybridge -ffunction-sections -fdata-sections -std=c++17 -static -DNDEBUG
 
 Linking flags: -Wl,--gc-sections -pthread -static -static-libgcc -static-libstdc++ *.o
 
@@ -824,7 +866,7 @@ int callee(int *val, bool do_err) {
 int caller\[N](int *val, bool do_err) {
   /* 31 - K\[N] NOPs */
   Dtor\[N] d;
-  int out_val; /* TODO: Bench this version without the init */
+  int out_val = 0;
   /* NEXT_FUNC is callee when N == 7, or caller[N+1] otherwise */
   int e = NEXT_FUNC(&out_val, do_err);
   if(e) return e;
@@ -888,6 +930,105 @@ int callee(bool do_err) {
 Appendix D: Histograms {#histograms}
 ==========================================
 
+Happy path: Write to a global {#happy_write_to_a_global_histogram}
+-----------------------
+<p align="center">Write to global: Cycles per iteration histogram</p>
+<div id="violin_happy_div" style="width: 100%;height:300px;"></div>
+<script type="text/javascript">
+//document.getElementById('violin_happy_div').setAttribute("style","height:"+(violin_happy.gridHeight + 60) + "px");
+echarts.
+  init(document.getElementById('violin_happy_div')).
+  setOption(violin_happy);
+</script>
+
+Happy path: Write through an argument {#happy_write_through_an_argument_histogram}
+-----------------------
+<p align="center">Write through an argument: Cycles per iteration histogram</p>
+<div id="violin_happy_param_div" style="width: 100%;height:300px;"></div>
+<script type="text/javascript">
+//document.getElementById('violin_happy_param_div').setAttribute("style","height:"+(violin_happy_param.gridHeight + 60) + "px");
+echarts.
+  init(document.getElementById('violin_happy_param_div')).
+  setOption(violin_happy_param);
+</script>
+
+Happy path: "Return" a value {#happy_return_a_value_histogram}
+-----------------------
+<p align="center">Return a value: Cycles per iteration histogram</p>
+<div id="violin_happy_ret_div" style="width: 100%;height:300px;"></div>
+<script type="text/javascript">
+//document.getElementById('violin_happy_ret_div').setAttribute("style","height:"+(violin_happy_ret.gridHeight + 60) + "px");
+echarts.
+  init(document.getElementById('violin_happy_ret_div')).
+  setOption(violin_happy_ret);
+</script>
+
+Exception sad path: Write to a global {#sad_exception_write_to_a_global_histogram}
+-----------------------
+<p align="center">Write to a global: Cycles per iteration histogram.  throw_exception and return_val only.</p>
+<div id="violin_reduced_sad_sad_div" style="width: 100%;height:300px;"></div>
+<script type="text/javascript">
+//document.getElementById('violin_reduced_sad_sad_div').setAttribute("style","height:"+(violin_reduced_sad_sad.gridHeight + 60) + "px");
+echarts.
+  init(document.getElementById('violin_reduced_sad_sad_div')).
+  setOption(violin_reduced_sad_sad);
+</script>
+
+Exception sad path: Write through an argument {#sad_exception_write_through_an_argument_histogram}
+-----------------------
+<p align="center">Write through an argument: Cycles per iteration histogram.  throw_exception and return_val only.</p>
+<div id="violin_reduced_sad_sad_param_div" style="width: 100%;height:300px;"></div>
+<script type="text/javascript">
+//document.getElementById('violin_reduced_sad_sad_param_div').setAttribute("style","height:"+(violin_reduced_sad_sad_param.gridHeight + 60) + "px");
+echarts.
+  init(document.getElementById('violin_reduced_sad_sad_param_div')).
+  setOption(violin_reduced_sad_sad_param);
+</script>
+
+Exception sad path: "Return" a value {#sad_exception_return_a_value_histogram}
+-----------------------
+<p align="center">Return a value: Cycles per iteration histogram.  throw_exception and return_val only.</p>
+<div id="violin_reduced_sad_sad_ret_div" style="width: 100%;height:300px;"></div>
+<script type="text/javascript">
+//document.getElementById('violin_reduced_sad_sad_ret_div').setAttribute("style","height:"+(violin_reduced_sad_sad_ret.gridHeight + 60) + "px");
+echarts.
+  init(document.getElementById('violin_reduced_sad_sad_ret_div')).
+  setOption(violin_reduced_sad_sad_ret);
+</script>
+
+Other sad path: Write to a global {#sad_write_to_a_global_histogram}
+-----------------------
+<p align="center">Write to a global: Cycles per iteration histogram.  throw_exception omitted.</p>
+<div id="violin_noexcept_sad_sad_div" style="width: 100%;height:300px;"></div>
+<script type="text/javascript">
+//document.getElementById('violin_noexcept_sad_sad_div').setAttribute("style","height:"+(violin_noexcept_sad_sad.gridHeight + 60) + "px");
+echarts.
+  init(document.getElementById('violin_noexcept_sad_sad_div')).
+  setOption(violin_noexcept_sad_sad);
+</script>
+
+Other sad path: Write through an argument {#sad_write_through_an_argument_histogram}
+-----------------------
+<p align="center">Write through an argument: Cycles per iteration histogram.  throw_exception omitted.</p>
+<div id="violin_noexcept_sad_sad_param_div" style="width: 100%;height:300px;"></div>
+<script type="text/javascript">
+//document.getElementById('violin_noexcept_sad_sad_param_div').setAttribute("style","height:"+(violin_noexcept_sad_sad_param.gridHeight + 60) + "px");
+echarts.
+  init(document.getElementById('violin_noexcept_sad_sad_param_div')).
+  setOption(violin_noexcept_sad_sad_param);
+</script>
+
+Other sad path: "Return" a value {#sad_return_a_value_histogram}
+-----------------------
+<p align="center">Return a value: Cycles per iteration histogram.  throw_exception omitted.</p>
+<div id="violin_noexcept_sad_sad_ret_div" style="width: 100%;height:300px;"></div>
+<script type="text/javascript">
+//document.getElementById('violin_noexcept_sad_sad_ret_div').setAttribute("style","height:"+(violin_noexcept_sad_sad_ret.gridHeight + 60) + "px");
+echarts.
+  init(document.getElementById('violin_noexcept_sad_sad_ret_div')).
+  setOption(violin_noexcept_sad_sad_ret);
+</script>
+
 
 <pre class=biblio>
 {
@@ -895,11 +1036,6 @@ Appendix D: Histograms {#histograms}
         "authors": ["Modi Mo"],
         "href": "https://devblogs.microsoft.com/cppblog/making-cpp-exception-handling-smaller-x64/",
         "title": "Making C++ Exception Handling Smaller On x64"
-    },
-    "P0939R2": {
-        "authors": ["H. Hinnant", "R. Orr", "B. Stroustrup", "D. Vandevoorde", "M. Wong"],
-        "href": "http://wg21.link/P0939R2",
-        "title": "Direction for ISO C++"
     },
     "Bakhvalov": {
         "authors": ["Denis Bakhvalov"],
@@ -923,6 +1059,11 @@ Appendix D: Histograms {#histograms}
       "authors": ["Sy Brand"],
       "href": "https://github.com/TartanLlama/expected",
       "title": "expected: C++11/14/17 std::expected with functional-style extensions"
+    },
+    "Spencer18": {
+      "authors": ["Michael Spencer"],
+      "href": "https://www.youtube.com/watch?v=C4gpj-MDstY",
+      "title": "C++Now 2018: How Compilers Reason About Exceptions"
     }
 
 }
