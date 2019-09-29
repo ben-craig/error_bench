@@ -2,7 +2,7 @@
 Title: Error size benchmarking: Redux
 Shortname: D1640
 Revision: 1.0
-Audience: WG21, DG
+Audience: WG21; DG
 Status: D
 Group: WG21
 URL: https://wg21.link/P1640R1
@@ -319,7 +319,7 @@ In this paper, we will look at the *size* costs of error handling.  We'll break 
 
 Changes {#changes}
 ====================================
-R1 of this paper removed the discussion on how exceptions are implemented, and reduced the set of error handling strategies down to throwing exceptions, return codes, abort, and noexcept abort.  This is the make the paper and charts easier to read.  The data is the same.
+R1 of this paper removed the discussion on how exceptions are implemented, and reduced the set of error handling strategies down to throwing exceptions, return codes, abort, and noexcept abort.  This is to make the paper and charts easier to read.  The data is the same.
 
 R1 renamed the "stripped" cases to "baremetal" cases, to better frame where those numbers would be applicable.
 
@@ -720,17 +720,7 @@ Charts generated with [[ECharts]].
 
 Appendix A: Why no speed measurements? {#speed}
 =======================================
-Gathering representative timings for very small pieces of code is difficult on modern hardware.  In the [initial-error-neutral-function return_val benchmark](#code_neutral1); `main()`, `caller()`, `callee()`, and `Dtor::~Dtor()` add up to just 21 instructions when compiled with MSVC 2019 x64.  There are no system calls, no atomic operations, no divisions, or any other highly expensive operations being performed.  The code easily fits into caches.  This means that micro-architectural stalls can have drastic effects on performance.
-
-One type of micro-architectural quirk that makes these measurements very painful is code alignment [[Bakhvalov]].  Each call and each branch can introduce stalls if jumping to a poorly aligned location.  These stalls can dominate the timings.  With poor alignment, the error neutral noexcept_terminate MSVC x86 case (12 instructions) can run slower than the error neutral throw_val MSVC x86 case (28 instructions, including TLS manipulation).
-
-In order to get representative timings, a benchmark needs to sample a representative set of alignments of all jumps.  Gathering such a sampling is challenging, especially if one does not have access to the source of the compiler.
-
-This isn't just a problem that can be solved by increasing the number of loop iterations in a performance test.  Increasing loop iterations just gets a more accurate measurement of a single alignment.
-
-There exist tools to statically quantify the performance characteristics of assembly kernels.  Intel Architecture Code Analyzer [[IACA]] and LLVM Machine Code Analyzer [[MCA]] can take a snippet of assembly and determine how many cycles that instruction sequence will take on a given architecture.  These tools weren't suitable for my purposes, as neither is able to model call and return instructions currently.
-
-The author is hoping to gather representative speed measurements in a future paper.
+[[P1886]] contains speed measurements for various error handling strategies.
 
 Appendix B: The build flags {#build_flags}
 ============================
@@ -1120,18 +1110,10 @@ Initial cost of signaling an error, linear {#linearerror1}
         "href": "http://wg21.link/P0939R2",
         "title": "Direction for ISO C++"
     },
-    "Bakhvalov": {
-        "authors": ["Denis Bakhvalov"],
-        "href": "https://dendibakh.github.io/blog/2018/01/18/Code_alignment_issues",
-        "title": "Code alignment issues."
-    },
-    "IACA": {
-      "href": "https://software.intel.com/en-us/articles/intel-architecture-code-analyzer",
-      "title": "Intel Architecture Code Analyzer"
-    },
-    "MCA": {
-      "href": "https://llvm.org/docs/CommandGuide/llvm-mca.html",
-      "title": "llvm-mca - LLVM Machine Code Analyzer"
+    "P1886": {
+        "authors": ["Ben Craig"],
+        "href": "http://wg21.link/P1866",
+        "title": "Error speed benchmarking"
     },
     "ECharts": {
       "href": "https://ecomfe.github.io/echarts-doc/public/en/index.html",
