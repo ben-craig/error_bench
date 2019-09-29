@@ -1,9 +1,9 @@
 <pre class='metadata'>
 Title: Error size benchmarking: Redux
-Shortname: D1640
-Revision: 1.0
+Shortname: P1640
+Revision: 1
 Audience: WG21; DG
-Status: D
+Status: P
 Group: WG21
 URL: https://wg21.link/P1640R1
 !Source: <a href="https://github.com/ben-craig/error_bench/blob/master/bench_blog.bs">github.com/ben-craig/error_bench/blob/master/bench_blog.bs</a>
