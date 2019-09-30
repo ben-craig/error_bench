@@ -103,7 +103,7 @@ def aesthetic_round(val):
     new_width = 10.0 * new_width
   return new_width
 
-MAX_DESIRED_BUCKETS = 300.0
+MAX_DESIRED_BUCKETS = 150.0
 def calc_width(min_x, max_x):
   start_width = float(max_x - min_x) / MAX_DESIRED_BUCKETS
   return aesthetic_round(start_width)
