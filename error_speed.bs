@@ -16,7 +16,7 @@ Markup Shorthands: markdown yes
 
 Introduction {#intro}
 ====================================
-In this paper, we will look at the relative speeds of error handling strategies in micro-benchmarking scenarios.  "Happy" and "sad" path timings will be presented.
+In this paper, the relative speeds of error handling strategies in micro-benchmarking scenarios will be analyzed.  "Happy" and "sad" path timings will be presented.
 
 Measuring methodology {#methodology}
 ====================================
@@ -26,13 +26,13 @@ Gathering representative timings for very small pieces of code is difficult on m
 
 This research used a novel technique to get representative timings across a wide range of jump alignments.  At the beginning of each function, a random number of `nop` instructions (0 to 31 inclusive) were inserted.  A matching set of `nop` instructions were inserted at a later point in the execution path so that a total of 31 user inserted `nop` instructions were always executed.  1024 instances of this program, all with different layouts of nops, were then built and run.
 
-Tests were compiled to optimize for speed.  Link-time optimizations (LTO) / whole program optimizations were not used.  Had we used LTO, the entire program would be optimized away, and the benchmarks would be invalid.  Some compilers only support profile-guided optimizations (PGO) after turning on link-time optimizations, so PGO wasn't used either.  Only the exception cases were built with exceptions turned on.
+Tests were compiled to optimize for speed.  Link-time optimizations (LTO) / whole program optimizations were not used.  Had LTO been used, the entire program would be optimized away, and the benchmarks would be invalid.  Some compilers only support profile-guided optimizations (PGO) after turning on link-time optimizations, so PGO wasn't used either.  Only the exception cases were built with exceptions turned on.
 
 For all but the exception failure cases, 16K warm-up iterations were run before starting timing.  Within the timer bounds, 512K iterations of the test case were run.  The exception failure cases only had 256 warm-up iterations and 16K timed iterations, due to how slow throwing an exception can be.
 
 These tests are all testing code that is "hot".  The branch predictors should all be primed, and everything should be in cache.  Cold code benchmarks would likely show different results.
 
-All tests were run on the same machine.  The processor was an Intel Core i7-3770 running at 3.3915 GHz.  The Core i7-3770 has an Ivy Bridge micro-architecture, and was released in April 2012.  C states, HyperThreading, Intel TurboBoost and Intel SpeedStep were all disabled in order to improve benchmark reproducibility.  MSVC benchmarks were run on the 64-bit version of Windows 10 Enterprise (10.0.17134.1006).  Clang and GCC benchmarks were run on the Linux slax 4.9.0-9-amd64 #1 SMP Debian 4.9.168-1 (2019-04-12) x86_64 GNU/Linux.
+All tests were run on the same machine.  The processor was an Intel Core i7-3770 running at 3.3915 GHz.  The Core i7-3770 has an Ivy Bridge micro-architecture, and was released in April 2012.  C states, HyperThreading, Intel TurboBoost and Intel SpeedStep were all disabled in order to improve benchmark reproducibility.  MSVC benchmarks were run on the 64-bit version of Windows 10 Enterprise (10.0.17134.1006).  Clang and GCC benchmarks were run on Linux slax 4.9.0-9-amd64 #1 SMP Debian 4.9.168-1 (2019-04-12) x86_64 GNU/Linux.
 
 Justification of test case choices {#code_choice_justification}
 ==========================================
@@ -40,19 +40,19 @@ This paper takes three abstract programs, translates them into several different
 
 The author doesn't have the time, resources, or expertise for that.  The author (arguably) has the time, resources, and expertise to benchmark more than just one abstract program.
 
-The first abstract program ("Write to a global") was based heavily off of the program used in [[P1640R0]].  The essentials of error handling were captured in that program, and I saw little reason to change it significantly.
+The first abstract program ("Write to a global") was based heavily off of the program used in [[P1640R0]].  The essentials of error handling were captured in that program, and there was little reason to change it significantly.
 
-The second program ("Write through an argument") came about as part of my investigation into the MSVC x64 performance anomaly where exceptions beat abort.  This program demonstrates that minor changes, such as adding a parameter to a function, or using a smaller `mov` instruction, can affect the performance delta between exceptions and abort.
+The second program ("Write through an argument") came about as part of investigations into the MSVC x64 performance anomaly where exceptions beat abort.  This program demonstrates that minor changes, such as adding a parameter to a function, or using a smaller `mov` instruction, can affect the performance delta between exceptions and abort.
 
-The third program ("Return a value") was authored to ensure that I wasn't showing favoritism to the return code error handling strategy.
+The third program ("Return a value") was authored to ensure that favoritism wasn't shown to the return code error handling strategy.
 
-Each of the programs has a top level main, eight layers of "caller" functions, and a final "callee" function that decides whether to signal an error based off of a parameter.  Eight was chosen mostly arbitrarily.  I wasn't able to get sufficient nop-randomization with a single "callee" function, and calling sixteen functions exceeded the size of the return stack buffer on my machine.
+Each of the programs has a top level main, eight layers of "caller" functions, and a final "callee" function that decides whether to signal an error based off of a parameter.  Eight was chosen mostly arbitrarily.  The author wasn't able to get sufficient nop-randomization with a single "callee" function.  Calling sixteen functions exceeded the size of the return stack buffer on the test machine.
 
 Starter test case for on-line analysis {#starter_case}
 =====================
 In the code examples, anything using a `$` is something that gets generated before the C++ compiler or preprocessor ever sees it.  `X`, `Y`, `Z`, and `K[0]` through `K[7]` are all random numbers in the range of [0,31], determined at build time.
 
-To start with, we will look at code similar to the following:
+To start with, the following code will be used:
 ```
 struct Dtor$N {
   extern ~Dtor$N() {
@@ -113,7 +113,7 @@ This code has some important properties.
 * `callee()` will raise an error based off of runtime state
 * `caller$N()` needs to clean up the `d` object in error and non-error conditions.
 * `caller$N()` should only set `global_int` in success cases.
-* The inserted NOPs allow us to sample various alignments while keeping the same program structure.
+* The inserted NOPs allow for sampling various alignments while keeping the same program structure.
 
 In the actual tests all the function bodies are in separate .cpp files, and link-time / whole-program optimizations aren't used.  If they had been used, the entire program would get optimized away, removing our ability to measure error handling differences.
 
@@ -122,7 +122,7 @@ The initial part of this paper is only looking at three types of error handling.
 * return_val: Return an integer error code, where zero represents success.
 * throw_exception: Throw an exception deriving from std::exception, that contains only an int.  This should represent typical exception usage cases.  The exception is only caught with a `catch(...)`.
 
-The actual code used for the benchmark can be found [on my github](https://github.com/ben-craig/error_bench/tree/err_gauss).
+The actual code used for the benchmark can be found [on github](https://github.com/ben-craig/error_bench/tree/err_gauss).
 
 Happy path measurements {#happy_path_measurements}
 ============================
@@ -141,7 +141,7 @@ echarts.
 
 Write through an argument {#write_through_an_argument}
 ---------------------------------------------
-Instead of writing to a global, we write through a pointer argument.
+Instead of writing to a global, the code writes through a pointer argument.
 ```
 int callee(int *val, bool do_err) {
   (void)val;
@@ -172,7 +172,7 @@ echarts.
 
 "Return" a value {#return_a_value}
 ---------------------------------------------
-In this case, we'll use the output channel available to us to "return" an incremented value.  When handling errors in an error code fashion, we end up using an output parameter.
+In this case, the code will return an incremented channel in whichever output channel is available.  An output parameter is used when handling errors in an error code fashion.
 ```
 int callee(int *val, bool do_err) {
   inline_nops n;
@@ -246,11 +246,11 @@ LLVM-MCA happy path off-line analysis {#happy_path_analysis}
 
 LLVM-MCA [[MCA]] is a tool that will analyze assembly and provide statistics on a hypothetical execution on a specific simulated CPU.  This can be used to provide a hardware independent analysis of generated code.  There is at least one substantial limitation though, in that calls and returns are typically not modeled.  Regardless, the analysis is still useful.
 
-I focused on analyzing the difference between exception builds and abort / no exception builds, all in an error neutral function.  In the off-line analysis, I'm only focused on 64-bit x86-64 (Clang, GCC, and MSVC) and 64-bit ARM (Clang and GCC).  Exceptions on 32-bit x86 on Windows is so much slower in the happy path that it isn't interesting to dive in at the assembly level.
+This analysis focuses on the difference between exception builds and abort / no exception builds, all in an error neutral function.  Only 64-bit x86-64 (Clang, GCC, and MSVC) and 64-bit ARM (Clang and GCC) code will be discussed.  Exceptions on 32-bit x86 on Windows is so much slower in the happy path that it isn't interesting to dive in at the assembly level.
 
 In general, there are some minor missed optimization opportunities in some of the smallest error handling examples.
 
-I will be looking at this code snippet:
+The following code snippet will be analyzed:
 ```
 struct Dtor {~Dtor();};
 void callee();
@@ -272,7 +272,7 @@ void caller() {
     <td>MSVC x64</td>
     <td><code><pre>sub rsp, 40
 call void callee(void)<b>
-; Note the ordering difference
+// Note the ordering difference
 mov DWORD PTR int global, 0
 lea rcx, QWORD PTR d$[rsp]</b>
 call Dtor::~Dtor(void)
@@ -280,7 +280,7 @@ add rsp, 40
 ret 0</pre></code></td>
     <td><code><pre>sub rsp, 40
 call void callee(void)<b>
-; Note the ordering difference
+// Note the ordering difference
 lea rcx, QWORD PTR d$[rsp]
 mov DWORD PTR int global, 0</b>
 call Dtor::~Dtor(void)
@@ -288,7 +288,7 @@ add rsp, 40
 ret 0</pre></code></td>
   </tr>
 </table>
-With MSVC x64, we get almost identical codegen between code with exceptions and without.  On MSVC x64, there are some optimization passes that don't run when exceptions are turned on, and one of those passes is responsible for switching the order of the `lea` and `mov` instructions.  I have observed a 1-3 cycle difference in benchmark results just from switching the order of those two instructions.  In the data I am providing, this results in the exception based code being slightly faster than the abort based code.  The "optimization" pass in the no-exception code causes a minor speed penalty.
+With MSVC x64, the codegen is almost identical between code with exceptions and without.  On MSVC x64, there are some optimization passes that don't run when exceptions are turned on, and one of those passes is responsible for switching the order of the `lea` and `mov` instructions.  The benchmarks show a 1-3 cycle difference just from switching the order of those two instructions.  This results in the exception based code being slightly faster than the abort based code for this use case.  The "optimization" pass in the no-exception code causes a minor speed penalty.
 
 <table>
   <tr>
@@ -302,24 +302,24 @@ With MSVC x64, we get almost identical codegen between code with exceptions and 
     <td>1397 cycles over 100 iterations.<br/>
 Counts on Intel Ivy Bridge micro-architecture
 <code><pre>pushq %rbx
-subq $16, %rsp
+<b>subq $16, %rsp</b>
 callq callee()
 movl $0, global(%rip)
-leaq 8(%rsp), %rdi
+<b>leaq 8(%rsp), %rdi</b>
 callq Dtor::~Dtor()
-addq $16, %rsp
+<b>addq $16, %rsp</b>
 popq %rbx
 retq</pre></code></td>
 
     <td>1199 cycles over 100 iterations.<br/>
 Counts on Intel Ivy Bridge micro-architecture
 <code><pre>pushq %rax
-; no subq here
+<b>// no subq here</b>
 callq callee()
 movl $0, global(%rip)
-movq %rsp, %rdi ; movq instead of leaq
+<b>movq %rsp, %rdi // movq instead of leaq</b>
 callq Dtor::~Dtor()
-; no addq here
+<b>// no addq here</b>
 popq %rax
 retq</pre></code></td>
 
@@ -328,35 +328,35 @@ retq</pre></code></td>
     <td>GCC 8.2 x64</td>
     <td>1397 cycles over 100 iterations.<br/>
 Counts on Intel Ivy Bridge micro-architecture
-<code><pre>pushq %rbx
+<code><pre><b>pushq %rbx</b>
 subq $16, %rsp
 call callee()
-; ordering difference
+<b>// ordering difference
 movl $0, global(%rip)
-leaq 15(%rsp), %rdi
+leaq 15(%rsp), %rdi</b>
 call Dtor::~Dtor()
 addq $16, %rsp
-popq %rbx
+<b>popq %rbx</b>
 ret</pre></code></td>
 
     <td>752 cycles over 100 iterations.<br/>
 Counts on Intel Ivy Bridge micro-architecture
-<code><pre>; no pushq
+<code><pre><b>// no pushq</b>
 subq $24, %rsp
 call callee()
-; ordering difference
+<b>// ordering difference
 leaq 15(%rsp), %rdi
-movl $0, global(%rip)
+movl $0, global(%rip)</b>
 call Dtor::~Dtor()
 addq $24, %rsp
-; no popq
+<b>// no popq</b>
 ret</pre></code></td>
 
   </tr>
 </table>
 x64 GCC and Clang both generate slower code for this use case when exceptions are enabled.  This is a missed optimization, but isn't inherent to the design of exceptions.
 
-In my timings, GCC's abort code was 2 cycles faster than GCC's exception code.  Clang's abort code was 5 cycles faster than Clang's exception code.
+In the timings, GCC's abort code was 2 cycles faster than GCC's exception code.  Clang's abort code was 5 cycles faster than Clang's exception code.
 
 <table>
   <tr>
@@ -369,7 +369,7 @@ In my timings, GCC's abort code was 2 cycles faster than GCC's exception code.  
 
     <td>684 cycles over 100 iterations.<br/>
 Counts on exynos-m5 architecture
-<code><pre>str x19, [sp, #-32]!
+<code><pre><b>str x19, [sp, #-32]!</b>
 stp x29, x30, [sp, #16]
 add x29, sp, #16
 bl callee()
@@ -378,12 +378,12 @@ add x0, sp, #8
 str wzr, [x8, :lo12:global]
 bl Dtor::~Dtor()
 ldp x29, x30, [sp, #16]
-ldr x19, [sp], #32
+<b>ldr x19, [sp], #32</b>
 ret</pre></code></td>
 
     <td>665 cycles over 100 iterations.<br/>
 Counts on exynos-m5 architecture
-<code><pre>sub sp, sp, #32 // sub instead of str
+<code><pre><b>sub sp, sp, #32 // sub instead of str</b>
 stp x29, x30, [sp, #16]
 add x29, sp, #16
 bl callee()
@@ -392,7 +392,7 @@ add x0, sp, #8
 str wzr, [x8, :lo12:global]
 bl Dtor::~Dtor()
 ldp x29, x30, [sp, #16]
-add sp, sp, #32 // add instead of ldr
+<b>add sp, sp, #32 // add instead of ldr</b>
 ret</pre></code></td>
 
   </tr>
@@ -400,26 +400,26 @@ ret</pre></code></td>
     <td>GCC 8.2 ARM64</td>
     <td>639 cycles over 100 iterations.<br/>
 Counts on exynos-m5 architecture
-<code><pre>stp x29, x30, [sp, -48]!
+<code><pre><b>stp x29, x30, [sp, -48]!</b>
 mov x29, sp
 bl callee()
 adrp x1, .LANCHOR0
-add x0, sp, 40
+<b>add x0, sp, 40</b>
 str wzr, [x1, #:lo12:.LANCHOR0]
 bl Dtor::~Dtor()
-ldp x29, x30, [sp], 48
+<b>ldp x29, x30, [sp], 48</b>
 ret</pre></code></td>
 
     <td>639 cycles over 100 iterations.<br/>
 Counts on exynos-m5 architecture
-<code><pre>stp x29, x30, [sp, -32]! // different constant
+<code><pre><b>stp x29, x30, [sp, -32]! // different constant</b>
 mov x29, sp
 bl callee()
 adrp x1, .LANCHOR0
-add x0, sp, 24 // different constant
+<b>add x0, sp, 24 // different constant</b>
 str wzr, [x1, #:lo12:.LANCHOR0]
 bl Dtor::~Dtor()
-ldp x29, x30, [sp], 32 // different constant
+<b>ldp x29, x30, [sp], 32 // different constant</b>
 ret</pre></code></td>
 
   </tr>
@@ -428,7 +428,7 @@ ARM64 GCC and Clang both generate different code for this use case when exceptio
 
 Sad path affecting the happy path and macro-benchmark theorizing {#sad_path_theorizing}
 -------------------------------------------------------------
-GCC and Clang x64 place an exception "landing pad" at the end of each function that needs to run user code.  I'll be looking at the assembly, including the landing pad, of the following code:
+GCC and Clang x64 place an exception "landing pad" at the end of each function that needs to run user code.  The assembly of the following code, including the landing pad, will be analyzed:
 ```
 struct Dtor {~Dtor();};
 void callee();
@@ -455,7 +455,7 @@ call    Dtor::~Dtor()
 add     rsp, 16
 pop     rbx
 ret<b>
-; Begin landing pad
+// Begin landing pad
 mov     rbx, rax
 lea     rdi, [rsp + 8]
 call    Dtor::~Dtor()
@@ -471,7 +471,7 @@ call    Dtor::~Dtor()
 add     rsp, 16
 pop     rbx
 ret<b>
-; Begin landing pad
+// Begin landing pad
 lea     rdi, [rsp+15]
 mov     rbx, rax
 call    Dtor::~Dtor()
@@ -487,7 +487,7 @@ call    Dtor::~Dtor()
 add     rsp, 16
 pop     rbp
 ret<b>
-; Begin landing pad
+// Begin landing pad
 mov     rbp, rax
 jmp     .L2
 caller() [clone .cold]:
@@ -499,7 +499,7 @@ call    _Unwind_Resume</b></pre></code></td>
   </tr>
 </table>
 
-In all three cases, some cold landing pad code is directly adjacent to hot happy path code.  This doesn't cause any problems in microbenchmarks, but in theory, it could reduce instruction cache utilization in larger benchmarks.  Starting in GCC 8.1, GCC will only put a tiny trampoline in the landing pad.  The bulk of the landing pad code is moved into a different, cold location.  This should, in theory, improve instruction cache utilization in the happy path compared to Clang and earlier GCCs, though it will still be at a minor disadvantage compared to terminate based implementations.  I have no measurements to confirm or reject this theory though. [[Spencer18]] measured a small, non-zero performance degradation ( <1% ) in the happy path in a AAA game when turning on exceptions.
+In all three cases, some cold landing pad code is directly adjacent to hot happy path code.  This doesn't cause any problems in microbenchmarks, but in theory, it could reduce instruction cache utilization in larger benchmarks.  Starting in GCC 8.1, GCC will only put a tiny trampoline in the landing pad.  The bulk of the landing pad code is moved into a different, cold location.  This should, in theory, improve instruction cache utilization in the happy path compared to Clang and earlier GCCs, though it will still be at a minor disadvantage compared to terminate based implementations.  The author has no measurements to confirm or reject this theory though. [[Spencer18]] measured a small, non-zero performance degradation ( <1% ) in the happy path in a AAA game when turning on exceptions.
 
 The MSVC x64 /d2FH4 implementation does not place any exception handling code near the happy path.  The MSVC x86 sad path exception handling code is also far away from the happy path, but the happy path does exception bookkeeping.
 
@@ -515,7 +515,7 @@ Charts generated with [[ECharts]].
 
 Appendix A: Additional error handling types {#additional_error_handling}
 ===================================================================
-While researching this paper, I gathered data on some additional error handling mechanisms.  I will provide a brief description of the error handling mechanism, and I will provide the data.  Only a minimal amount of code and explanation will be provided though.  This data could be useful in future error handling discussions.
+While researching this paper, data was gathered on some additional error handling mechanisms.  The data is provided here with a brief description of the error handling mechanism.  Only a minimal amount of code and explanation will be provided though.  This data could be useful in future error handling discussions.
 
 In each of these cases, the struct involved is of the following form:
 ```
