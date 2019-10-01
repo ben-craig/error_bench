@@ -1,7 +1,7 @@
 <pre class='metadata'>
 Title: Error speed benchmarking
 Shortname: D1886
-Revision: 0.1
+Revision: 0.2
 Audience: WG21; DG
 Status: D
 Group: WG21
@@ -205,7 +205,11 @@ echarts.
 Sad path measurements {#sad_path_measurements}
 ============================
 
-Sad path timings for abort aren't shown, as the recovery path is very system specific.  Throwing an exception is more than 100x slower than returning an error code.
+The following sad path measurements are best cases for the sad path.  The sad path code is all hot.  All the branches should predict as well as they can.  On the exception front, `catch(...)` is used, so little-to-no RTTI-like matching code needs to run.
+
+Even given this best case scenario, throwing an exception is more than 100x slower than returning an error code.  The standard deviation of the exception runs is also more than 100x larger than returning an error code.  This means that the determinism of throwing an exception is substantially worse than error codes.  This is before throwing in complications like difficult catch block matching, concurrent exection fighting over dynamic allocation locks, or cold cache effects, all of which would likely make return codes look even better.
+
+Sad path timings for abort aren't shown, as the recovery path is very system specific.
 
 Write to a global {#sad_write_to_a_global}
 -----------------------
@@ -505,7 +509,7 @@ The MSVC x64 /d2FH4 implementation does not place any exception handling code ne
 
 Conclusion {#conclusion}
 ========================
-Exceptions are reasonable error handling strategies in many environments, but they don't serve all needs in all use cases.  C++ needs good performance, standards conforming ways to signal failures in constructors and operator overloads.  Currently, exceptions do well on the happy path, but there is no good answer for the sad path.  C++ is built on the foundation that you don't pay for what you don't use, and that you can't write the language abstractions better by hand.  This paper provides evidence that you can write error handling code by hand that results in faster code on the sad path than the equivalent exception throwing code.  In each of the sad path test cases, return values beat exceptions by more than a factor of 100.
+Exceptions are reasonable error handling strategies in many environments, but they don't serve all needs in all use cases.  C++ needs good performance, deterministic, standards conforming ways to signal failures in constructors and operator overloads.  Currently, exceptions do well on the happy path, but there is no good answer for the sad path.  C++ is built on the foundation that you don't pay for what you don't use, and that you can't write the language abstractions better by hand.  This paper provides evidence that you can write error handling code by hand that results in faster code on the sad path than the equivalent exception throwing code.  In each of the sad path test cases, return values beat exceptions by more than a factor of 100.
 
 Acknowledgments {#ack}
 ======================
