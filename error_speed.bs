@@ -40,6 +40,10 @@ This paper takes three abstract programs, translates them into several different
 
 The author doesn't have the time, resources, or expertise for that.  The author (arguably) has the time, resources, and expertise to benchmark more than just one abstract program.
 
+These programs perform virtually no "real" work.  In many production scenarios, the costs of error handling will be hidden through out-of-order execution in combination with expensive operations like I/O, synchronization, memory operations, and "large" math operations.  In a production environment, it is possible that the error handling overhead differences only manifest as a slight increase in power consumption.
+
+These programs are crafted in such a way as to make it possible to measure error overhead.  To use an analogy, it is difficult to measure the weight of a flea.  It is even more difficult to measure the weight of a flea on an elephant by subtracting out the weight of the elephant.  If these programs did real work, then the noise introduced by the real work would likely swamp out the differences that this paper seeks to measure.
+
 The first abstract program ("Write to a global") was based heavily off of the program used in [[P1640R0]].  The essentials of error handling were captured in that program, and there was little reason to change it significantly.
 
 The second program ("Write through an argument") came about as part of investigations into the MSVC x64 performance anomaly where exceptions beat abort.  This program demonstrates that minor changes, such as adding a parameter to a function, or using a smaller `mov` instruction, can affect the performance delta between exceptions and abort.
