@@ -1,8 +1,9 @@
 <!DOCTYPE html>
+<!-- saved from url=(0031) -->
 <html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-  
+
   <meta content="width=device-width, initial-scale=1, shrink-to-fit=no" name="viewport">
-  <title>D1886R0.0: Error speed benchmarking</title>
+  <title>D1886R0.1: Error speed benchmarking</title>
 <style data-fill-with="stylesheet">/******************************************************************************
  *                   Style sheet for the W3C specifications                   *
  *
@@ -1285,7 +1286,7 @@ Possible extra rowspan handling
     blockquote c-[vi] { color: inherit; } /* Name.Variable.Instance */
     blockquote c-[il] { color: inherit; } /* Literal.Number.Integer.Long */
   </style>
-  <meta content="Bikeshed version e86d5b1b47a216fa66165c234892adc259212183" name="generator">
+  <meta content="Bikeshed version c80088ef848c5e5446a2eaced80623027d194593" name="generator">
   <link href="https://wg21.link/P1886R0" rel="canonical">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
 <style>/* style-md-lists */
@@ -1496,8 +1497,8 @@ pre .property::before, pre .property::after {
  </head><body class="h-entry toc-sidebar"><p id="toc-nav"><a id="toc-jump" href="#toc"><span aria-hidden="true">↑</span> <span>Jump to Table of Contents</span></a><a id="toc-toggle" href="#toc"><span aria-hidden="true">←</span> <span>Collapse Sidebar</span></a></p>
   <div class="head">
    <p data-fill-with="logo"></p>
-   <h1 class="p-name no-ref" id="title">D1886R0.0<br>Error speed benchmarking</h1>
-   <h2 class="no-num no-toc no-ref heading settled" id="subtitle"><span class="content">Draft Proposal, <time class="dt-updated" datetime="2019-09-28">2019-09-28</time></span></h2>
+   <h1 class="p-name no-ref" id="title">D1886R0.1<br>Error speed benchmarking</h1>
+   <h2 class="no-num no-toc no-ref heading settled" id="subtitle"><span class="content">Draft Proposal, <time class="dt-updated" datetime="2019-10-01">2019-10-01</time></span></h2>
    <div data-fill-with="spec-metadata">
     <dl>
      <dt>This version:
@@ -1525,38 +1526,39 @@ pre .property::before, pre .property::after {
    <ol class="toc" role="directory">
     <li><a href="#intro"><span class="secno">1</span> <span class="content">Introduction</span></a>
     </li><li><a href="#methodology"><span class="secno">2</span> <span class="content">Measuring methodology</span></a>
-    </li><li><a href="#starter_case"><span class="secno">3</span> <span class="content">Starter test case for on-line analysis</span></a>
+    </li><li><a href="#code_choice_justification"><span class="secno">3</span> <span class="content">Justification of test case choices</span></a>
+    </li><li><a href="#starter_case"><span class="secno">4</span> <span class="content">Starter test case for on-line analysis</span></a>
     </li><li>
-     <a href="#happy_path_measurements"><span class="secno">4</span> <span class="content">Happy path measurements</span></a>
+     <a href="#happy_path_measurements"><span class="secno">5</span> <span class="content">Happy path measurements</span></a>
      <ol class="toc">
-      <li><a href="#write_to_a_global"><span class="secno">4.1</span> <span class="content">Write to a global</span></a>
-      </li><li><a href="#write_through_an_argument"><span class="secno">4.2</span> <span class="content">Write through an argument</span></a>
-      </li><li><a href="#return_a_value"><span class="secno">4.3</span> <span class="content">"Return" a value</span></a>
+      <li><a href="#write_to_a_global"><span class="secno">5.1</span> <span class="content">Write to a global</span></a>
+      </li><li><a href="#write_through_an_argument"><span class="secno">5.2</span> <span class="content">Write through an argument</span></a>
+      </li><li><a href="#return_a_value"><span class="secno">5.3</span> <span class="content">"Return" a value</span></a>
      </li></ol>
     </li><li>
-     <a href="#sad_path_measurements"><span class="secno">5</span> <span class="content">Sad path measurements</span></a>
+     <a href="#sad_path_measurements"><span class="secno">6</span> <span class="content">Sad path measurements</span></a>
      <ol class="toc">
-      <li><a href="#sad_write_to_a_global"><span class="secno">5.1</span> <span class="content">Write to a global</span></a>
-      </li><li><a href="#sad_write_through_an_argument"><span class="secno">5.2</span> <span class="content">Write through an argument</span></a>
-      </li><li><a href="#sad_return_a_value"><span class="secno">5.3</span> <span class="content">"Return" a value</span></a>
+      <li><a href="#sad_write_to_a_global"><span class="secno">6.1</span> <span class="content">Write to a global</span></a>
+      </li><li><a href="#sad_write_through_an_argument"><span class="secno">6.2</span> <span class="content">Write through an argument</span></a>
+      </li><li><a href="#sad_return_a_value"><span class="secno">6.3</span> <span class="content">"Return" a value</span></a>
      </li></ol>
     </li><li>
-     <a href="#offline_analysis"><span class="secno">6</span> <span class="content">Off-line analysis</span></a>
+     <a href="#offline_analysis"><span class="secno">7</span> <span class="content">Off-line analysis</span></a>
      <ol class="toc">
-      <li><a href="#happy_path_analysis"><span class="secno">6.1</span> <span class="content">LLVM-MCA happy path off-line analysis</span></a>
-      </li><li><a href="#sad_path_theorizing"><span class="secno">6.2</span> <span class="content">Sad path affecting the happy path and macro-benchmark theorizing</span></a>
+      <li><a href="#happy_path_analysis"><span class="secno">7.1</span> <span class="content">LLVM-MCA happy path off-line analysis</span></a>
+      </li><li><a href="#sad_path_theorizing"><span class="secno">7.2</span> <span class="content">Sad path affecting the happy path and macro-benchmark theorizing</span></a>
      </li></ol>
-    </li><li><a href="#conclusion"><span class="secno">7</span> <span class="content">Conclusion</span></a>
-    </li><li><a href="#ack"><span class="secno">8</span> <span class="content">Acknowledgments</span></a>
+    </li><li><a href="#conclusion"><span class="secno">8</span> <span class="content">Conclusion</span></a>
+    </li><li><a href="#ack"><span class="secno">9</span> <span class="content">Acknowledgments</span></a>
     </li><li>
      <a href="#additional_error_handling"><span class="secno"></span> <span class="content">Appendix A: Additional error handling types</span></a>
      <ol class="toc">
       <li><a href="#big_happy_write_to_a_global"><span class="secno"></span> <span class="content">Write to a global (happy path)</span></a>
-      </li><li><a href="#big_happy_write_through_an_argument"><span class="secno"></span> <span class="content">Write through an argument (happy path)</span></a>
-      </li><li><a href="#big_happy_return_a_value"><span class="secno"></span> <span class="content">"Return" a value (happy path)</span></a>
-      </li><li><a href="#sad_happy_write_to_a_global"><span class="secno"></span> <span class="content">Write to a global (sad path)</span></a>
-      </li><li><a href="#big_sad_write_through_an_argument"><span class="secno"></span> <span class="content">Write through an argument (sad path)</span></a>
-      </li><li><a href="#big_sad_return_a_value"><span class="secno"></span> <span class="content">"Return" a value (sad path)</span></a>
+      </li><li><a href="#big_happy_write_through_an_argument"><span class="secno"></span> <span class="content">Happy path: Write through an argument</span></a>
+      </li><li><a href="#big_happy_return_a_value"><span class="secno"></span> <span class="content">Happy path: "Return" a value</span></a>
+      </li><li><a href="#sad_happy_write_to_a_global"><span class="secno"></span> <span class="content">Sad path: Write to a global</span></a>
+      </li><li><a href="#big_sad_write_through_an_argument"><span class="secno"></span> <span class="content">Sad path: Write through an argument</span></a>
+      </li><li><a href="#big_sad_return_a_value"><span class="secno"></span> <span class="content">Sad path: "Return" a value</span></a>
      </li></ol>
     </li><li>
      <a href="#build_flags"><span class="secno"></span> <span class="content">Appendix B: The build flags</span></a>
@@ -1597,24 +1599,34 @@ pre .property::before, pre .property::after {
 <script src="echarts_modified.js"></script>
 <script src="data.js"></script>
    <h2 class="heading settled" data-level="1" id="intro"><span class="secno">1. </span><span class="content">Introduction</span><a class="self-link" href="#intro"></a></h2>
-    In this paper, we will look at the relative speeds of error handling strategies in micro-benchmarking scenarios.  "Happy" and "sad" path timings will be presented. 
+    In this paper, the relative speeds of error handling strategies in micro-benchmarking scenarios will be analyzed.  "Happy" and "sad" path timings will be presented.
    <h2 class="heading settled" data-level="2" id="methodology"><span class="secno">2. </span><span class="content">Measuring methodology</span><a class="self-link" href="#methodology"></a></h2>
-    All benchmarks lie.  It’s important to know how a benchmark is set up so that the useful parts can be distinguished from the misleading parts. 
+    All benchmarks lie.  It’s important to know how a benchmark is set up so that the useful parts can be distinguished from the misleading parts.
    <p>Gathering representative timings for very small pieces of code is difficult on modern hardware.  One type of micro-architectural quirk that makes these measurements very painful is code alignment <a data-link-type="biblio" href="#biblio-bakhvalov">[Bakhvalov]</a>.  Each call and each branch can introduce stalls if jumping to a poorly aligned location.  These stalls can dominate the timings.  The author has seen code alignment differences swing a benchmark running at 451 cycles per iteration to 310 cycles per iteration, for a 45% increase in execution time.  This involved no system calls, no atomic operations, no divisions, or any other highly expensive operations being performed.</p>
    <p>This research used a novel technique to get representative timings across a wide range of jump alignments.  At the beginning of each function, a random number of <code class="highlight"><c- n="">nop</c-></code> instructions (0 to 31 inclusive) were inserted.  A matching set of <code class="highlight"><c- n="">nop</c-></code> instructions were inserted at a later point in the execution path so that a total of 31 user inserted <code class="highlight"><c- n="">nop</c-></code> instructions were always executed.  1024 instances of this program, all with different layouts of nops, were then built and run.</p>
-   <p>Tests were built to optimize for speed.  The test case optimizes away in the face of link-time optimizations (LTO) / whole program optimizations, so they were not used.  Some compilers only support profile-guided optimizations (PGO) after turning on link-time optimizations, so PGO wasn’t used either.  Only the exception cases were built with exceptions turned on.</p>
-   <p>For all but the exception failure cases, 16K warm-up iterations were run before starting timing.  Within the timer bounds, 512K iterations of the test case were run.  The exception failure cases only had 256 warm-up iterations and 16K timed iterations, due to just how slow throwing an exception can be.</p>
-   <p>All tests were run on the same machine.  The processor was an Intel Core i7-3770 running at 3.3915 GHz.  The Core i7-3770 has an Ivy Bridge microarchitecture, and was released in April 2012.  C-states, Hyper-Threading, and Turbo Boost were all disabled in order to improve benchmark reproducibility.  MSVC benchmarks were run on the 64-bit version of Windows 10.  Clang and GCC benchmarks were run on the Slax Linux distribution. (TODO: verify)</p>
-   <h2 class="heading settled" data-level="3" id="starter_case"><span class="secno">3. </span><span class="content">Starter test case for on-line analysis</span><a class="self-link" href="#starter_case"></a></h2>
-    To start with, we will look at code similar to the following: 
-<pre class="highlight"><c- k="">struct</c-> <c- n="">Dtor</c-><c- p="">[</c-><c- n="">N</c-><c- p="">]</c-> <c- p="">{</c->
-  <c- k="">extern</c-> <c- o="">~</c-><c- n="">Dtor</c-><c- p="">[</c-><c- n="">N</c-><c- p="">]()</c-> <c- p="">{</c->
-    <c- d="">/* Random number of NOPs K[N] := [0,31] */</c->
+   <p>Tests were compiled to optimize for speed.  Link-time optimizations (LTO) / whole program optimizations were not used.  Had LTO been used, the entire program would be optimized away, and the benchmarks would be invalid.  Some compilers only support profile-guided optimizations (PGO) after turning on link-time optimizations, so PGO wasn’t used either.  Only the exception cases were built with exceptions turned on.</p>
+   <p>For all but the exception failure cases, 16K warm-up iterations were run before starting timing.  Within the timer bounds, 512K iterations of the test case were run.  The exception failure cases only had 256 warm-up iterations and 16K timed iterations, due to how slow throwing an exception can be.</p>
+   <p>These tests are all testing code that is "hot".  The branch predictors should all be primed, and everything should be in cache.  Cold code benchmarks would likely show different results.</p>
+   <p>All tests were run on the same machine.  The processor was an Intel Core i7-3770 running at 3.3915 GHz.  The Core i7-3770 has an Ivy Bridge micro-architecture, and was released in April 2012.  C states, HyperThreading, Intel TurboBoost and Intel SpeedStep were all disabled in order to improve benchmark reproducibility.  MSVC benchmarks were run on the 64-bit version of Windows 10 Enterprise (10.0.17134.1006).  Clang and GCC benchmarks were run on Linux slax 4.9.0-9-amd64 #1 SMP Debian 4.9.168-1 (2019-04-12) x86_64 GNU/Linux.</p>
+   <h2 class="heading settled" data-level="3" id="code_choice_justification"><span class="secno">3. </span><span class="content">Justification of test case choices</span><a class="self-link" href="#code_choice_justification"></a></h2>
+    This paper takes three abstract programs, translates them into several different error handling strategies, then benchmarks roughly a thousand nop-randomized versions of those programs, all on one machine.  Ideally, there would be many machines of different architectures and micro-architectures used.  There would be dozens, or hundreds of abstract programs chosen, and all performance differences would be root caused.  The results would then be run through rigorous statistical devices, correlating the results of the abstract programs and giving confidence values.
+   <p>The author doesn’t have the time, resources, or expertise for that.  The author (arguably) has the time, resources, and expertise to benchmark more than just one abstract program.</p>
+   <p>The first abstract program ("Write to a global") was based heavily off of the program used in <a data-link-type="biblio" href="#biblio-p1640r0">[P1640R0]</a>.  The essentials of error handling were captured in that program, and there was little reason to change it significantly.</p>
+   <p>The second program ("Write through an argument") came about as part of investigations into the MSVC x64 performance anomaly where exceptions beat abort.  This program demonstrates that minor changes, such as adding a parameter to a function, or using a smaller <code class="highlight"><c- n="">mov</c-></code> instruction, can affect the performance delta between exceptions and abort.</p>
+   <p>The third program ("Return a value") was authored to ensure that favoritism wasn’t shown to the return code error handling strategy.</p>
+   <p>Each of the programs has a top level main, eight layers of "caller" functions, and a final "callee" function that decides whether to signal an error based off of a parameter.  Eight was chosen mostly arbitrarily.  The author wasn’t able to get sufficient nop-randomization with a single "callee" function.  Calling sixteen functions exceeded the size of the return stack buffer on the test machine.</p>
+   <h2 class="heading settled" data-level="4" id="starter_case"><span class="secno">4. </span><span class="content">Starter test case for on-line analysis</span><a class="self-link" href="#starter_case"></a></h2>
+    In the code examples, anything using a <code class="highlight">$</code> is something that gets generated before the C++ compiler or preprocessor ever sees it. <code class="highlight"><c- n="">X</c-></code>, <code class="highlight"><c- n="">Y</c-></code>, <code class="highlight"><c- n="">Z</c-></code>, and <code class="highlight"><c- n="">K</c-><c- p="">[</c-><c- mi="">0</c-><c- p="">]</c-></code> through <code class="highlight"><c- n="">K</c-><c- p="">[</c-><c- mi="">7</c-><c- p="">]</c-></code> are all random numbers in the range of [0,31], determined at build time.
+   <p>To start with, the following code will be used:</p>
+<pre class="highlight"><c- k="">struct</c-> <c- n="">Dtor</c->$<c- n="">N</c-> <c- p="">{</c->
+  <c- k="">extern</c-> <c- o="">~</c-><c- n="">Dtor</c->$<c- n="">N</c-><c- p="">()</c-> <c- p="">{</c->
+    <c- d="">/* K[N] NOPs */</c->
   <c- p="">}</c->
 <c- p="">};</c->
 <c- k="">struct</c-> <c- n="">inline_nops</c-> <c- p="">{</c->
+  <c- d="">/* only one inline_nops class per executable, no $ variables needed */</c->
   <c- kr="">inline</c-> <c- n="">inline_nops</c-><c- p="">()</c-> <c- p="">{</c->
-    <c- d="">/* Random number of NOPs Z := [0,31] */</c->
+    <c- d="">/* Z NOPs */</c->
   <c- p="">}</c->
   <c- kr="">inline</c-> <c- o="">~</c-><c- n="">inline_nops</c-><c- p="">()</c-> <c- p="">{</c->
     <c- d="">/* 31 - Z NOPs */</c->
@@ -1627,11 +1639,13 @@ pre .property::before, pre .property::after {
     <c- k="">return</c-> <c- mi="">1</c-><c- p="">;</c->
   <c- k="">return</c-> <c- mi="">0</c-><c- p="">;</c->
 <c- p="">}</c->
-<c- b="">int</c-> <c- n="">caller</c-><c- p="">[</c-><c- n="">N</c-><c- p="">](</c-><c- b="">bool</c-> <c- n="">do_err</c-><c- p="">)</c-> <c- p="">{</c->
+<c- b="">int</c-> <c- n="">caller</c->$<c- n="">N</c-><c- p="">(</c-><c- b="">bool</c-> <c- n="">do_err</c-><c- p="">)</c-> <c- p="">{</c->
   <c- d="">/* 31 - K[N] NOPs */</c->
-  <c- n="">Dtor</c-><c- p="">[</c-><c- n="">N</c-><c- p="">]</c-> <c- n="">d</c-><c- p="">;</c->
-  <c- d="">/* NEXT_FUNC is callee when N == 7, or caller[N+1] otherwise */</c->
-  <c- b="">int</c-> <c- n="">e</c-> <c- o="">=</c-> <c- n="">NEXT_FUNC</c-><c- p="">(</c-><c- n="">do_err</c-><c- p="">);</c->
+  <c- n="">Dtor</c->$<c- n="">N</c-> <c- n="">d</c-><c- p="">;</c->
+  $<c- k="">if</c-> <c- n="">N</c-> <c- o="">==</c-> <c- mi="">7</c->
+    <c- b="">int</c-> <c- n="">e</c-> <c- o="">=</c-> <c- n="">callee</c-><c- p="">(</c-><c- n="">do_err</c-><c- p="">);</c->
+  $<c- k="">else</c->
+    <c- b="">int</c-> <c- n="">e</c-> <c- o="">=</c-> <c- n="">caller</c->$<c- n="">N</c-><c- o="">+</c-><c- mi="">1</c-><c- p="">(</c-><c- n="">do_err</c-><c- p="">);</c->
   <c- k="">if</c-><c- p="">(</c-><c- n="">e</c-><c- p="">)</c-> <c- k="">return</c-> <c- n="">e</c-><c- p="">;</c->
   <c- n="">global_int</c-> <c- o="">=</c-> <c- mi="">0</c-><c- p="">;</c->
   <c- k="">return</c-> <c- mi="">0</c-><c- p="">;</c->
@@ -1641,7 +1655,8 @@ pre .property::before, pre .property::after {
   <c- n="">startTimer</c-><c- p="">();</c->
   <c- d="">/* X NOPs */</c->
   <c- k="">for</c-> <c- p="">(</c-><c- b="">int</c-> <c- n="">i</c-> <c- o="">=</c-> <c- mi="">0</c-><c- p="">;</c-> <c- n="">i</c-> <c- o="">&lt;</c-> <c- n="">ITERATIONS</c-><c- p="">;</c-> <c- o="">++</c-><c- n="">i</c-><c- p="">)</c-> <c- p="">{</c->
-    <c- p="">(</c-><c- b="">void</c-><c- p="">)</c-><c- n="">caller</c-><c- p="">[</c-><c- mi="">0</c-><c- p="">](</c->false<c- p="">);</c->
+    <c- d="">/* invokes caller$N with N == 0 */</c->
+    <c- p="">(</c-><c- b="">void</c-><c- p="">)</c-><c- n="">caller0</c-><c- p="">(</c->false<c- p="">);</c->
   <c- p="">}</c->
   <c- d="">/* 31 - X NOPs */</c->
   <c- n="">endTimer</c-><c- p="">();</c->
@@ -1651,38 +1666,38 @@ pre .property::before, pre .property::after {
   <c- n="">startTimer</c-><c- p="">();</c->
   <c- d="">/* Y NOPs */</c->
   <c- k="">for</c-> <c- p="">(</c-><c- b="">int</c-> <c- n="">i</c-> <c- o="">=</c-> <c- mi="">0</c-><c- p="">;</c-> <c- n="">i</c-> <c- o="">&lt;</c-> <c- n="">ITERATIONS</c-><c- p="">;</c-> <c- o="">++</c-><c- n="">i</c-><c- p="">)</c-> <c- p="">{</c->
-    <c- p="">(</c-><c- b="">void</c-><c- p="">)</c-><c- n="">caller</c-><c- p="">[</c-><c- mi="">0</c-><c- p="">](</c->true<c- p="">);</c->
+    <c- p="">(</c-><c- b="">void</c-><c- p="">)</c-><c- n="">caller0</c-><c- p="">(</c->true<c- p="">);</c->
   <c- p="">}</c->
   <c- d="">/* 31 - Y NOPs */</c->
   <c- n="">endTimer</c-><c- p="">();</c->
   <c- n="">print</c-><c- p="">(</c-><c- n="">duration</c-><c- p="">()</c-> <c- o="">/</c-> <c- n="">ITERATIONS</c-><c- p="">);</c->
 <c- p="">}</c->
 </pre>
-   This code has some important properties. 
+   This code has some important properties.
    <ul>
     <li data-md="">
      <p><code class="highlight"><c- n="">callee</c-><c- p="">()</c-></code> will raise an error based off of runtime state</p>
     </li><li data-md="">
-     <p><code class="highlight"><c- n="">caller</c-><c- p="">[</c-><c- n="">N</c-><c- p="">]()</c-></code> needs to clean up the <code class="highlight"><c- n="">d</c-></code> object in error and non-error conditions.</p>
+     <p><code class="highlight"><c- n="">caller</c->$<c- n="">N</c-><c- p="">()</c-></code> needs to clean up the <code class="highlight"><c- n="">d</c-></code> object in error and non-error conditions.</p>
     </li><li data-md="">
-     <p><code class="highlight"><c- n="">caller</c-><c- p="">[</c-><c- n="">N</c-><c- p="">]()</c-></code> should only set <code class="highlight"><c- n="">global_int</c-></code> in success cases.</p>
+     <p><code class="highlight"><c- n="">caller</c->$<c- n="">N</c-><c- p="">()</c-></code> should only set <code class="highlight"><c- n="">global_int</c-></code> in success cases.</p>
     </li><li data-md="">
-     <p>The inserted NOPs allow us to sample various alignments while keeping the same program structure.</p>
+     <p>The inserted NOPs allow for sampling various alignments while keeping the same program structure.</p>
    </li></ul>
    <p>In the actual tests all the function bodies are in separate .cpp files, and link-time / whole-program optimizations aren’t used.  If they had been used, the entire program would get optimized away, removing our ability to measure error handling differences.</p>
    <p>The initial part of this paper is only looking at three types of error handling.</p>
    <ul>
     <li data-md="">
-     <p>abort: When an error is encountered, kill the program with <code class="highlight"><c- n="">std</c-><c- o="">::</c-><c- n="">abort</c-></code>.  No "sad" path benchmarks were taken for this case.</p>
+     <p>abort: The program directly calls <code class="highlight"><c- n="">std</c-><c- o="">::</c-><c- n="">abort</c-></code> when an error condition is encountered.  No error handling code beyond <code class="highlight"><c- n="">std</c-><c- o="">::</c-><c- n="">abort</c-></code> is present in the code. No "sad" path benchmarks were taken for this case.</p>
     </li><li data-md="">
      <p>return_val: Return an integer error code, where zero represents success.</p>
     </li><li data-md="">
      <p>throw_exception: Throw an exception deriving from std::exception, that contains only an int.  This should represent typical exception usage cases.  The exception is only caught with a <code class="highlight"><c- k="">catch</c-><c- p="">(...)</c-></code>.</p>
    </li></ul>
-   <p>The actual code used for the benchmark can be found <a href="https://github.com/ben-craig/error_bench/tree/err_gauss">on my github</a>.</p>
-   <h2 class="heading settled" data-level="4" id="happy_path_measurements"><span class="secno">4. </span><span class="content">Happy path measurements</span><a class="self-link" href="#happy_path_measurements"></a></h2>
-   <p>Abort and x64 exceptions are consistently faster than return codes.  Windows x86 exceptions are slower than both return codes and abort semantics.  While return codes are slower than abort and x64 exceptions, they aren’t much slower.  The cost ranges from less than a cycle per function to four cycles per function in my experiments.</p>
-   <h3 class="heading settled" data-level="4.1" id="write_to_a_global"><span class="secno">4.1. </span><span class="content">Write to a global</span><a class="self-link" href="#write_to_a_global"></a></h3>
+   <p>The actual code used for the benchmark can be found <a href="https://github.com/ben-craig/error_bench/tree/err_gauss">on github</a>.</p>
+   <h2 class="heading settled" data-level="5" id="happy_path_measurements"><span class="secno">5. </span><span class="content">Happy path measurements</span><a class="self-link" href="#happy_path_measurements"></a></h2>
+   <p>Abort and x64 exceptions have similar happy path performance characteristics.  Return codes cost one to four extra cycles per function.  x86 exceptions cost five to seven extra cycles per function in comparison to abort.</p>
+   <h3 class="heading settled" data-level="5.1" id="write_to_a_global"><span class="secno">5.1. </span><span class="content">Write to a global</span><a class="self-link" href="#write_to_a_global"></a></h3>
    <p align="center">Write to global: Median cycles per iteration.  A histogram can be found <a href="#happy_write_to_a_global_histogram">here</a></p>
    <div id="bar_reduced_happy_div" style="width: 100%;height:300px;"></div>
 <script type="text/javascript">
@@ -1690,8 +1705,8 @@ echarts.
   init(document.getElementById('bar_reduced_happy_div')).
   setOption(bar_reduced_happy);
 </script>
-   <h3 class="heading settled" data-level="4.2" id="write_through_an_argument"><span class="secno">4.2. </span><span class="content">Write through an argument</span><a class="self-link" href="#write_through_an_argument"></a></h3>
-    Instead of writing to a global, we write through a pointer argument. 
+   <h3 class="heading settled" data-level="5.2" id="write_through_an_argument"><span class="secno">5.2. </span><span class="content">Write through an argument</span><a class="self-link" href="#write_through_an_argument"></a></h3>
+    Instead of writing to a global, the code writes through a pointer argument.
 <pre class="highlight"><c- b="">int</c-> <c- nf="">callee</c-><c- p="">(</c-><c- b="">int</c-> <c- o="">*</c-><c- n="">val</c-><c- p="">,</c-> <c- b="">bool</c-> <c- n="">do_err</c-><c- p="">)</c-> <c- p="">{</c->
   <c- p="">(</c-><c- b="">void</c-><c- p="">)</c-><c- n="">val</c-><c- p="">;</c->
   <c- n="">inline_nops</c-> <c- n="">n</c-><c- p="">;</c->
@@ -1699,11 +1714,13 @@ echarts.
     <c- k="">return</c-> <c- mi="">1</c-><c- p="">;</c->
   <c- k="">return</c-> <c- mi="">0</c-><c- p="">;</c->
 <c- p="">}</c->
-<c- b="">int</c-> <c- n="">caller</c-><c- p="">[</c-><c- n="">N</c-><c- p="">](</c-><c- b="">int</c-> <c- o="">*</c-><c- n="">val</c-><c- p="">,</c-> <c- b="">bool</c-> <c- n="">do_err</c-><c- p="">)</c-> <c- p="">{</c->
+<c- b="">int</c-> <c- n="">caller</c->$<c- n="">N</c-><c- p="">(</c-><c- b="">int</c-> <c- o="">*</c-><c- n="">val</c-><c- p="">,</c-> <c- b="">bool</c-> <c- n="">do_err</c-><c- p="">)</c-> <c- p="">{</c->
   <c- d="">/* 31 - K[N] NOPs */</c->
-  <c- n="">Dtor</c-><c- p="">[</c-><c- n="">N</c-><c- p="">]</c-> <c- n="">d</c-><c- p="">;</c->
-  <c- d="">/* NEXT_FUNC is callee when N == 7, or caller[N+1] otherwise */</c->
-  <c- b="">int</c-> <c- n="">e</c-> <c- o="">=</c-> <c- n="">NEXT_FUNC</c-><c- p="">(</c-><c- n="">val</c-><c- p="">,</c-> <c- n="">do_err</c-><c- p="">);</c->
+  <c- n="">Dtor</c->$<c- n="">N</c-> <c- n="">d</c-><c- p="">;</c->
+  $<c- k="">if</c-> <c- n="">N</c-> <c- o="">==</c-> <c- mi="">7</c->
+    <c- b="">int</c-> <c- n="">e</c-> <c- o="">=</c-> <c- n="">callee</c-><c- p="">(</c-><c- n="">val</c-><c- p="">,</c-> <c- n="">do_err</c-><c- p="">);</c->
+  $<c- k="">else</c->
+    <c- b="">int</c-> <c- n="">e</c-> <c- o="">=</c-> <c- n="">caller</c->$<c- n="">N</c-><c- o="">+</c-><c- mi="">1</c-><c- p="">(</c-><c- n="">val</c-><c- p="">,</c-> <c- n="">do_err</c-><c- p="">);</c->
   <c- k="">if</c-><c- p="">(</c-><c- n="">e</c-><c- p="">)</c-> <c- k="">return</c-> <c- n="">e</c-><c- p="">;</c->
   <c- o="">*</c-><c- n="">val</c-> <c- o="">=</c-> <c- mi="">0</c-><c- p="">;</c->
   <c- k="">return</c-> <c- mi="">0</c-><c- p="">;</c->
@@ -1716,8 +1733,8 @@ echarts.
   init(document.getElementById('bar_reduced_happy_param_div')).
   setOption(bar_reduced_happy_param);
 </script>
-   <h3 class="heading settled" data-level="4.3" id="return_a_value"><span class="secno">4.3. </span><span class="content">"Return" a value</span><a class="self-link" href="#return_a_value"></a></h3>
-    In this case, we’ll use the output channel available to us to "return" an incremented value.  When handling errors in an error code fashion, we end up using an output parameter. 
+   <h3 class="heading settled" data-level="5.3" id="return_a_value"><span class="secno">5.3. </span><span class="content">"Return" a value</span><a class="self-link" href="#return_a_value"></a></h3>
+    In this case, the code will return an incremented channel in whichever output channel is available.  An output parameter is used when handling errors in an error code fashion.
 <pre class="highlight"><c- b="">int</c-> <c- nf="">callee</c-><c- p="">(</c-><c- b="">int</c-> <c- o="">*</c-><c- n="">val</c-><c- p="">,</c-> <c- b="">bool</c-> <c- n="">do_err</c-><c- p="">)</c-> <c- p="">{</c->
   <c- n="">inline_nops</c-> <c- n="">n</c-><c- p="">;</c->
   <c- k="">if</c-><c- p="">(</c-><c- n="">do_err</c-><c- p="">)</c->
@@ -1725,12 +1742,14 @@ echarts.
   <c- o="">*</c-><c- n="">val</c-> <c- o="">=</c-> <c- mi="">0</c-><c- p="">;</c->
   <c- k="">return</c-> <c- mi="">0</c-><c- p="">;</c->
 <c- p="">}</c->
-<c- b="">int</c-> <c- n="">caller</c-><c- p="">[</c-><c- n="">N</c-><c- p="">](</c-><c- b="">int</c-> <c- o="">*</c-><c- n="">val</c-><c- p="">,</c-> <c- b="">bool</c-> <c- n="">do_err</c-><c- p="">)</c-> <c- p="">{</c->
+<c- b="">int</c-> <c- n="">caller</c->$<c- n="">N</c-><c- p="">(</c-><c- b="">int</c-> <c- o="">*</c-><c- n="">val</c-><c- p="">,</c-> <c- b="">bool</c-> <c- n="">do_err</c-><c- p="">)</c-> <c- p="">{</c->
   <c- d="">/* 31 - K[N] NOPs */</c->
-  <c- n="">Dtor</c-><c- p="">[</c-><c- n="">N</c-><c- p="">]</c-> <c- n="">d</c-><c- p="">;</c->
+  <c- n="">Dtor</c->$<c- n="">N</c-> <c- n="">d</c-><c- p="">;</c->
   <c- b="">int</c-> <c- n="">out_val</c-> <c- o="">=</c-> <c- mi="">0</c-><c- p="">;</c->
-  <c- d="">/* NEXT_FUNC is callee when N == 7, or caller[N+1] otherwise */</c->
-  <c- b="">int</c-> <c- n="">e</c-> <c- o="">=</c-> <c- n="">NEXT_FUNC</c-><c- p="">(</c-><c- o="">&amp;</c-><c- n="">out_val</c-><c- p="">,</c-> <c- n="">do_err</c-><c- p="">);</c->
+  $<c- k="">if</c-> <c- n="">N</c-> <c- o="">==</c-> <c- mi="">7</c->
+    <c- b="">int</c-> <c- n="">e</c-> <c- o="">=</c-> <c- n="">callee</c-><c- p="">(</c-><c- o="">&amp;</c-><c- n="">out_val</c-><c- p="">,</c-> <c- n="">do_err</c-><c- p="">);</c->
+  $<c- k="">else</c->
+    <c- b="">int</c-> <c- n="">e</c-> <c- o="">=</c-> <c- n="">caller</c->$<c- n="">N</c-><c- o="">+</c-><c- mi="">1</c-><c- p="">(</c-><c- o="">&amp;</c-><c- n="">out_val</c-><c- p="">,</c-> <c- n="">do_err</c-><c- p="">);</c->
   <c- k="">if</c-><c- p="">(</c-><c- n="">e</c-><c- p="">)</c-> <c- k="">return</c-> <c- n="">e</c-><c- p="">;</c->
   <c- o="">*</c-><c- n="">val</c-> <c- o="">=</c-> <c- n="">out_val</c-> <c- o="">+</c-> <c- mi="">1</c-><c- p="">;</c->
   <c- k="">return</c-> <c- mi="">0</c-><c- p="">;</c->
@@ -1743,39 +1762,39 @@ echarts.
   init(document.getElementById('bar_reduced_happy_ret_div')).
   setOption(bar_reduced_happy_ret);
 </script>
-   <h2 class="heading settled" data-level="5" id="sad_path_measurements"><span class="secno">5. </span><span class="content">Sad path measurements</span><a class="self-link" href="#sad_path_measurements"></a></h2>
+   <h2 class="heading settled" data-level="6" id="sad_path_measurements"><span class="secno">6. </span><span class="content">Sad path measurements</span><a class="self-link" href="#sad_path_measurements"></a></h2>
    <p>Sad path timings for abort aren’t shown, as the recovery path is very system specific.  Throwing an exception is more than 100x slower than returning an error code.</p>
-   <h3 class="heading settled" data-level="5.1" id="sad_write_to_a_global"><span class="secno">5.1. </span><span class="content">Write to a global</span><a class="self-link" href="#sad_write_to_a_global"></a></h3>
+   <h3 class="heading settled" data-level="6.1" id="sad_write_to_a_global"><span class="secno">6.1. </span><span class="content">Write to a global</span><a class="self-link" href="#sad_write_to_a_global"></a></h3>
    <p align="center">Write to a global, sad path: Median cycles per iteration.  A histogram can be found <a href="#sad_exception_write_to_a_global_histogram">here</a></p>
    <div id="bar_reduced_sad_sad_div" style="width: 100%;height:300px;"></div>
 <script type="text/javascript">
 echarts.
   init(document.getElementById('bar_reduced_sad_sad_div')).
-  setOption(bar_reduced_sad_sad);
+  setOption(Object.assign({dataZoom: [{show: true}]},bar_reduced_sad_sad));
 </script>
-   <h3 class="heading settled" data-level="5.2" id="sad_write_through_an_argument"><span class="secno">5.2. </span><span class="content">Write through an argument</span><a class="self-link" href="#sad_write_through_an_argument"></a></h3>
+   <h3 class="heading settled" data-level="6.2" id="sad_write_through_an_argument"><span class="secno">6.2. </span><span class="content">Write through an argument</span><a class="self-link" href="#sad_write_through_an_argument"></a></h3>
    <p align="center">Write through an argument, sad path: Median cycles per iteration.  A histogram can be found <a href="#sad_exception_write_through_an_argument_histogram">here</a></p>
    <div id="bar_reduced_sad_sad_param_div" style="width: 100%;height:300px;"></div>
 <script type="text/javascript">
 echarts.
   init(document.getElementById('bar_reduced_sad_sad_param_div')).
-  setOption(bar_reduced_sad_sad_param);
+  setOption(Object.assign({dataZoom: [{show: true}]},bar_reduced_sad_sad_param));
 </script>
-   <h3 class="heading settled" data-level="5.3" id="sad_return_a_value"><span class="secno">5.3. </span><span class="content">"Return" a value</span><a class="self-link" href="#sad_return_a_value"></a></h3>
+   <h3 class="heading settled" data-level="6.3" id="sad_return_a_value"><span class="secno">6.3. </span><span class="content">"Return" a value</span><a class="self-link" href="#sad_return_a_value"></a></h3>
    <p align="center">Return a value, sad path: Median cycles per iteration.  A histogram can be found <a href="#sad_exception_return_a_value_histogram">here</a></p>
    <div id="bar_reduced_sad_sad_ret_div" style="width: 100%;height:300px;"></div>
 <script type="text/javascript">
 echarts.
   init(document.getElementById('bar_reduced_sad_sad_ret_div')).
-  setOption(bar_reduced_sad_sad_ret);
+  setOption(Object.assign({dataZoom: [{show: true}]},bar_reduced_sad_sad_ret));
 </script>
-   <h2 class="heading settled" data-level="6" id="offline_analysis"><span class="secno">6. </span><span class="content">Off-line analysis</span><a class="self-link" href="#offline_analysis"></a></h2>
-    The following analysis is done by examining assembly, but not running it.  This analysis is valuable, but is no substitute for data on real machines. 
-   <h3 class="heading settled" data-level="6.1" id="happy_path_analysis"><span class="secno">6.1. </span><span class="content">LLVM-MCA happy path off-line analysis</span><a class="self-link" href="#happy_path_analysis"></a></h3>
+   <h2 class="heading settled" data-level="7" id="offline_analysis"><span class="secno">7. </span><span class="content">Off-line analysis</span><a class="self-link" href="#offline_analysis"></a></h2>
+    The following analysis is done by examining assembly, but not running it.  This analysis is valuable, but is no substitute for data on real machines.
+   <h3 class="heading settled" data-level="7.1" id="happy_path_analysis"><span class="secno">7.1. </span><span class="content">LLVM-MCA happy path off-line analysis</span><a class="self-link" href="#happy_path_analysis"></a></h3>
    <p>LLVM-MCA <a data-link-type="biblio" href="#biblio-mca">[MCA]</a> is a tool that will analyze assembly and provide statistics on a hypothetical execution on a specific simulated CPU.  This can be used to provide a hardware independent analysis of generated code.  There is at least one substantial limitation though, in that calls and returns are typically not modeled.  Regardless, the analysis is still useful.</p>
-   <p>I focused on analyzing the difference between exception builds and abort / no exception builds, all in an error neutral function.  In the off-line analysis, I’m only focused on 64-bit x86-64 (Clang, GCC, and MSVC) and 64-bit ARM (Clang and GCC).  Exceptions on 32-bit x86 on Windows is so much slower in the happy path that it isn’t interesting to dive in at the assembly level.</p>
+   <p>This analysis focuses on the difference between exception builds and abort / no exception builds, all in an error neutral function.  Only 64-bit x86-64 (Clang, GCC, and MSVC) and 64-bit ARM (Clang and GCC) code will be discussed.  Exceptions on 32-bit x86 on Windows is so much slower in the happy path that it isn’t interesting to dive in at the assembly level.</p>
    <p>In general, there are some minor missed optimization opportunities in some of the smallest error handling examples.</p>
-   <p>I will be looking at this code snippet:</p>
+   <p>The following code snippet will be analyzed:</p>
 <pre class="highlight"><c- k="">struct</c-> <c- n="">Dtor</c-> <c- p="">{</c-><c- o="">~</c-><c- n="">Dtor</c-><c- p="">();};</c->
 <c- b="">void</c-> <c- nf="">callee</c-><c- p="">();</c->
 <c- b="">int</c-> <c- n="">global</c-><c- p="">;</c->
@@ -1795,7 +1814,7 @@ echarts.
       <td>MSVC x64
       </td><td><code class="highlight"><pre class="highlight"><c- n=""><c- n="">sub</c-></c-> <c- n=""><c- n="">rsp</c-></c-><c- p=""><c- p="">,</c-></c-> <c- mi=""><c- mi="">40</c-></c->
 <c- n=""><c- n="">call</c-></c-> <c- b=""><c- b="">void</c-></c-> <c- n=""><c- n="">callee</c-></c-><c- p=""><c- p="">(</c-></c-><c- b=""><c- b="">void</c-></c-><c- p=""><c- p="">)</c-></c-><b>
-<c- p=""><c- p="">;</c-></c-> <c- n=""><c- n="">Note</c-></c-> <c- n=""><c- n="">the</c-></c-> <c- n=""><c- n="">ordering</c-></c-> <c- n=""><c- n="">difference</c-></c->
+<c- c1=""><c- c1="">// Note the ordering difference</c-></c->
 <c- n=""><c- n="">mov</c-></c-> <c- n=""><c- n="">DWORD</c-></c-> <c- n=""><c- n="">PTR</c-></c-> <c- b=""><c- b="">int</c-></c-> <c- n=""><c- n="">global</c-></c-><c- p=""><c- p="">,</c-></c-> <c- mi=""><c- mi="">0</c-></c->
 <c- n=""><c- n="">lea</c-></c-> <c- n=""><c- n="">rcx</c-></c-><c- p=""><c- p="">,</c-></c-> <c- n=""><c- n="">QWORD</c-></c-> <c- n=""><c- n="">PTR</c-></c-> <c- n=""><c- n="">d</c-></c->$<c- p=""><c- p="">[</c-></c-><c- n=""><c- n="">rsp</c-></c-><c- p=""><c- p="">]</c-></c-></b>
 <c- n=""><c- n="">call</c-></c-> <c- n=""><c- n="">Dtor</c-></c-><c- o=""><c- o="">::~</c-></c-><c- n=""><c- n="">Dtor</c-></c-><c- p=""><c- p="">(</c-></c-><c- b=""><c- b="">void</c-></c-><c- p=""><c- p="">)</c-></c->
@@ -1803,14 +1822,14 @@ echarts.
 <c- n=""><c- n="">ret</c-></c-> <c- mi=""><c- mi="">0</c-></c-></pre></code>
       </td><td><code class="highlight"><pre class="highlight"><c- n=""><c- n="">sub</c-></c-> <c- n=""><c- n="">rsp</c-></c-><c- p=""><c- p="">,</c-></c-> <c- mi=""><c- mi="">40</c-></c->
 <c- n=""><c- n="">call</c-></c-> <c- b=""><c- b="">void</c-></c-> <c- n=""><c- n="">callee</c-></c-><c- p=""><c- p="">(</c-></c-><c- b=""><c- b="">void</c-></c-><c- p=""><c- p="">)</c-></c-><b>
-<c- p=""><c- p="">;</c-></c-> <c- n=""><c- n="">Note</c-></c-> <c- n=""><c- n="">the</c-></c-> <c- n=""><c- n="">ordering</c-></c-> <c- n=""><c- n="">difference</c-></c->
+<c- c1=""><c- c1="">// Note the ordering difference</c-></c->
 <c- n=""><c- n="">lea</c-></c-> <c- n=""><c- n="">rcx</c-></c-><c- p=""><c- p="">,</c-></c-> <c- n=""><c- n="">QWORD</c-></c-> <c- n=""><c- n="">PTR</c-></c-> <c- n=""><c- n="">d</c-></c->$<c- p=""><c- p="">[</c-></c-><c- n=""><c- n="">rsp</c-></c-><c- p=""><c- p="">]</c-></c->
 <c- n=""><c- n="">mov</c-></c-> <c- n=""><c- n="">DWORD</c-></c-> <c- n=""><c- n="">PTR</c-></c-> <c- b=""><c- b="">int</c-></c-> <c- n=""><c- n="">global</c-></c-><c- p=""><c- p="">,</c-></c-> <c- mi=""><c- mi="">0</c-></c-></b>
 <c- n=""><c- n="">call</c-></c-> <c- n=""><c- n="">Dtor</c-></c-><c- o=""><c- o="">::~</c-></c-><c- n=""><c- n="">Dtor</c-></c-><c- p=""><c- p="">(</c-></c-><c- b=""><c- b="">void</c-></c-><c- p=""><c- p="">)</c-></c->
 <c- n=""><c- n="">add</c-></c-> <c- n=""><c- n="">rsp</c-></c-><c- p=""><c- p="">,</c-></c-> <c- mi=""><c- mi="">40</c-></c->
 <c- n=""><c- n="">ret</c-></c-> <c- mi=""><c- mi="">0</c-></c-></pre></code>
    </td></tr></tbody></table>
-    With MSVC x64, we get almost identical codegen between code with exceptions and without.  On MSVC x64, there are some optimization passes that don’t run when exceptions are turned on, and one of those passes is responsible for switching the order of the <code class="highlight"><c- n="">lea</c-></code> and <code class="highlight"><c- n="">mov</c-></code> instructions.  I have observed a 1-3 cycle difference in benchmark results just from switching the order of those two instructions.  In the data I am providing, this results in the exception based code being slightly faster than the abort based code. 
+    With MSVC x64, the codegen is almost identical between code with exceptions and without.  On MSVC x64, there are some optimization passes that don’t run when exceptions are turned on, and one of those passes is responsible for switching the order of the <code class="highlight"><c- n="">lea</c-></code> and <code class="highlight"><c- n="">mov</c-></code> instructions.  The benchmarks show a 1-3 cycle difference just from switching the order of those two instructions.  This results in the exception based code being slightly faster than the abort based code for this use case.  The "optimization" pass in the no-exception code causes a minor speed penalty.
    <table>
     <tbody>
      <tr>
@@ -1819,49 +1838,49 @@ echarts.
       </th><th>No exceptions
      </th></tr><tr>
       <td>Clang 9.0 x64
-      </td><td>1397 cycles over 100 iterations.<br> Counts on Intel Ivy Bridge microarchitecture <code class="highlight"><pre class="highlight"><c- n=""><c- n="">pushq</c-></c-> <c- o=""><c- o="">%</c-></c-><c- n=""><c- n="">rbx</c-></c->
-<c- n=""><c- n="">subq</c-></c-> $<c- mi=""><c- mi="">16</c-></c-><c- p=""><c- p="">,</c-></c-> <c- o=""><c- o="">%</c-></c-><c- n=""><c- n="">rsp</c-></c->
+      </td><td>1397 cycles over 100 iterations.<br> Counts on Intel Ivy Bridge micro-architecture <code class="highlight"><pre class="highlight"><c- n=""><c- n="">pushq</c-></c-> <c- o=""><c- o="">%</c-></c-><c- n=""><c- n="">rbx</c-></c->
+<b><c- n=""><c- n="">subq</c-></c-> $<c- mi=""><c- mi="">16</c-></c-><c- p=""><c- p="">,</c-></c-> <c- o=""><c- o="">%</c-></c-><c- n=""><c- n="">rsp</c-></c-></b>
 <c- n=""><c- n="">callq</c-></c-> <c- n=""><c- n="">callee</c-></c-><c- p=""><c- p="">()</c-></c->
 <c- n=""><c- n="">movl</c-></c-> $<c- mi=""><c- mi="">0</c-></c-><c- p=""><c- p="">,</c-></c-> <c- n=""><c- n="">global</c-></c-><c- p=""><c- p="">(</c-></c-><c- o=""><c- o="">%</c-></c-><c- n=""><c- n="">rip</c-></c-><c- p=""><c- p="">)</c-></c->
-<c- n=""><c- n="">leaq</c-></c-> <c- mi=""><c- mi="">8</c-></c-><c- p=""><c- p="">(</c-></c-><c- o=""><c- o="">%</c-></c-><c- n=""><c- n="">rsp</c-></c-><c- p=""><c- p="">),</c-></c-> <c- o=""><c- o="">%</c-></c-><c- n=""><c- n="">rdi</c-></c->
+<b><c- n=""><c- n="">leaq</c-></c-> <c- mi=""><c- mi="">8</c-></c-><c- p=""><c- p="">(</c-></c-><c- o=""><c- o="">%</c-></c-><c- n=""><c- n="">rsp</c-></c-><c- p=""><c- p="">),</c-></c-> <c- o=""><c- o="">%</c-></c-><c- n=""><c- n="">rdi</c-></c-></b>
 <c- n=""><c- n="">callq</c-></c-> <c- n=""><c- n="">Dtor</c-></c-><c- o=""><c- o="">::~</c-></c-><c- n=""><c- n="">Dtor</c-></c-><c- p=""><c- p="">()</c-></c->
-<c- n=""><c- n="">addq</c-></c-> $<c- mi=""><c- mi="">16</c-></c-><c- p=""><c- p="">,</c-></c-> <c- o=""><c- o="">%</c-></c-><c- n=""><c- n="">rsp</c-></c->
+<b><c- n=""><c- n="">addq</c-></c-> $<c- mi=""><c- mi="">16</c-></c-><c- p=""><c- p="">,</c-></c-> <c- o=""><c- o="">%</c-></c-><c- n=""><c- n="">rsp</c-></c-></b>
 <c- n=""><c- n="">popq</c-></c-> <c- o=""><c- o="">%</c-></c-><c- n=""><c- n="">rbx</c-></c->
 <c- n=""><c- n="">retq</c-></c-></pre></code>
-      </td><td>1199 cycles over 100 iterations.<br> Counts on Intel Ivy Bridge microarchitecture <code class="highlight"><pre class="highlight"><c- n=""><c- n="">pushq</c-></c-> <c- o=""><c- o="">%</c-></c-><c- n=""><c- n="">rax</c-></c->
-<c- p=""><c- p="">;</c-></c-> <c- n=""><c- n="">no</c-></c-> <c- n=""><c- n="">subq</c-></c-> <c- n=""><c- n="">here</c-></c->
-<c- n=""><c- n="">callq</c-></c-> <c- nf=""><c- nf="">callee</c-></c-><c- p=""><c- p="">()</c-></c->
+      </td><td>1199 cycles over 100 iterations.<br> Counts on Intel Ivy Bridge micro-architecture <code class="highlight"><pre class="highlight"><c- n=""><c- n="">pushq</c-></c-> <c- o=""><c- o="">%</c-></c-><c- n=""><c- n="">rax</c-></c->
+<b><c- c1=""><c- c1="">// no subq here</c-></c-></b>
+<c- n=""><c- n="">callq</c-></c-> <c- n=""><c- n="">callee</c-></c-><c- p=""><c- p="">()</c-></c->
 <c- n=""><c- n="">movl</c-></c-> $<c- mi=""><c- mi="">0</c-></c-><c- p=""><c- p="">,</c-></c-> <c- n=""><c- n="">global</c-></c-><c- p=""><c- p="">(</c-></c-><c- o=""><c- o="">%</c-></c-><c- n=""><c- n="">rip</c-></c-><c- p=""><c- p="">)</c-></c->
-<c- n=""><c- n="">movq</c-></c-> <c- o=""><c- o="">%</c-></c-><c- n=""><c- n="">rsp</c-></c-><c- p=""><c- p="">,</c-></c-> <c- o=""><c- o="">%</c-></c-><c- n=""><c- n="">rdi</c-></c-> <c- p=""><c- p="">;</c-></c-> <c- n=""><c- n="">movq</c-></c-> <c- n=""><c- n="">instead</c-></c-> <c- n=""><c- n="">of</c-></c-> <c- n=""><c- n="">leaq</c-></c->
+<b><c- n=""><c- n="">movq</c-></c-> <c- o=""><c- o="">%</c-></c-><c- n=""><c- n="">rsp</c-></c-><c- p=""><c- p="">,</c-></c-> <c- o=""><c- o="">%</c-></c-><c- n=""><c- n="">rdi</c-></c-> <c- c1=""><c- c1="">// movq instead of leaq</c-></c-></b>
 <c- n=""><c- n="">callq</c-></c-> <c- n=""><c- n="">Dtor</c-></c-><c- o=""><c- o="">::~</c-></c-><c- n=""><c- n="">Dtor</c-></c-><c- p=""><c- p="">()</c-></c->
-<c- p=""><c- p="">;</c-></c-> <c- n=""><c- n="">no</c-></c-> <c- n=""><c- n="">addq</c-></c-> <c- n=""><c- n="">here</c-></c->
+<b><c- c1=""><c- c1="">// no addq here</c-></c-></b>
 <c- n=""><c- n="">popq</c-></c-> <c- o=""><c- o="">%</c-></c-><c- n=""><c- n="">rax</c-></c->
 <c- n=""><c- n="">retq</c-></c-></pre></code>
      </td></tr><tr>
       <td>GCC 8.2 x64
-      </td><td>1397 cycles over 100 iterations.<br> Counts on Intel Ivy Bridge microarchitecture <code class="highlight"><pre class="highlight"><c- n=""><c- n="">pushq</c-></c-> <c- o=""><c- o="">%</c-></c-><c- n=""><c- n="">rbx</c-></c->
+      </td><td>1397 cycles over 100 iterations.<br> Counts on Intel Ivy Bridge micro-architecture <code class="highlight"><pre class="highlight"><b><c- n=""><c- n="">pushq</c-></c-> <c- o=""><c- o="">%</c-></c-><c- n=""><c- n="">rbx</c-></c-></b>
 <c- n=""><c- n="">subq</c-></c-> $<c- mi=""><c- mi="">16</c-></c-><c- p=""><c- p="">,</c-></c-> <c- o=""><c- o="">%</c-></c-><c- n=""><c- n="">rsp</c-></c->
 <c- n=""><c- n="">call</c-></c-> <c- n=""><c- n="">callee</c-></c-><c- p=""><c- p="">()</c-></c->
-<c- p=""><c- p="">;</c-></c-> <c- n=""><c- n="">ordering</c-></c-> <c- n=""><c- n="">difference</c-></c->
+<b><c- c1=""><c- c1="">// ordering difference</c-></c->
 <c- n=""><c- n="">movl</c-></c-> $<c- mi=""><c- mi="">0</c-></c-><c- p=""><c- p="">,</c-></c-> <c- n=""><c- n="">global</c-></c-><c- p=""><c- p="">(</c-></c-><c- o=""><c- o="">%</c-></c-><c- n=""><c- n="">rip</c-></c-><c- p=""><c- p="">)</c-></c->
-<c- n=""><c- n="">leaq</c-></c-> <c- mi=""><c- mi="">15</c-></c-><c- p=""><c- p="">(</c-></c-><c- o=""><c- o="">%</c-></c-><c- n=""><c- n="">rsp</c-></c-><c- p=""><c- p="">),</c-></c-> <c- o=""><c- o="">%</c-></c-><c- n=""><c- n="">rdi</c-></c->
+<c- n=""><c- n="">leaq</c-></c-> <c- mi=""><c- mi="">15</c-></c-><c- p=""><c- p="">(</c-></c-><c- o=""><c- o="">%</c-></c-><c- n=""><c- n="">rsp</c-></c-><c- p=""><c- p="">),</c-></c-> <c- o=""><c- o="">%</c-></c-><c- n=""><c- n="">rdi</c-></c-></b>
 <c- n=""><c- n="">call</c-></c-> <c- n=""><c- n="">Dtor</c-></c-><c- o=""><c- o="">::~</c-></c-><c- n=""><c- n="">Dtor</c-></c-><c- p=""><c- p="">()</c-></c->
 <c- n=""><c- n="">addq</c-></c-> $<c- mi=""><c- mi="">16</c-></c-><c- p=""><c- p="">,</c-></c-> <c- o=""><c- o="">%</c-></c-><c- n=""><c- n="">rsp</c-></c->
-<c- n=""><c- n="">popq</c-></c-> <c- o=""><c- o="">%</c-></c-><c- n=""><c- n="">rbx</c-></c->
+<b><c- n=""><c- n="">popq</c-></c-> <c- o=""><c- o="">%</c-></c-><c- n=""><c- n="">rbx</c-></c-></b>
 <c- n=""><c- n="">ret</c-></c-></pre></code>
-      </td><td>752 cycles over 100 iterations.<br> Counts on Intel Ivy Bridge microarchitecture <code class="highlight"><pre class="highlight"><c- p=""><c- p="">;</c-></c-> <c- n=""><c- n="">no</c-></c-> <c- n=""><c- n="">pushq</c-></c->
+      </td><td>752 cycles over 100 iterations.<br> Counts on Intel Ivy Bridge micro-architecture <code class="highlight"><pre class="highlight"><b><c- c1=""><c- c1="">// no pushq</c-></c-></b>
 <c- n=""><c- n="">subq</c-></c-> $<c- mi=""><c- mi="">24</c-></c-><c- p=""><c- p="">,</c-></c-> <c- o=""><c- o="">%</c-></c-><c- n=""><c- n="">rsp</c-></c->
 <c- n=""><c- n="">call</c-></c-> <c- n=""><c- n="">callee</c-></c-><c- p=""><c- p="">()</c-></c->
-<c- p=""><c- p="">;</c-></c-> <c- n=""><c- n="">ordering</c-></c-> <c- n=""><c- n="">difference</c-></c->
+<b><c- c1=""><c- c1="">// ordering difference</c-></c->
 <c- n=""><c- n="">leaq</c-></c-> <c- mi=""><c- mi="">15</c-></c-><c- p=""><c- p="">(</c-></c-><c- o=""><c- o="">%</c-></c-><c- n=""><c- n="">rsp</c-></c-><c- p=""><c- p="">),</c-></c-> <c- o=""><c- o="">%</c-></c-><c- n=""><c- n="">rdi</c-></c->
-<c- n=""><c- n="">movl</c-></c-> $<c- mi=""><c- mi="">0</c-></c-><c- p=""><c- p="">,</c-></c-> <c- n=""><c- n="">global</c-></c-><c- p=""><c- p="">(</c-></c-><c- o=""><c- o="">%</c-></c-><c- n=""><c- n="">rip</c-></c-><c- p=""><c- p="">)</c-></c->
+<c- n=""><c- n="">movl</c-></c-> $<c- mi=""><c- mi="">0</c-></c-><c- p=""><c- p="">,</c-></c-> <c- n=""><c- n="">global</c-></c-><c- p=""><c- p="">(</c-></c-><c- o=""><c- o="">%</c-></c-><c- n=""><c- n="">rip</c-></c-><c- p=""><c- p="">)</c-></c-></b>
 <c- n=""><c- n="">call</c-></c-> <c- n=""><c- n="">Dtor</c-></c-><c- o=""><c- o="">::~</c-></c-><c- n=""><c- n="">Dtor</c-></c-><c- p=""><c- p="">()</c-></c->
 <c- n=""><c- n="">addq</c-></c-> $<c- mi=""><c- mi="">24</c-></c-><c- p=""><c- p="">,</c-></c-> <c- o=""><c- o="">%</c-></c-><c- n=""><c- n="">rsp</c-></c->
-<c- p=""><c- p="">;</c-></c-> <c- n=""><c- n="">no</c-></c-> <c- n=""><c- n="">popq</c-></c->
+<b><c- c1=""><c- c1="">// no popq</c-></c-></b>
 <c- n=""><c- n="">ret</c-></c-></pre></code>
    </td></tr></tbody></table>
-    x64 GCC and Clang both generate slower code for this use case when exceptions are enabled.  This is a missed optimization, but isn’t inherent to the design of exceptions. 
-   <p>In my timings, GCC’s abort code was 2 cycles faster than GCC’s exception code.  Clang’s abort code was 5 cycles faster than Clang’s exception code.</p>
+    x64 GCC and Clang both generate slower code for this use case when exceptions are enabled.  This is a missed optimization, but isn’t inherent to the design of exceptions.
+   <p>In the timings, GCC’s abort code was 2 cycles faster than GCC’s exception code.  Clang’s abort code was 5 cycles faster than Clang’s exception code.</p>
    <table>
     <tbody>
      <tr>
@@ -1870,7 +1889,7 @@ echarts.
       </th><th>No exceptions
      </th></tr><tr>
       <td>Clang 9.0 ARM64
-      </td><td>684 cycles over 100 iterations.<br> Counts on exynos-m5 architecture <code class="highlight"><pre class="highlight"><c- n=""><c- n="">str</c-></c-> <c- n=""><c- n="">x19</c-></c-><c- p=""><c- p="">,</c-></c-> <c- p=""><c- p="">[</c-></c-><c- n=""><c- n="">sp</c-></c-><c- p=""><c- p="">,</c-></c-> #<c- o=""><c- o="">-</c-></c-><c- mi=""><c- mi="">32</c-></c-><c- p=""><c- p="">]</c-></c-><c- o=""><c- o="">!</c-></c->
+      </td><td>684 cycles over 100 iterations.<br> Counts on exynos-m5 architecture <code class="highlight"><pre class="highlight"><b><c- n=""><c- n="">str</c-></c-> <c- n=""><c- n="">x19</c-></c-><c- p=""><c- p="">,</c-></c-> <c- p=""><c- p="">[</c-></c-><c- n=""><c- n="">sp</c-></c-><c- p=""><c- p="">,</c-></c-> #<c- o=""><c- o="">-</c-></c-><c- mi=""><c- mi="">32</c-></c-><c- p=""><c- p="">]</c-></c-><c- o=""><c- o="">!</c-></c-></b>
 <c- n=""><c- n="">stp</c-></c-> <c- n=""><c- n="">x29</c-></c-><c- p=""><c- p="">,</c-></c-> <c- n=""><c- n="">x30</c-></c-><c- p=""><c- p="">,</c-></c-> <c- p=""><c- p="">[</c-></c-><c- n=""><c- n="">sp</c-></c-><c- p=""><c- p="">,</c-></c-> #<c- mi=""><c- mi="">16</c-></c-><c- p=""><c- p="">]</c-></c->
 <c- n=""><c- n="">add</c-></c-> <c- n=""><c- n="">x29</c-></c-><c- p=""><c- p="">,</c-></c-> <c- n=""><c- n="">sp</c-></c-><c- p=""><c- p="">,</c-></c-> #<c- mi=""><c- mi="">16</c-></c->
 <c- n=""><c- n="">bl</c-></c-> <c- n=""><c- n="">callee</c-></c-><c- p=""><c- p="">()</c-></c->
@@ -1879,9 +1898,9 @@ echarts.
 <c- n=""><c- n="">str</c-></c-> <c- n=""><c- n="">wzr</c-></c-><c- p=""><c- p="">,</c-></c-> <c- p=""><c- p="">[</c-></c-><c- n=""><c- n="">x8</c-></c-><c- p=""><c- p="">,</c-></c-> <c- o=""><c- o="">:</c-></c-><c- nl=""><c- nl="">lo12</c-></c-><c- p=""><c- p="">:</c-></c-><c- n=""><c- n="">global</c-></c-><c- p=""><c- p="">]</c-></c->
 <c- n=""><c- n="">bl</c-></c-> <c- n=""><c- n="">Dtor</c-></c-><c- o=""><c- o="">::~</c-></c-><c- n=""><c- n="">Dtor</c-></c-><c- p=""><c- p="">()</c-></c->
 <c- n=""><c- n="">ldp</c-></c-> <c- n=""><c- n="">x29</c-></c-><c- p=""><c- p="">,</c-></c-> <c- n=""><c- n="">x30</c-></c-><c- p=""><c- p="">,</c-></c-> <c- p=""><c- p="">[</c-></c-><c- n=""><c- n="">sp</c-></c-><c- p=""><c- p="">,</c-></c-> #<c- mi=""><c- mi="">16</c-></c-><c- p=""><c- p="">]</c-></c->
-<c- n=""><c- n="">ldr</c-></c-> <c- n=""><c- n="">x19</c-></c-><c- p=""><c- p="">,</c-></c-> <c- p=""><c- p="">[</c-></c-><c- n=""><c- n="">sp</c-></c-><c- p=""><c- p="">],</c-></c-> #<c- mi=""><c- mi="">32</c-></c->
+<b><c- n=""><c- n="">ldr</c-></c-> <c- n=""><c- n="">x19</c-></c-><c- p=""><c- p="">,</c-></c-> <c- p=""><c- p="">[</c-></c-><c- n=""><c- n="">sp</c-></c-><c- p=""><c- p="">],</c-></c-> #<c- mi=""><c- mi="">32</c-></c-></b>
 <c- n=""><c- n="">ret</c-></c-></pre></code>
-      </td><td>665 cycles over 100 iterations.<br> Counts on exynos-m5 architecture <code class="highlight"><pre class="highlight"><c- n=""><c- n="">sub</c-></c-> <c- n=""><c- n="">sp</c-></c-><c- p=""><c- p="">,</c-></c-> <c- n=""><c- n="">sp</c-></c-><c- p=""><c- p="">,</c-></c-> #<c- mi=""><c- mi="">32</c-></c-> <c- c1=""><c- c1="">// sub instead of str</c-></c->
+      </td><td>665 cycles over 100 iterations.<br> Counts on exynos-m5 architecture <code class="highlight"><pre class="highlight"><b><c- n=""><c- n="">sub</c-></c-> <c- n=""><c- n="">sp</c-></c-><c- p=""><c- p="">,</c-></c-> <c- n=""><c- n="">sp</c-></c-><c- p=""><c- p="">,</c-></c-> #<c- mi=""><c- mi="">32</c-></c-> <c- c1=""><c- c1="">// sub instead of str</c-></c-></b>
 <c- n=""><c- n="">stp</c-></c-> <c- n=""><c- n="">x29</c-></c-><c- p=""><c- p="">,</c-></c-> <c- n=""><c- n="">x30</c-></c-><c- p=""><c- p="">,</c-></c-> <c- p=""><c- p="">[</c-></c-><c- n=""><c- n="">sp</c-></c-><c- p=""><c- p="">,</c-></c-> #<c- mi=""><c- mi="">16</c-></c-><c- p=""><c- p="">]</c-></c->
 <c- n=""><c- n="">add</c-></c-> <c- n=""><c- n="">x29</c-></c-><c- p=""><c- p="">,</c-></c-> <c- n=""><c- n="">sp</c-></c-><c- p=""><c- p="">,</c-></c-> #<c- mi=""><c- mi="">16</c-></c->
 <c- n=""><c- n="">bl</c-></c-> <c- n=""><c- n="">callee</c-></c-><c- p=""><c- p="">()</c-></c->
@@ -1890,32 +1909,32 @@ echarts.
 <c- n=""><c- n="">str</c-></c-> <c- n=""><c- n="">wzr</c-></c-><c- p=""><c- p="">,</c-></c-> <c- p=""><c- p="">[</c-></c-><c- n=""><c- n="">x8</c-></c-><c- p=""><c- p="">,</c-></c-> <c- o=""><c- o="">:</c-></c-><c- nl=""><c- nl="">lo12</c-></c-><c- p=""><c- p="">:</c-></c-><c- n=""><c- n="">global</c-></c-><c- p=""><c- p="">]</c-></c->
 <c- n=""><c- n="">bl</c-></c-> <c- n=""><c- n="">Dtor</c-></c-><c- o=""><c- o="">::~</c-></c-><c- n=""><c- n="">Dtor</c-></c-><c- p=""><c- p="">()</c-></c->
 <c- n=""><c- n="">ldp</c-></c-> <c- n=""><c- n="">x29</c-></c-><c- p=""><c- p="">,</c-></c-> <c- n=""><c- n="">x30</c-></c-><c- p=""><c- p="">,</c-></c-> <c- p=""><c- p="">[</c-></c-><c- n=""><c- n="">sp</c-></c-><c- p=""><c- p="">,</c-></c-> #<c- mi=""><c- mi="">16</c-></c-><c- p=""><c- p="">]</c-></c->
-<c- n=""><c- n="">add</c-></c-> <c- n=""><c- n="">sp</c-></c-><c- p=""><c- p="">,</c-></c-> <c- n=""><c- n="">sp</c-></c-><c- p=""><c- p="">,</c-></c-> #<c- mi=""><c- mi="">32</c-></c-> <c- c1=""><c- c1="">// add instead of ldr</c-></c->
+<b><c- n=""><c- n="">add</c-></c-> <c- n=""><c- n="">sp</c-></c-><c- p=""><c- p="">,</c-></c-> <c- n=""><c- n="">sp</c-></c-><c- p=""><c- p="">,</c-></c-> #<c- mi=""><c- mi="">32</c-></c-> <c- c1=""><c- c1="">// add instead of ldr</c-></c-></b>
 <c- n=""><c- n="">ret</c-></c-></pre></code>
      </td></tr><tr>
       <td>GCC 8.2 ARM64
-      </td><td>639 cycles over 100 iterations.<br> Counts on exynos-m5 architecture <code class="highlight"><pre class="highlight"><c- n=""><c- n="">stp</c-></c-> <c- n=""><c- n="">x29</c-></c-><c- p=""><c- p="">,</c-></c-> <c- n=""><c- n="">x30</c-></c-><c- p=""><c- p="">,</c-></c-> <c- p=""><c- p="">[</c-></c-><c- n=""><c- n="">sp</c-></c-><c- p=""><c- p="">,</c-></c-> <c- o=""><c- o="">-</c-></c-><c- mi=""><c- mi="">48</c-></c-><c- p=""><c- p="">]</c-></c-><c- o=""><c- o="">!</c-></c->
+      </td><td>639 cycles over 100 iterations.<br> Counts on exynos-m5 architecture <code class="highlight"><pre class="highlight"><b><c- n=""><c- n="">stp</c-></c-> <c- n=""><c- n="">x29</c-></c-><c- p=""><c- p="">,</c-></c-> <c- n=""><c- n="">x30</c-></c-><c- p=""><c- p="">,</c-></c-> <c- p=""><c- p="">[</c-></c-><c- n=""><c- n="">sp</c-></c-><c- p=""><c- p="">,</c-></c-> <c- o=""><c- o="">-</c-></c-><c- mi=""><c- mi="">48</c-></c-><c- p=""><c- p="">]</c-></c-><c- o=""><c- o="">!</c-></c-></b>
 <c- n=""><c- n="">mov</c-></c-> <c- n=""><c- n="">x29</c-></c-><c- p=""><c- p="">,</c-></c-> <c- n=""><c- n="">sp</c-></c->
 <c- n=""><c- n="">bl</c-></c-> <c- n=""><c- n="">callee</c-></c-><c- p=""><c- p="">()</c-></c->
 <c- n=""><c- n="">adrp</c-></c-> <c- n=""><c- n="">x1</c-></c-><c- p=""><c- p="">,</c-></c-> <c- p=""><c- p="">.</c-></c-><c- n=""><c- n="">LANCHOR0</c-></c->
-<c- n=""><c- n="">add</c-></c-> <c- n=""><c- n="">x0</c-></c-><c- p=""><c- p="">,</c-></c-> <c- n=""><c- n="">sp</c-></c-><c- p=""><c- p="">,</c-></c-> <c- mi=""><c- mi="">40</c-></c->
+<b><c- n=""><c- n="">add</c-></c-> <c- n=""><c- n="">x0</c-></c-><c- p=""><c- p="">,</c-></c-> <c- n=""><c- n="">sp</c-></c-><c- p=""><c- p="">,</c-></c-> <c- mi=""><c- mi="">40</c-></c-></b>
 <c- n=""><c- n="">str</c-></c-> <c- n=""><c- n="">wzr</c-></c-><c- p=""><c- p="">,</c-></c-> <c- p=""><c- p="">[</c-></c-><c- n=""><c- n="">x1</c-></c-><c- p=""><c- p="">,</c-></c-> #<c- o=""><c- o="">:</c-></c-><c- nl=""><c- nl="">lo12</c-></c-><c- p=""><c- p="">:.</c-></c-><c- n=""><c- n="">LANCHOR0</c-></c-><c- p=""><c- p="">]</c-></c->
 <c- n=""><c- n="">bl</c-></c-> <c- n=""><c- n="">Dtor</c-></c-><c- o=""><c- o="">::~</c-></c-><c- n=""><c- n="">Dtor</c-></c-><c- p=""><c- p="">()</c-></c->
-<c- n=""><c- n="">ldp</c-></c-> <c- n=""><c- n="">x29</c-></c-><c- p=""><c- p="">,</c-></c-> <c- n=""><c- n="">x30</c-></c-><c- p=""><c- p="">,</c-></c-> <c- p=""><c- p="">[</c-></c-><c- n=""><c- n="">sp</c-></c-><c- p=""><c- p="">],</c-></c-> <c- mi=""><c- mi="">48</c-></c->
+<b><c- n=""><c- n="">ldp</c-></c-> <c- n=""><c- n="">x29</c-></c-><c- p=""><c- p="">,</c-></c-> <c- n=""><c- n="">x30</c-></c-><c- p=""><c- p="">,</c-></c-> <c- p=""><c- p="">[</c-></c-><c- n=""><c- n="">sp</c-></c-><c- p=""><c- p="">],</c-></c-> <c- mi=""><c- mi="">48</c-></c-></b>
 <c- n=""><c- n="">ret</c-></c-></pre></code>
-      </td><td>639 cycles over 100 iterations.<br> Counts on exynos-m5 architecture <code class="highlight"><pre class="highlight"><c- n=""><c- n="">stp</c-></c-> <c- n=""><c- n="">x29</c-></c-><c- p=""><c- p="">,</c-></c-> <c- n=""><c- n="">x30</c-></c-><c- p=""><c- p="">,</c-></c-> <c- p=""><c- p="">[</c-></c-><c- n=""><c- n="">sp</c-></c-><c- p=""><c- p="">,</c-></c-> <c- o=""><c- o="">-</c-></c-><c- mi=""><c- mi="">32</c-></c-><c- p=""><c- p="">]</c-></c-><c- o=""><c- o="">!</c-></c-> <c- c1=""><c- c1="">// different constant</c-></c->
+      </td><td>639 cycles over 100 iterations.<br> Counts on exynos-m5 architecture <code class="highlight"><pre class="highlight"><b><c- n=""><c- n="">stp</c-></c-> <c- n=""><c- n="">x29</c-></c-><c- p=""><c- p="">,</c-></c-> <c- n=""><c- n="">x30</c-></c-><c- p=""><c- p="">,</c-></c-> <c- p=""><c- p="">[</c-></c-><c- n=""><c- n="">sp</c-></c-><c- p=""><c- p="">,</c-></c-> <c- o=""><c- o="">-</c-></c-><c- mi=""><c- mi="">32</c-></c-><c- p=""><c- p="">]</c-></c-><c- o=""><c- o="">!</c-></c-> <c- c1=""><c- c1="">// different constant</c-></c-></b>
 <c- n=""><c- n="">mov</c-></c-> <c- n=""><c- n="">x29</c-></c-><c- p=""><c- p="">,</c-></c-> <c- n=""><c- n="">sp</c-></c->
 <c- n=""><c- n="">bl</c-></c-> <c- n=""><c- n="">callee</c-></c-><c- p=""><c- p="">()</c-></c->
 <c- n=""><c- n="">adrp</c-></c-> <c- n=""><c- n="">x1</c-></c-><c- p=""><c- p="">,</c-></c-> <c- p=""><c- p="">.</c-></c-><c- n=""><c- n="">LANCHOR0</c-></c->
-<c- n=""><c- n="">add</c-></c-> <c- n=""><c- n="">x0</c-></c-><c- p=""><c- p="">,</c-></c-> <c- n=""><c- n="">sp</c-></c-><c- p=""><c- p="">,</c-></c-> <c- mi=""><c- mi="">24</c-></c-> <c- c1=""><c- c1="">// different constant</c-></c->
+<b><c- n=""><c- n="">add</c-></c-> <c- n=""><c- n="">x0</c-></c-><c- p=""><c- p="">,</c-></c-> <c- n=""><c- n="">sp</c-></c-><c- p=""><c- p="">,</c-></c-> <c- mi=""><c- mi="">24</c-></c-> <c- c1=""><c- c1="">// different constant</c-></c-></b>
 <c- n=""><c- n="">str</c-></c-> <c- n=""><c- n="">wzr</c-></c-><c- p=""><c- p="">,</c-></c-> <c- p=""><c- p="">[</c-></c-><c- n=""><c- n="">x1</c-></c-><c- p=""><c- p="">,</c-></c-> #<c- o=""><c- o="">:</c-></c-><c- nl=""><c- nl="">lo12</c-></c-><c- p=""><c- p="">:.</c-></c-><c- n=""><c- n="">LANCHOR0</c-></c-><c- p=""><c- p="">]</c-></c->
 <c- n=""><c- n="">bl</c-></c-> <c- n=""><c- n="">Dtor</c-></c-><c- o=""><c- o="">::~</c-></c-><c- n=""><c- n="">Dtor</c-></c-><c- p=""><c- p="">()</c-></c->
-<c- n=""><c- n="">ldp</c-></c-> <c- n=""><c- n="">x29</c-></c-><c- p=""><c- p="">,</c-></c-> <c- n=""><c- n="">x30</c-></c-><c- p=""><c- p="">,</c-></c-> <c- p=""><c- p="">[</c-></c-><c- n=""><c- n="">sp</c-></c-><c- p=""><c- p="">],</c-></c-> <c- mi=""><c- mi="">32</c-></c-> <c- c1=""><c- c1="">// different constant</c-></c->
+<b><c- n=""><c- n="">ldp</c-></c-> <c- n=""><c- n="">x29</c-></c-><c- p=""><c- p="">,</c-></c-> <c- n=""><c- n="">x30</c-></c-><c- p=""><c- p="">,</c-></c-> <c- p=""><c- p="">[</c-></c-><c- n=""><c- n="">sp</c-></c-><c- p=""><c- p="">],</c-></c-> <c- mi=""><c- mi="">32</c-></c-> <c- c1=""><c- c1="">// different constant</c-></c-></b>
 <c- n=""><c- n="">ret</c-></c-></pre></code>
    </td></tr></tbody></table>
-    ARM64 GCC and Clang both generate different code for this use case when exceptions are enabled.  This is likely another missed optimization.  With GCC, the only penalty that is paid is slightly more stack usage. 
-   <h3 class="heading settled" data-level="6.2" id="sad_path_theorizing"><span class="secno">6.2. </span><span class="content">Sad path affecting the happy path and macro-benchmark theorizing</span><a class="self-link" href="#sad_path_theorizing"></a></h3>
-    GCC and Clang x64 place an exception "landing pad" at the end of each function that needs to run user code.  I’ll be looking at the assembly, including the landing pad, of the following code: 
+    ARM64 GCC and Clang both generate different code for this use case when exceptions are enabled.  This is likely another missed optimization.  With GCC, the only penalty that is paid is slightly more stack usage.
+   <h3 class="heading settled" data-level="7.2" id="sad_path_theorizing"><span class="secno">7.2. </span><span class="content">Sad path affecting the happy path and macro-benchmark theorizing</span><a class="self-link" href="#sad_path_theorizing"></a></h3>
+    GCC and Clang x64 place an exception "landing pad" at the end of each function that needs to run user code.  The assembly of the following code, including the landing pad, will be analyzed:
 <pre class="highlight"><c- k="">struct</c-> <c- n="">Dtor</c-> <c- p="">{</c-><c- o="">~</c-><c- n="">Dtor</c-><c- p="">();};</c->
 <c- b="">void</c-> <c- nf="">callee</c-><c- p="">();</c->
 <c- b="">int</c-> <c- n="">global</c-><c- p="">;</c->
@@ -1941,7 +1960,7 @@ echarts.
 <c- n=""><c- n="">add</c-></c->     <c- n=""><c- n="">rsp</c-></c-><c- p=""><c- p="">,</c-></c-> <c- mi=""><c- mi="">16</c-></c->
 <c- n=""><c- n="">pop</c-></c->     <c- n=""><c- n="">rbx</c-></c->
 <c- n=""><c- n="">ret</c-></c-><b>
-<c- p=""><c- p="">;</c-></c-> <c- n=""><c- n="">Begin</c-></c-> <c- n=""><c- n="">landing</c-></c-> <c- n=""><c- n="">pad</c-></c->
+<c- c1=""><c- c1="">// Begin landing pad</c-></c->
 <c- n=""><c- n="">mov</c-></c->     <c- n=""><c- n="">rbx</c-></c-><c- p=""><c- p="">,</c-></c-> <c- n=""><c- n="">rax</c-></c->
 <c- n=""><c- n="">lea</c-></c->     <c- n=""><c- n="">rdi</c-></c-><c- p=""><c- p="">,</c-></c-> <c- p=""><c- p="">[</c-></c-><c- n=""><c- n="">rsp</c-></c-> <c- o=""><c- o="">+</c-></c-> <c- mi=""><c- mi="">8</c-></c-><c- p=""><c- p="">]</c-></c->
 <c- n=""><c- n="">call</c-></c->    <c- n=""><c- n="">Dtor</c-></c-><c- o=""><c- o="">::~</c-></c-><c- n=""><c- n="">Dtor</c-></c-><c- p=""><c- p="">()</c-></c->
@@ -1956,7 +1975,7 @@ echarts.
 <c- n=""><c- n="">add</c-></c->     <c- n=""><c- n="">rsp</c-></c-><c- p=""><c- p="">,</c-></c-> <c- mi=""><c- mi="">16</c-></c->
 <c- n=""><c- n="">pop</c-></c->     <c- n=""><c- n="">rbx</c-></c->
 <c- n=""><c- n="">ret</c-></c-><b>
-<c- p=""><c- p="">;</c-></c-> <c- n=""><c- n="">Begin</c-></c-> <c- n=""><c- n="">landing</c-></c-> <c- n=""><c- n="">pad</c-></c->
+<c- c1=""><c- c1="">// Begin landing pad</c-></c->
 <c- n=""><c- n="">lea</c-></c->     <c- n=""><c- n="">rdi</c-></c-><c- p=""><c- p="">,</c-></c-> <c- p=""><c- p="">[</c-></c-><c- n=""><c- n="">rsp</c-></c-><c- o=""><c- o="">+</c-></c-><c- mi=""><c- mi="">15</c-></c-><c- p=""><c- p="">]</c-></c->
 <c- n=""><c- n="">mov</c-></c->     <c- n=""><c- n="">rbx</c-></c-><c- p=""><c- p="">,</c-></c-> <c- n=""><c- n="">rax</c-></c->
 <c- n=""><c- n="">call</c-></c->    <c- n=""><c- n="">Dtor</c-></c-><c- o=""><c- o="">::~</c-></c-><c- n=""><c- n="">Dtor</c-></c-><c- p=""><c- p="">()</c-></c->
@@ -1971,7 +1990,7 @@ echarts.
 <c- n=""><c- n="">add</c-></c->     <c- n=""><c- n="">rsp</c-></c-><c- p=""><c- p="">,</c-></c-> <c- mi=""><c- mi="">16</c-></c->
 <c- n=""><c- n="">pop</c-></c->     <c- n=""><c- n="">rbp</c-></c->
 <c- n=""><c- n="">ret</c-></c-><b>
-<c- p=""><c- p="">;</c-></c-> <c- n=""><c- n="">Begin</c-></c-> <c- n=""><c- n="">landing</c-></c-> <c- n=""><c- n="">pad</c-></c->
+<c- c1=""><c- c1="">// Begin landing pad</c-></c->
 <c- n=""><c- n="">mov</c-></c->     <c- n=""><c- n="">rbp</c-></c-><c- p=""><c- p="">,</c-></c-> <c- n=""><c- n="">rax</c-></c->
 <c- n=""><c- n="">jmp</c-></c->     <c- p=""><c- p="">.</c-></c-><c- n=""><c- n="">L2</c-></c->
 <c- n=""><c- n="">caller</c-></c-><c- p=""><c- p="">()</c-></c-> <c- p=""><c- p="">[</c-></c-><c- n=""><c- n="">clone</c-></c-> <c- p=""><c- p="">.</c-></c-><c- n=""><c- n="">cold</c-></c-><c- p=""><c- p="">]</c-></c-><c- o=""><c- o="">:</c-></c->
@@ -1981,33 +2000,52 @@ echarts.
 <c- n=""><c- n="">mov</c-></c->     <c- n=""><c- n="">rdi</c-></c-><c- p=""><c- p="">,</c-></c-> <c- n=""><c- n="">rbp</c-></c->
 <c- n=""><c- n="">call</c-></c->    <c- n=""><c- n="">_Unwind_Resume</c-></c-></b></pre></code>
    </td></tr></tbody></table>
-   <p>In all three cases, some cold landing pad code is directly adjacent to hot happy path code.  This doesn’t cause any problems in microbenchmarks, but in theory, it could reduce instruction cache utilization in larger benchmarks.  Starting in GCC 8.1, GCC will only put a tiny trampoline in the landing pad.  The bulk of the landing pad code is moved into a different, cold location.  This should, in theory, improve instruction cache utilization in the happy path compared to Clang and earlier GCCs, though it will still be at a minor disadvantage compared to terminate based implementations.  I have no measurements to confirm or reject this theory though. <a data-link-type="biblio" href="#biblio-spencer18">[Spencer18]</a> measured a small, non-zero performance degradation ( &lt;1% ) in the happy path in a AAA game when turning on exceptions.</p>
+   <p>In all three cases, some cold landing pad code is directly adjacent to hot happy path code.  This doesn’t cause any problems in microbenchmarks, but in theory, it could reduce instruction cache utilization in larger benchmarks.  Starting in GCC 8.1, GCC will only put a tiny trampoline in the landing pad.  The bulk of the landing pad code is moved into a different, cold location.  This should, in theory, improve instruction cache utilization in the happy path compared to Clang and earlier GCCs, though it will still be at a minor disadvantage compared to terminate based implementations.  The author has no measurements to confirm or reject this theory though. <a data-link-type="biblio" href="#biblio-spencer18">[Spencer18]</a> measured a small, non-zero performance degradation ( &lt;1% ) in the happy path in a AAA game when turning on exceptions.</p>
    <p>The MSVC x64 /d2FH4 implementation does not place any exception handling code near the happy path.  The MSVC x86 sad path exception handling code is also far away from the happy path, but the happy path does exception bookkeeping.</p>
-   <h2 class="heading settled" data-level="7" id="conclusion"><span class="secno">7. </span><span class="content">Conclusion</span><a class="self-link" href="#conclusion"></a></h2>
-    Exceptions are reasonable error handling strategies in many environments, but they don’t serve all needs in all use cases.  C++ needs good performance, standards conforming ways to signal failures in constructors and operator overloads.  Currently, exceptions do well on the happy path, but there is no good answer for the sad path.  C++ is built on the foundation that you don’t pay for what you don’t use, and that you can’t write the language abstractions better by hand.  This paper provides evidence that you can write error handling code by hand that results in faster code on the sad path than the equivalent exception throwing code.  In each of the sad path test cases, return values beat exceptions by more than a factor of 100. 
-   <h2 class="heading settled" data-level="8" id="ack"><span class="secno">8. </span><span class="content">Acknowledgments</span><a class="self-link" href="#ack"></a></h2>
+   <h2 class="heading settled" data-level="8" id="conclusion"><span class="secno">8. </span><span class="content">Conclusion</span><a class="self-link" href="#conclusion"></a></h2>
+    Exceptions are reasonable error handling strategies in many environments, but they don’t serve all needs in all use cases.  C++ needs good performance, standards conforming ways to signal failures in constructors and operator overloads.  Currently, exceptions do well on the happy path, but there is no good answer for the sad path.  C++ is built on the foundation that you don’t pay for what you don’t use, and that you can’t write the language abstractions better by hand.  This paper provides evidence that you can write error handling code by hand that results in faster code on the sad path than the equivalent exception throwing code.  In each of the sad path test cases, return values beat exceptions by more than a factor of 100.
+   <h2 class="heading settled" data-level="9" id="ack"><span class="secno">9. </span><span class="content">Acknowledgments</span><a class="self-link" href="#ack"></a></h2>
+    Niall Douglas, Herb Sutter, Nathan Sidwell, Joshua Cannon, and Mike Petersen all provided valuable early feedback on this paper.
    <p>Charts generated with <a data-link-type="biblio" href="#biblio-echarts">[ECharts]</a>.</p>
    <h2 class="heading settled" id="additional_error_handling"><span class="content">Appendix A: Additional error handling types</span><a class="self-link" href="#additional_error_handling"></a></h2>
-    While researching this paper, I gathered data on some additional error handling mechanisms.  I will provide a brief description of the error handling mechanism, and I will provide the data.  Only a minimal amount of code and explanation will be provided though.  This data could be useful in future error handling discussions. 
+    While researching this paper, data was gathered on some additional error handling mechanisms.  The data is provided here with a brief description of the error handling mechanism.  Only a minimal amount of code and explanation will be provided though.  This data could be useful in future error handling discussions.
    <p>In each of these cases, the struct involved is of the following form:</p>
 <pre class="highlight"><c- k="">struct</c-> <c- n="">error_struct</c-> <c- p="">{</c->
   <c- b="">void</c-> <c- o="">*</c-><c- n="">error</c-> <c- o="">=</c-> <c- k="">nullptr</c-><c- p="">;</c->
   <c- b="">void</c-> <c- o="">*</c-><c- n="">domain</c-> <c- o="">=</c-> <c- k="">nullptr</c-><c- p="">;</c->
 <c- p="">};</c->
 </pre>
-   A null error pointer indicates no error. 
+   A null error pointer indicates no error.
    <ul>
     <li data-md="">
      <p>ref_struct: Pass an <code class="highlight"><c- n="">error_struct</c-></code> by reference, and check <code class="highlight"><c- n="">error</c-></code> after each call.</p>
-    </li><li data-md="">
-     <p>return_struct: Like return_val, but with an <code class="highlight"><c- n="">error_struct</c-></code> instead.</p>
-    </li><li data-md="">
-     <p>return_nt_struct: Like return_struct, but <code class="highlight"><c- n="">error_struct</c-></code> has a destructor of the form <code class="highlight"><c- o="">~</c-><c- n="">error_struct</c-><c- p="">()</c-> <c- p="">{}</c-></code>.  "nt" means "non-trivial".</p>
-    </li><li data-md="">
-     <p>expected_struct: This uses Sy Brand’s <a data-link-type="biblio" href="#biblio-expected">[Expected]</a> library with <code class="highlight"><c- n="">error_struct</c-></code> as the error type.  This should closely resemble the proposed <code class="highlight"><c- n="">std</c-><c- o="">::</c-><c- n="">expected</c-></code>.</p>
-    </li><li data-md="">
-     <p>outcome_std_error: This uses a branch of Niall Douglas’s <a data-link-type="biblio" href="#biblio-outcome">[Outcome]</a> library.  This branch is specially optimized for GCC.</p>
    </li></ul>
+<pre class="highlight"><c- b="">void</c-> <c- n="">callee</c-><c- p="">(</c-><c- b="">bool</c-> <c- n="">do_err</c-><c- p="">,</c-> <c- n="">error_struct</c-> <c- o="">&amp;</c-><c- n="">e</c-><c- p="">)</c->
+</pre>
+   <ul>
+    <li data-md="">
+     <p>return_struct: Like return_val, but with an <code class="highlight"><c- n="">error_struct</c-></code> instead.</p>
+   </li></ul>
+<pre class="highlight"><c- n="">error_struct</c-> <c- n="">callee</c-><c- p="">(</c-><c- b="">bool</c-> <c- n="">do_err</c-><c- p="">)</c->
+</pre>
+   <ul>
+    <li data-md="">
+     <p>return_nt_struct: Like return_struct, but <code class="highlight"><c- n="">error_struct</c-></code> has a destructor of the form <code class="highlight"><c- o="">~</c-><c- n="">error_struct</c-><c- p="">()</c-> <c- p="">{}</c-></code>.  "nt" means "non-trivial".</p>
+   </li></ul>
+<pre class="highlight"><c- n="">error_struct</c-> <c- d="">/* with non-trivial destructor */</c-> <c- n="">callee</c-><c- p="">(</c-><c- b="">bool</c-> <c- n="">do_err</c-><c- p="">)</c->
+</pre>
+   <ul>
+    <li data-md="">
+     <p>expected_struct: This uses Sy Brand’s <a data-link-type="biblio" href="#biblio-expected">[Expected]</a> library with <code class="highlight"><c- n="">error_struct</c-></code> as the error type.  This should closely resemble the proposed <code class="highlight"><c- n="">std</c-><c- o="">::</c-><c- n="">expected</c-></code>.</p>
+   </li></ul>
+<pre class="highlight"><c- n="">tl</c-><c- o="">::</c-><c- n="">expected</c-><c- o="">&lt;</c-><c- b="">void</c-><c- p="">,</c-> <c- n="">error_struct</c-><c- o="">&gt;</c-> <c- n="">callee</c-><c- p="">(</c-><c- b="">bool</c-> <c- n="">do_err</c-><c- p="">)</c->
+</pre>
+   <ul>
+    <li data-md="">
+     <p>outcome_std_error: This uses a branch of Niall Douglas’s <a data-link-type="biblio" href="#biblio-outcome">[Outcome]</a> library.  This branch is specially optimized for GCC on the happy path.</p>
+   </li></ul>
+<pre class="highlight"><c- n="">outcome</c-><c- o="">::</c-><c- n="">experimental</c-><c- o="">::</c-><c- n="">status_result</c-><c- o="">&lt;</c-><c- b="">void</c-><c- o="">&gt;</c-> <c- n="">callee</c-><c- p="">(</c-><c- b="">bool</c-> <c- n="">do_err</c-><c- p="">)</c->
+</pre>
    <p>In the sad path graphs, exceptions are omitted so that the remaining values can be easily compared.</p>
    <h3 class="heading settled" id="big_happy_write_to_a_global"><span class="content">Write to a global (happy path)</span><a class="self-link" href="#big_happy_write_to_a_global"></a></h3>
    <p align="center">Write to global: Median cycles per iteration.  A histogram can be found <a href="#happy_write_to_a_global_histogram">here</a></p>
@@ -2017,7 +2055,7 @@ echarts.
   init(document.getElementById('bar_happy_div')).
   setOption(bar_happy);
 </script>
-   <h3 class="heading settled" id="big_happy_write_through_an_argument"><span class="content">Write through an argument (happy path)</span><a class="self-link" href="#big_happy_write_through_an_argument"></a></h3>
+   <h3 class="heading settled" id="big_happy_write_through_an_argument"><span class="content">Happy path: Write through an argument</span><a class="self-link" href="#big_happy_write_through_an_argument"></a></h3>
    <p align="center">Write to global: Median cycles per iteration.  A histogram can be found <a href="#happy_write_through_an_argument_histogram">here</a></p>
    <div id="bar_happy_param_div" style="width: 100%;height:300px;"></div>
 <script type="text/javascript">
@@ -2025,7 +2063,7 @@ echarts.
   init(document.getElementById('bar_happy_param_div')).
   setOption(bar_happy_param);
 </script>
-   <h3 class="heading settled" id="big_happy_return_a_value"><span class="content">"Return" a value (happy path)</span><a class="self-link" href="#big_happy_return_a_value"></a></h3>
+   <h3 class="heading settled" id="big_happy_return_a_value"><span class="content">Happy path: "Return" a value</span><a class="self-link" href="#big_happy_return_a_value"></a></h3>
    <p align="center">Write to global: Median cycles per iteration.  A histogram can be found <a href="#happy_return_a_value_histogram">here</a></p>
    <div id="bar_happy_ret_div" style="width: 100%;height:300px;"></div>
 <script type="text/javascript">
@@ -2033,7 +2071,7 @@ echarts.
   init(document.getElementById('bar_happy_ret_div')).
   setOption(bar_happy_ret);
 </script>
-   <h3 class="heading settled" id="sad_happy_write_to_a_global"><span class="content">Write to a global (sad path)</span><a class="self-link" href="#sad_happy_write_to_a_global"></a></h3>
+   <h3 class="heading settled" id="sad_happy_write_to_a_global"><span class="content">Sad path: Write to a global</span><a class="self-link" href="#sad_happy_write_to_a_global"></a></h3>
    <p align="center">Write to global: Median cycles per iteration.  A histogram can be found <a href="#sad_write_to_a_global_histogram">here</a></p>
    <div id="bar_noexcept_sad_sad_div" style="width: 100%;height:300px;"></div>
 <script type="text/javascript">
@@ -2041,7 +2079,7 @@ echarts.
   init(document.getElementById('bar_noexcept_sad_sad_div')).
   setOption(bar_noexcept_sad_sad);
 </script>
-   <h3 class="heading settled" id="big_sad_write_through_an_argument"><span class="content">Write through an argument (sad path)</span><a class="self-link" href="#big_sad_write_through_an_argument"></a></h3>
+   <h3 class="heading settled" id="big_sad_write_through_an_argument"><span class="content">Sad path: Write through an argument</span><a class="self-link" href="#big_sad_write_through_an_argument"></a></h3>
    <p align="center">Write to global: Median cycles per iteration.  A histogram can be found <a href="#sad_write_through_an_argument_histogram">here</a></p>
    <div id="bar_noexcept_sad_sad_param_div" style="width: 100%;height:300px;"></div>
 <script type="text/javascript">
@@ -2049,7 +2087,7 @@ echarts.
   init(document.getElementById('bar_noexcept_sad_sad_param_div')).
   setOption(bar_noexcept_sad_sad_param);
 </script>
-   <h3 class="heading settled" id="big_sad_return_a_value"><span class="content">"Return" a value (sad path)</span><a class="self-link" href="#big_sad_return_a_value"></a></h3>
+   <h3 class="heading settled" id="big_sad_return_a_value"><span class="content">Sad path: "Return" a value</span><a class="self-link" href="#big_sad_return_a_value"></a></h3>
    <p align="center">Write to global: Median cycles per iteration.  A histogram can be found <a href="#sad_return_a_value_histogram">here</a></p>
    <div id="bar_noexcept_sad_sad_ret_div" style="width: 100%;height:300px;"></div>
 <script type="text/javascript">
@@ -2059,47 +2097,44 @@ echarts.
 </script>
    <h2 class="heading settled" id="build_flags"><span class="content">Appendix B: The build flags</span><a class="self-link" href="#build_flags"></a></h2>
    <h3 class="heading settled" id="msvc"><span class="content">MSVC</span><a class="self-link" href="#msvc"></a></h3>
-    The compiler and flags are the same for 32-bit and 64-bit builds, except that the 32-bit linker uses /machine:x86 and the 64-bit linker uses /machine:x64 
+    The compiler and flags are the same for 32-bit and 64-bit builds, except that the 32-bit linker uses /machine:x86 and the 64-bit linker uses /machine:x64
    <p>/d2FH4 is a critical flag for these benchmarks.  Without it, the results are drastically different.  See <a data-link-type="biblio" href="#biblio-mofh4">[MoFH4]</a> for a description of this flag.</p>
    <p>Compiler marketing version: Visual Studio 2019</p>
    <p>Compiler toolkit version: 14.22.27905</p>
    <p>cl.exe version: 19.22.27905</p>
-   <p>Compiler codegen flags (no exceptions): /GR /Gy /Gw /O2 /MT /d2FH4 /std:c++latest /permissive- /DNDEBUG</p>
-   <p>Compiler codegen flags (with exceptions): /EHs /GR /Gy /Gw /O2 /MT /d2FH4 /std:c++latest /permissive- /DNDEBUG</p>
-   <p>Compiler codegen flags (outcome): /GR- /Gy /Gw /O2 /MT /d2FH4 /std:c++latest /permissive- /DNDEBUG</p>
+   <p>Compiler codegen flags (no exceptions): /GR- /Gy /Gw /O2 /MT /d2FH4 /std:c++latest /permissive- /DNDEBUG</p>
+   <p>Compiler codegen flags (with exceptions): /EHsc /GR /Gy /Gw /O2 /MT /d2FH4 /std:c++latest /permissive- /DNDEBUG</p>
    <p>Linker flags: /OPT:REF /release /subsystem:CONSOLE /incremental:no /OPT:ICF /NXCOMPAT /DYNAMICBASE *.obj</p>
    <h3 class="heading settled" id="clang_x64"><span class="content">Clang x64</span><a class="self-link" href="#clang_x64"></a></h3>
-    Toolchains used: 
+    Toolchains used:
    <ul>
     <li data-md="">
      <p>Clang 8.0.0 and libc++</p>
     </li><li data-md="">
      <p>System linker from Ubuntu 14.04.3’s GCC 4.8.4 installation</p>
    </li></ul>
-   <p>Compiler codegen flags (no exceptions): -fno-exceptions -O2 -mtune=ivybridge -ffunction-sections -fdata-sections -std=c++17 -stdlib=libc++ -static -DNDEBUG</p>
+   <p>Compiler codegen flags (no exceptions): -fno-exceptions -fno-rtti -O2 -mtune=ivybridge -ffunction-sections -fdata-sections -std=c++17 -stdlib=libc++ -static -DNDEBUG</p>
    <p>Compiler codegen flags (exceptions): -O2 -mtune=ivybridge -ffunction-sections -fdata-sections -std=c++17 -stdlib=libc++ -static -DNDEBUG</p>
-   <p>Compiler codegen flags (outcome): -fno-exceptions -fno-rtti -O2 -mtune=ivybridge -ffunction-sections -fdata-sections -std=c++17 -stdlib=libc++ -static -DNDEBUG</p>
    <p>Linking flags: -Wl,--gc-sections -pthread -static -static-libgcc -stdlib=libc++ *.o libc++abi.a</p>
    <h3 class="heading settled" id="gcc_x64"><span class="content">GCC x64</span><a class="self-link" href="#gcc_x64"></a></h3>
-    Toolchain used: GCC 7.3.1 from the Red Hat Developer Toolset 7.1 
-   <p>Compiler codegen flags (no exceptions): -fno-exceptions -O2 -mtune=ivybridge -ffunction-sections -fdata-sections -std=c++17 -static -DNDEBUG</p>
+    Toolchain used: GCC 7.3.1 from the Red Hat Developer Toolset 7.1
+   <p>Compiler codegen flags (no exceptions): -fno-exceptions -fno-rtti -O2 -mtune=ivybridge -ffunction-sections -fdata-sections -std=c++17 -static -DNDEBUG</p>
    <p>Compiler codegen flags (exceptions): -O2 -mtune=ivybridge -ffunction-sections -fdata-sections -std=c++17 -static -DNDEBUG</p>
-   <p>Compiler codegen flags (outcome): -fno-exceptions -fno-rtti -O2 -mtune=ivybridge -ffunction-sections -fdata-sections -std=c++17 -static -DNDEBUG</p>
    <p>Linking flags: -Wl,--gc-sections -pthread -static -static-libgcc -static-libstdc++ *.o</p>
    <h2 class="heading settled" id="code"><span class="content">Appendix C: The code</span><a class="self-link" href="#code"></a></h2>
-    As stated before, this isn’t the exact code that was benchmarked.  In the benchmarked code, functions were placed in distinct translation units in order to avoid inlining.  The following code is provided to demonstrate what the error handling code looks like. 
+    As stated before, this isn’t the exact code that was benchmarked.  In the benchmarked code, functions were placed in distinct translation units in order to avoid inlining.  The following code is provided to demonstrate what the error handling code looks like.
    <h3 class="heading settled" id="code_support"><span class="content">Common support code</span><a class="self-link" href="#code_support"></a></h3>
    <details>
     <summary>Expand to see code snippets</summary>
-     <strong>All cases</strong> 
-<pre class="highlight"><c- k="">struct</c-> <c- n="">Dtor</c-><c- p="">[</c-><c- n="">N</c-><c- p="">]</c-> <c- p="">{</c->
-  <c- k="">extern</c-> <c- o="">~</c-><c- n="">Dtor</c-><c- p="">[</c-><c- n="">N</c-><c- p="">]()</c-> <c- p="">{</c->
-    <c- d="">/* Random number of NOPs K[N] := [0,31] */</c->
+     <strong>All cases</strong>
+<pre class="highlight"><c- k="">struct</c-> <c- n="">Dtor</c->$<c- n="">N</c-> <c- p="">{</c->
+  <c- k="">extern</c-> <c- o="">~</c-><c- n="">Dtor</c->$<c- n="">N</c-><c- p="">()</c-> <c- p="">{</c->
+    <c- d="">/* K[N] NOPs */</c->
   <c- p="">}</c->
 <c- p="">};</c->
 <c- k="">struct</c-> <c- n="">inline_nops</c-> <c- p="">{</c->
   <c- kr="">inline</c-> <c- n="">inline_nops</c-><c- p="">()</c-> <c- p="">{</c->
-    <c- d="">/* Random number of NOPs Z := [0,31] */</c->
+    <c- d="">/* Z NOPs */</c->
   <c- p="">}</c->
   <c- kr="">inline</c-> <c- o="">~</c-><c- n="">inline_nops</c-><c- p="">()</c-> <c- p="">{</c->
     <c- d="">/* 31 - Z NOPs */</c->
@@ -2112,7 +2147,7 @@ echarts.
   <c- n="">startTimer</c-><c- p="">();</c->
   <c- d="">/* X NOPs */</c->
   <c- k="">for</c-> <c- p="">(</c-><c- b="">int</c-> <c- n="">i</c-> <c- o="">=</c-> <c- mi="">0</c-><c- p="">;</c-> <c- n="">i</c-> <c- o="">&lt;</c-> <c- n="">ITERATIONS</c-><c- p="">;</c-> <c- o="">++</c-><c- n="">i</c-><c- p="">)</c-> <c- p="">{</c->
-    <c- p="">(</c-><c- b="">void</c-><c- p="">)</c-><c- n="">caller</c-><c- p="">[</c-><c- mi="">0</c-><c- p="">](</c->false<c- p="">);</c->
+    <c- p="">(</c-><c- b="">void</c-><c- p="">)</c-><c- n="">caller0</c-><c- p="">(</c->false<c- p="">);</c->
   <c- p="">}</c->
   <c- d="">/* 31 - X NOPs */</c->
   <c- n="">endTimer</c-><c- p="">();</c->
@@ -2121,7 +2156,7 @@ echarts.
   <c- n="">startTimer</c-><c- p="">();</c->
   <c- d="">/* Y NOPs */</c->
   <c- k="">for</c-> <c- p="">(</c-><c- b="">int</c-> <c- n="">i</c-> <c- o="">=</c-> <c- mi="">0</c-><c- p="">;</c-> <c- n="">i</c-> <c- o="">&lt;</c-> <c- n="">ITERATIONS</c-><c- p="">;</c-> <c- o="">++</c-><c- n="">i</c-><c- p="">)</c-> <c- p="">{</c->
-    <c- p="">(</c-><c- b="">void</c-><c- p="">)</c-><c- n="">caller</c-><c- p="">[</c-><c- mi="">0</c-><c- p="">](</c->true<c- p="">);</c->
+    <c- p="">(</c-><c- b="">void</c-><c- p="">)</c-><c- n="">caller0</c-><c- p="">(</c->true<c- p="">);</c->
   <c- p="">}</c->
   <c- d="">/* 31 - Y NOPs */</c->
   <c- n="">endTimer</c-><c- p="">();</c->
@@ -2140,7 +2175,7 @@ echarts.
   <c- n="">startTimer</c-><c- p="">();</c->
   <c- d="">/* X NOPs */</c->
   <c- k="">for</c-> <c- p="">(</c-><c- b="">int</c-> <c- n="">i</c-> <c- o="">=</c-> <c- mi="">0</c-><c- p="">;</c-> <c- n="">i</c-> <c- o="">&lt;</c-> <c- n="">ITERATIONS</c-><c- p="">;</c-> <c- o="">++</c-><c- n="">i</c-><c- p="">)</c-> <c- p="">{</c->
-    <c- k="">try</c-> <c- p="">{</c-> <c- p="">(</c-><c- b="">void</c-><c- p="">)</c-><c- n="">caller</c-><c- p="">[</c-><c- mi="">0</c-><c- p="">](</c->false<c- p="">);</c-> <c- p="">}</c-> <c- k="">catch</c-><c- p="">(...){}</c->
+    <c- k="">try</c-> <c- p="">{</c-> <c- p="">(</c-><c- b="">void</c-><c- p="">)</c-><c- n="">caller0</c-><c- p="">(</c->false<c- p="">);</c-> <c- p="">}</c-> <c- k="">catch</c-><c- p="">(...){}</c->
   <c- p="">}</c->
   <c- d="">/* 31 - X NOPs */</c->
   <c- n="">endTimer</c-><c- p="">();</c->
@@ -2150,7 +2185,7 @@ echarts.
   <c- n="">startTimer</c-><c- p="">();</c->
   <c- d="">/* Y NOPs */</c->
   <c- k="">for</c-> <c- p="">(</c-><c- b="">int</c-> <c- n="">i</c-> <c- o="">=</c-> <c- mi="">0</c-><c- p="">;</c-> <c- n="">i</c-> <c- o="">&lt;</c-> <c- n="">ITERATIONS</c-><c- p="">;</c-> <c- o="">++</c-><c- n="">i</c-><c- p="">)</c-> <c- p="">{</c->
-    <c- k="">try</c-> <c- p="">{</c-> <c- p="">(</c-><c- b="">void</c-><c- p="">)</c-><c- n="">caller</c-><c- p="">[</c-><c- mi="">0</c-><c- p="">](</c->true<c- p="">);</c-> <c- p="">}</c-> <c- k="">catch</c-><c- p="">(...){}</c->
+    <c- k="">try</c-> <c- p="">{</c-> <c- p="">(</c-><c- b="">void</c-><c- p="">)</c-><c- n="">caller0</c-><c- p="">(</c->true<c- p="">);</c-> <c- p="">}</c-> <c- k="">catch</c-><c- p="">(...){}</c->
   <c- p="">}</c->
   <c- d="">/* 31 - Y NOPs */</c->
   <c- n="">endTimer</c-><c- p="">();</c->
@@ -2161,7 +2196,7 @@ echarts.
    <h3 class="heading settled" id="code_write_to_a_global"><span class="content">Write to a global</span><a class="self-link" href="#code_write_to_a_global"></a></h3>
    <details>
     <summary>Expand to see code snippets</summary>
-     <strong>All cases</strong> 
+     <strong>All cases</strong>
 <pre class="highlight"><c- b="">int</c-> <c- n="">global_int</c-> <c- o="">=</c-> <c- mi="">0</c-><c- p="">;</c->
 </pre>
     <p><strong>return_val</strong></p>
@@ -2171,33 +2206,37 @@ echarts.
     <c- k="">return</c-> <c- mi="">1</c-><c- p="">;</c->
   <c- k="">return</c-> <c- mi="">0</c-><c- p="">;</c->
 <c- p="">}</c->
-<c- b="">int</c-> <c- n="">caller</c-><c- p="">[</c-><c- n="">N</c-><c- p="">](</c-><c- b="">bool</c-> <c- n="">do_err</c-><c- p="">)</c-> <c- p="">{</c->
+<c- b="">int</c-> <c- n="">caller</c->$<c- n="">N</c-><c- p="">(</c-><c- b="">bool</c-> <c- n="">do_err</c-><c- p="">)</c-> <c- p="">{</c->
   <c- d="">/* 31 - K[N] NOPs */</c->
-  <c- n="">Dtor</c-><c- p="">[</c-><c- n="">N</c-><c- p="">]</c-> <c- n="">d</c-><c- p="">;</c->
-  <c- d="">/* NEXT_FUNC is callee when N == 7, or caller[N+1] otherwise */</c->
-  <c- b="">int</c-> <c- n="">e</c-> <c- o="">=</c-> <c- n="">NEXT_FUNC</c-><c- p="">(</c-><c- n="">do_err</c-><c- p="">);</c->
+  <c- n="">Dtor</c->$<c- n="">N</c-> <c- n="">d</c-><c- p="">;</c->
+  $<c- k="">if</c-> <c- n="">N</c-> <c- o="">==</c-> <c- mi="">7</c->
+    <c- b="">int</c-> <c- n="">e</c-> <c- o="">=</c-> <c- n="">callee</c-><c- p="">(</c-><c- n="">do_err</c-><c- p="">);</c->
+  $<c- k="">else</c->
+    <c- b="">int</c-> <c- n="">e</c-> <c- o="">=</c-> <c- n="">caller</c->$<c- n="">N</c-><c- o="">+</c-><c- mi="">1</c-><c- p="">(</c-><c- n="">do_err</c-><c- p="">);</c->
   <c- k="">if</c-><c- p="">(</c-><c- n="">e</c-><c- p="">)</c-> <c- k="">return</c-> <c- n="">e</c-><c- p="">;</c->
   <c- n="">global_int</c-> <c- o="">=</c-> <c- mi="">0</c-><c- p="">;</c->
   <c- k="">return</c-> <c- mi="">0</c-><c- p="">;</c->
 <c- p="">}</c->
 </pre>
     <p><strong>abort, throw_exception</strong></p>
-<pre class="highlight"><c- b="">void</c-> <c- n="">caller</c-><c- p="">[</c-><c- n="">N</c-><c- p="">](</c-><c- b="">bool</c-> <c- n="">do_err</c-><c- p="">)</c-> <c- p="">{</c->
+<pre class="highlight"><c- b="">void</c-> <c- n="">caller</c->$<c- n="">N</c-><c- p="">(</c-><c- b="">bool</c-> <c- n="">do_err</c-><c- p="">)</c-> <c- p="">{</c->
   <c- d="">/* 31 - K[N] NOPs */</c->
-  <c- n="">Dtor</c-><c- p="">[</c-><c- n="">N</c-><c- p="">]</c-> <c- n="">d</c-><c- p="">;</c->
-  <c- d="">/* NEXT_FUNC is callee when N == 7, or caller[N+1] otherwise */</c->
-  <c- n="">NEXT_FUNC</c-><c- p="">(</c-><c- n="">do_err</c-><c- p="">);</c->
+  <c- n="">Dtor</c->$<c- n="">N</c-> <c- n="">d</c-><c- p="">;</c->
+  $<c- k="">if</c-> <c- n="">N</c-> <c- o="">==</c-> <c- mi="">7</c->
+    <c- n="">callee</c-><c- p="">(</c-><c- n="">do_err</c-><c- p="">);</c->
+  $<c- k="">else</c->
+    <c- n="">caller</c->$<c- n="">N</c-><c- o="">+</c-><c- mi="">1</c-><c- p="">(</c-><c- n="">do_err</c-><c- p="">);</c->
   <c- n="">global_int</c-> <c- o="">=</c-> <c- mi="">0</c-><c- p="">;</c->
 <c- p="">}</c->
 </pre>
-    <strong>abort</strong> 
+    <strong>abort</strong>
 <pre class="highlight"><c- b="">void</c-> <c- nf="">callee</c-><c- p="">(</c-><c- b="">bool</c-> <c- n="">do_err</c-><c- p="">)</c-> <c- p="">{</c->
   <c- n="">inline_nops</c-> <c- n="">n</c-><c- p="">;</c->
   <c- k="">if</c-><c- p="">(</c-><c- n="">do_err</c-><c- p="">)</c->
     <c- n="">abort</c-><c- p="">();</c->
 <c- p="">}</c->
 </pre>
-    <strong>throw_exception</strong> 
+    <strong>throw_exception</strong>
 <pre class="highlight"><c- b="">void</c-> <c- nf="">callee</c-><c- p="">(</c-><c- b="">bool</c-> <c- n="">do_err</c-><c- p="">)</c-> <c- p="">{</c->
   <c- n="">inline_nops</c-> <c- n="">n</c-><c- p="">;</c->
   <c- k="">if</c-><c- p="">(</c-><c- n="">do_err</c-><c- p="">)</c->
@@ -2208,14 +2247,14 @@ echarts.
    <h3 class="heading settled" id="code_write_through_an_argument"><span class="content">Write through an argument</span><a class="self-link" href="#code_write_through_an_argument"></a></h3>
    <details>
     <summary>Expand to see code snippets</summary>
-     <strong>abort, return_val</strong> 
+     <strong>abort, return_val</strong>
 <pre class="highlight"><c- b="">int</c-> <c- nf="">main</c-><c- p="">()</c-> <c- p="">{</c->
   <c- b="">int</c-> <c- n="">val</c-><c- o="">=</c-><c- mi="">0</c-><c- p="">;</c->
   <c- d="">/* Test happy path */</c->
   <c- n="">startTimer</c-><c- p="">();</c->
   <c- d="">/* X NOPs */</c->
   <c- k="">for</c-> <c- p="">(</c-><c- b="">int</c-> <c- n="">i</c-> <c- o="">=</c-> <c- mi="">0</c-><c- p="">;</c-> <c- n="">i</c-> <c- o="">&lt;</c-> <c- n="">ITERATIONS</c-><c- p="">;</c-> <c- o="">++</c-><c- n="">i</c-><c- p="">)</c-> <c- p="">{</c->
-    <c- p="">(</c-><c- b="">void</c-><c- p="">)</c-><c- n="">caller</c-><c- p="">[</c-><c- mi="">0</c-><c- p="">](</c-><c- o="">&amp;</c-><c- n="">val</c-><c- p="">,</c-> false<c- p="">);</c->
+    <c- p="">(</c-><c- b="">void</c-><c- p="">)</c-><c- n="">caller0</c-><c- p="">(</c-><c- o="">&amp;</c-><c- n="">val</c-><c- p="">,</c-> false<c- p="">);</c->
   <c- p="">}</c->
   <c- d="">/* 31 - X NOPs */</c->
   <c- n="">endTimer</c-><c- p="">();</c->
@@ -2225,7 +2264,7 @@ echarts.
   <c- n="">startTimer</c-><c- p="">();</c->
   <c- d="">/* Y NOPs */</c->
   <c- k="">for</c-> <c- p="">(</c-><c- b="">int</c-> <c- n="">i</c-> <c- o="">=</c-> <c- mi="">0</c-><c- p="">;</c-> <c- n="">i</c-> <c- o="">&lt;</c-> <c- n="">ITERATIONS</c-><c- p="">;</c-> <c- o="">++</c-><c- n="">i</c-><c- p="">)</c-> <c- p="">{</c->
-    <c- p="">(</c-><c- b="">void</c-><c- p="">)</c-><c- n="">caller</c-><c- p="">[</c-><c- mi="">0</c-><c- p="">](</c-><c- o="">&amp;</c-><c- n="">val</c-><c- p="">,</c-> true<c- p="">);</c->
+    <c- p="">(</c-><c- b="">void</c-><c- p="">)</c-><c- n="">caller0</c-><c- p="">(</c-><c- o="">&amp;</c-><c- n="">val</c-><c- p="">,</c-> true<c- p="">);</c->
   <c- p="">}</c->
   <c- d="">/* 31 - Y NOPs */</c->
   <c- n="">endTimer</c-><c- p="">();</c->
@@ -2239,33 +2278,37 @@ echarts.
     <c- k="">return</c-> <c- mi="">1</c-><c- p="">;</c->
   <c- k="">return</c-> <c- mi="">0</c-><c- p="">;</c->
 <c- p="">}</c->
-<c- b="">int</c-> <c- n="">caller</c-><c- p="">[</c-><c- n="">N</c-><c- p="">](</c-><c- b="">int</c-> <c- o="">*</c-><c- n="">val</c-><c- p="">,</c-> <c- b="">bool</c-> <c- n="">do_err</c-><c- p="">)</c-> <c- p="">{</c->
+<c- b="">int</c-> <c- n="">caller</c->$<c- n="">N</c-><c- p="">(</c-><c- b="">int</c-> <c- o="">*</c-><c- n="">val</c-><c- p="">,</c-> <c- b="">bool</c-> <c- n="">do_err</c-><c- p="">)</c-> <c- p="">{</c->
   <c- d="">/* 31 - K[N] NOPs */</c->
-  <c- n="">Dtor</c-><c- p="">[</c-><c- n="">N</c-><c- p="">]</c-> <c- n="">d</c-><c- p="">;</c->
-  <c- d="">/* NEXT_FUNC is callee when N == 7, or caller[N+1] otherwise */</c->
-  <c- b="">int</c-> <c- n="">e</c-> <c- o="">=</c-> <c- n="">NEXT_FUNC</c-><c- p="">(</c-><c- n="">val</c-><c- p="">,</c-> <c- n="">do_err</c-><c- p="">);</c->
+  <c- n="">Dtor</c->$<c- n="">N</c-> <c- n="">d</c-><c- p="">;</c->
+  $<c- k="">if</c-> <c- n="">N</c-> <c- o="">==</c-> <c- mi="">7</c->
+    <c- b="">int</c-> <c- n="">e</c-> <c- o="">=</c-> <c- n="">callee</c-><c- p="">(</c-><c- n="">val</c-><c- p="">,</c-> <c- n="">do_err</c-><c- p="">);</c->
+  $<c- k="">else</c->
+    <c- b="">int</c-> <c- n="">e</c-> <c- o="">=</c-> <c- n="">caller</c->$<c- n="">N</c-><c- o="">+</c-><c- mi="">1</c-><c- p="">(</c-><c- n="">val</c-><c- p="">,</c-> <c- n="">do_err</c-><c- p="">);</c->
   <c- k="">if</c-><c- p="">(</c-><c- n="">e</c-><c- p="">)</c-> <c- k="">return</c-> <c- n="">e</c-><c- p="">;</c->
   <c- o="">*</c-><c- n="">val</c-> <c- o="">=</c-> <c- mi="">0</c-><c- p="">;</c->
   <c- k="">return</c-> <c- mi="">0</c-><c- p="">;</c->
 <c- p="">}</c->
 </pre>
     <p><strong>abort, throw_exception</strong></p>
-<pre class="highlight"><c- b="">void</c-> <c- n="">caller</c-><c- p="">[</c-><c- n="">N</c-><c- p="">](</c-><c- b="">int</c-> <c- o="">*</c-><c- n="">val</c-><c- p="">,</c-> <c- b="">bool</c-> <c- n="">do_err</c-><c- p="">)</c-> <c- p="">{</c->
+<pre class="highlight"><c- b="">void</c-> <c- n="">caller</c->$<c- n="">N</c-><c- p="">(</c-><c- b="">int</c-> <c- o="">*</c-><c- n="">val</c-><c- p="">,</c-> <c- b="">bool</c-> <c- n="">do_err</c-><c- p="">)</c-> <c- p="">{</c->
   <c- d="">/* 31 - K[N] NOPs */</c->
-  <c- n="">Dtor</c-><c- p="">[</c-><c- n="">N</c-><c- p="">]</c-> <c- n="">d</c-><c- p="">;</c->
-  <c- d="">/* NEXT_FUNC is callee when N == 7, or caller[N+1] otherwise */</c->
-  <c- n="">NEXT_FUNC</c-><c- p="">(</c-><c- n="">val</c-><c- p="">,</c-> <c- n="">do_err</c-><c- p="">);</c->
+  <c- n="">Dtor</c->$<c- n="">N</c-> <c- n="">d</c-><c- p="">;</c->
+  $<c- k="">if</c-> <c- n="">N</c-> <c- o="">==</c-> <c- mi="">7</c->
+    <c- n="">callee</c-><c- p="">(</c-><c- n="">val</c-><c- p="">,</c-> <c- n="">do_err</c-><c- p="">);</c->
+  $<c- k="">else</c->
+    <c- n="">caller</c->$<c- n="">N</c-><c- o="">+</c-><c- mi="">1</c-><c- p="">(</c-><c- n="">val</c-><c- p="">,</c-> <c- n="">do_err</c-><c- p="">);</c->
   <c- o="">*</c-><c- n="">val</c-> <c- o="">=</c-> <c- mi="">0</c-><c- p="">;</c->
 <c- p="">}</c->
 </pre>
-    <strong>abort</strong> 
+    <strong>abort</strong>
 <pre class="highlight"><c- b="">void</c-> <c- nf="">callee</c-><c- p="">(</c-><c- b="">int</c-> <c- o="">*</c-><c- p="">,</c-> <c- b="">bool</c-> <c- n="">do_err</c-><c- p="">)</c-> <c- p="">{</c->
   <c- n="">inline_nops</c-> <c- n="">n</c-><c- p="">;</c->
   <c- k="">if</c-><c- p="">(</c-><c- n="">do_err</c-><c- p="">)</c->
     <c- n="">abort</c-><c- p="">();</c->
 <c- p="">}</c->
 </pre>
-    <strong>throw_exception</strong> 
+    <strong>throw_exception</strong>
 <pre class="highlight"><c- b="">void</c-> <c- nf="">callee</c-><c- p="">(</c-><c- b="">int</c-> <c- o="">*</c-><c- p="">,</c-> <c- b="">bool</c-> <c- n="">do_err</c-><c- p="">)</c-> <c- p="">{</c->
   <c- n="">inline_nops</c-> <c- n="">n</c-><c- p="">;</c->
   <c- k="">if</c-><c- p="">(</c-><c- n="">do_err</c-><c- p="">)</c->
@@ -2277,7 +2320,7 @@ echarts.
   <c- n="">startTimer</c-><c- p="">();</c->
   <c- d="">/* X NOPs */</c->
   <c- k="">for</c-> <c- p="">(</c-><c- b="">int</c-> <c- n="">i</c-> <c- o="">=</c-> <c- mi="">0</c-><c- p="">;</c-> <c- n="">i</c-> <c- o="">&lt;</c-> <c- n="">ITERATIONS</c-><c- p="">;</c-> <c- o="">++</c-><c- n="">i</c-><c- p="">)</c-> <c- p="">{</c->
-    <c- k="">try</c-> <c- p="">{</c-> <c- p="">(</c-><c- b="">void</c-><c- p="">)</c-><c- n="">caller</c-><c- p="">[</c-><c- mi="">0</c-><c- p="">](</c-><c- o="">&amp;</c-><c- n="">val</c-><c- p="">,</c-> false<c- p="">);</c-> <c- p="">}</c-> <c- k="">catch</c-><c- p="">(...)</c-> <c- p="">{}</c->
+    <c- k="">try</c-> <c- p="">{</c-> <c- p="">(</c-><c- b="">void</c-><c- p="">)</c-><c- n="">caller0</c-><c- p="">(</c-><c- o="">&amp;</c-><c- n="">val</c-><c- p="">,</c-> false<c- p="">);</c-> <c- p="">}</c-> <c- k="">catch</c-><c- p="">(...)</c-> <c- p="">{}</c->
   <c- p="">}</c->
   <c- d="">/* 31 - X NOPs */</c->
   <c- n="">endTimer</c-><c- p="">();</c->
@@ -2287,7 +2330,7 @@ echarts.
   <c- n="">startTimer</c-><c- p="">();</c->
   <c- d="">/* Y NOPs */</c->
   <c- k="">for</c-> <c- p="">(</c-><c- b="">int</c-> <c- n="">i</c-> <c- o="">=</c-> <c- mi="">0</c-><c- p="">;</c-> <c- n="">i</c-> <c- o="">&lt;</c-> <c- n="">ITERATIONS</c-><c- p="">;</c-> <c- o="">++</c-><c- n="">i</c-><c- p="">)</c-> <c- p="">{</c->
-    <c- k="">try</c-> <c- p="">{</c-> <c- p="">(</c-><c- b="">void</c-><c- p="">)</c-><c- n="">caller</c-><c- p="">[</c-><c- mi="">0</c-><c- p="">](</c-><c- o="">&amp;</c-><c- n="">val</c-><c- p="">,</c-> true<c- p="">);</c-> <c- p="">}</c-> <c- k="">catch</c-><c- p="">(...)</c-> <c- p="">{}</c->
+    <c- k="">try</c-> <c- p="">{</c-> <c- p="">(</c-><c- b="">void</c-><c- p="">)</c-><c- n="">caller0</c-><c- p="">(</c-><c- o="">&amp;</c-><c- n="">val</c-><c- p="">,</c-> true<c- p="">);</c-> <c- p="">}</c-> <c- k="">catch</c-><c- p="">(...)</c-> <c- p="">{}</c->
   <c- p="">}</c->
   <c- d="">/* 31 - Y NOPs */</c->
   <c- n="">endTimer</c-><c- p="">();</c->
@@ -2298,7 +2341,7 @@ echarts.
    <h3 class="heading settled" id="code_return_a_value"><span class="content">"Return" a value</span><a class="self-link" href="#code_return_a_value"></a></h3>
    <details>
     <summary>Expand to see code snippets</summary>
-     <strong>return_val</strong> 
+     <strong>return_val</strong>
 <pre class="highlight"><c- b="">int</c-> <c- nf="">callee</c-><c- p="">(</c-><c- b="">int</c-> <c- o="">*</c-><c- n="">val</c-><c- p="">,</c-> <c- b="">bool</c-> <c- n="">do_err</c-><c- p="">)</c-> <c- p="">{</c->
   <c- n="">inline_nops</c-> <c- n="">n</c-><c- p="">;</c->
   <c- k="">if</c-><c- p="">(</c-><c- n="">do_err</c-><c- p="">)</c->
@@ -2306,12 +2349,14 @@ echarts.
   <c- o="">*</c-><c- n="">val</c-> <c- o="">=</c-> <c- mi="">0</c-><c- p="">;</c->
   <c- k="">return</c-> <c- mi="">0</c-><c- p="">;</c->
 <c- p="">}</c->
-<c- b="">int</c-> <c- n="">caller</c-><c- p="">[</c-><c- n="">N</c-><c- p="">](</c-><c- b="">int</c-> <c- o="">*</c-><c- n="">val</c-><c- p="">,</c-> <c- b="">bool</c-> <c- n="">do_err</c-><c- p="">)</c-> <c- p="">{</c->
+<c- b="">int</c-> <c- n="">caller</c->$<c- n="">N</c-><c- p="">(</c-><c- b="">int</c-> <c- o="">*</c-><c- n="">val</c-><c- p="">,</c-> <c- b="">bool</c-> <c- n="">do_err</c-><c- p="">)</c-> <c- p="">{</c->
   <c- d="">/* 31 - K[N] NOPs */</c->
-  <c- n="">Dtor</c-><c- p="">[</c-><c- n="">N</c-><c- p="">]</c-> <c- n="">d</c-><c- p="">;</c->
+  <c- n="">Dtor</c->$<c- n="">N</c-> <c- n="">d</c-><c- p="">;</c->
   <c- b="">int</c-> <c- n="">out_val</c-> <c- o="">=</c-> <c- mi="">0</c-><c- p="">;</c->
-  <c- d="">/* NEXT_FUNC is callee when N == 7, or caller[N+1] otherwise */</c->
-  <c- b="">int</c-> <c- n="">e</c-> <c- o="">=</c-> <c- n="">NEXT_FUNC</c-><c- p="">(</c-><c- o="">&amp;</c-><c- n="">out_val</c-><c- p="">,</c-> <c- n="">do_err</c-><c- p="">);</c->
+  $<c- k="">if</c-> <c- n="">N</c-> <c- o="">==</c-> <c- mi="">7</c->
+    <c- b="">int</c-> <c- n="">e</c-> <c- o="">=</c-> <c- n="">callee</c-><c- p="">(</c-><c- o="">&amp;</c-><c- n="">out_val</c-><c- p="">,</c-> <c- n="">do_err</c-><c- p="">);</c->
+  $<c- k="">else</c->
+    <c- b="">int</c-> <c- n="">e</c-> <c- o="">=</c-> <c- n="">caller</c->$<c- n="">N</c-><c- o="">+</c-><c- mi="">1</c-><c- p="">(</c-><c- o="">&amp;</c-><c- n="">out_val</c-><c- p="">,</c-> <c- n="">do_err</c-><c- p="">);</c->
   <c- k="">if</c-><c- p="">(</c-><c- n="">e</c-><c- p="">)</c-> <c- k="">return</c-> <c- n="">e</c-><c- p="">;</c->
   <c- o="">*</c-><c- n="">val</c-> <c- o="">=</c-> <c- n="">out_val</c-> <c- o="">+</c-> <c- mi="">1</c-><c- p="">;</c->
   <c- k="">return</c-> <c- mi="">0</c-><c- p="">;</c->
@@ -2322,7 +2367,7 @@ echarts.
   <c- d="">/* X NOPs */</c->
   <c- k="">for</c-> <c- p="">(</c-><c- b="">int</c-> <c- n="">i</c-> <c- o="">=</c-> <c- mi="">0</c-><c- p="">;</c-> <c- n="">i</c-> <c- o="">&lt;</c-> <c- n="">ITERATIONS</c-><c- p="">;</c-> <c- o="">++</c-><c- n="">i</c-><c- p="">)</c-> <c- p="">{</c->
     <c- b="">int</c-> <c- n="">val</c-><c- o="">=</c-><c- mi="">0</c-><c- p="">;</c->
-    <c- p="">(</c-><c- b="">void</c-><c- p="">)</c-><c- n="">caller</c-><c- p="">[</c-><c- mi="">0</c-><c- p="">](</c-><c- o="">&amp;</c-><c- n="">val</c-><c- p="">,</c-> false<c- p="">);</c->
+    <c- p="">(</c-><c- b="">void</c-><c- p="">)</c-><c- n="">caller0</c-><c- p="">(</c-><c- o="">&amp;</c-><c- n="">val</c-><c- p="">,</c-> false<c- p="">);</c->
   <c- p="">}</c->
   <c- d="">/* 31 - X NOPs */</c->
   <c- n="">endTimer</c-><c- p="">();</c->
@@ -2333,7 +2378,7 @@ echarts.
   <c- d="">/* Y NOPs */</c->
   <c- k="">for</c-> <c- p="">(</c-><c- b="">int</c-> <c- n="">i</c-> <c- o="">=</c-> <c- mi="">0</c-><c- p="">;</c-> <c- n="">i</c-> <c- o="">&lt;</c-> <c- n="">ITERATIONS</c-><c- p="">;</c-> <c- o="">++</c-><c- n="">i</c-><c- p="">)</c-> <c- p="">{</c->
     <c- b="">int</c-> <c- n="">val</c-><c- o="">=</c-><c- mi="">0</c-><c- p="">;</c->
-    <c- p="">(</c-><c- b="">void</c-><c- p="">)</c-><c- n="">caller</c-><c- p="">[</c-><c- mi="">0</c-><c- p="">](</c-><c- o="">&amp;</c-><c- n="">val</c-><c- p="">,</c-> true<c- p="">);</c->
+    <c- p="">(</c-><c- b="">void</c-><c- p="">)</c-><c- n="">caller0</c-><c- p="">(</c-><c- o="">&amp;</c-><c- n="">val</c-><c- p="">,</c-> true<c- p="">);</c->
   <c- p="">}</c->
   <c- d="">/* 31 - Y NOPs */</c->
   <c- n="">endTimer</c-><c- p="">();</c->
@@ -2341,14 +2386,16 @@ echarts.
 <c- p="">}</c->
 </pre>
     <p><strong>abort, throw_exception</strong></p>
-<pre class="highlight"><c- b="">int</c-> <c- n="">caller</c-><c- p="">[</c-><c- n="">N</c-><c- p="">](</c-><c- b="">bool</c-> <c- n="">do_err</c-><c- p="">)</c-> <c- p="">{</c->
+<pre class="highlight"><c- b="">int</c-> <c- n="">caller</c->$<c- n="">N</c-><c- p="">(</c-><c- b="">bool</c-> <c- n="">do_err</c-><c- p="">)</c-> <c- p="">{</c->
   <c- d="">/* 31 - K[N] NOPs */</c->
-  <c- n="">Dtor</c-><c- p="">[</c-><c- n="">N</c-><c- p="">]</c-> <c- n="">d</c-><c- p="">;</c->
-  <c- d="">/* NEXT_FUNC is callee when N == 7, or caller[N+1] otherwise */</c->
-  <c- k="">return</c-> <c- mi="">1</c-> <c- o="">+</c-> <c- n="">NEXT_FUNC</c-><c- p="">(</c-><c- n="">do_err</c-><c- p="">);</c->
+  <c- n="">Dtor</c->$<c- n="">N</c-> <c- n="">d</c-><c- p="">;</c->
+  $<c- k="">if</c-> <c- n="">N</c-> <c- o="">==</c-> <c- mi="">7</c->
+    <c- k="">return</c-> <c- mi="">1</c-> <c- o="">+</c-> <c- n="">callee</c-><c- p="">(</c-><c- n="">do_err</c-><c- p="">);</c->
+  $<c- k="">else</c->
+    <c- k="">return</c-> <c- mi="">1</c-> <c- o="">+</c-> <c- n="">caller</c->$<c- n="">N</c-><c- o="">+</c-><c- mi="">1</c-><c- p="">(</c-><c- n="">do_err</c-><c- p="">);</c->
 <c- p="">}</c->
 </pre>
-    <strong>abort</strong> 
+    <strong>abort</strong>
 <pre class="highlight"><c- b="">int</c-> <c- nf="">callee</c-><c- p="">(</c-><c- b="">bool</c-> <c- n="">do_err</c-><c- p="">)</c-> <c- p="">{</c->
   <c- n="">inline_nops</c-> <c- n="">n</c-><c- p="">;</c->
   <c- k="">if</c-><c- p="">(</c-><c- n="">do_err</c-><c- p="">)</c->
@@ -2356,7 +2403,7 @@ echarts.
   <c- k="">return</c-> <c- mi="">0</c-><c- p="">;</c->
 <c- p="">}</c->
 </pre>
-    <strong>throw_exception</strong> 
+    <strong>throw_exception</strong>
 <pre class="highlight"><c- b="">int</c-> <c- nf="">callee</c-><c- p="">(</c-><c- b="">bool</c-> <c- n="">do_err</c-><c- p="">)</c-> <c- p="">{</c->
   <c- n="">inline_nops</c-> <c- n="">n</c-><c- p="">;</c->
   <c- k="">if</c-><c- p="">(</c-><c- n="">do_err</c-><c- p="">)</c->
@@ -2583,7 +2630,7 @@ echarts.
    <dt id="biblio-bakhvalov">[Bakhvalov]
    </dt><dd>Denis Bakhvalov. <a href="https://dendibakh.github.io/blog/2018/01/18/Code_alignment_issues">Code alignment issues.</a>. URL: <a href="https://dendibakh.github.io/blog/2018/01/18/Code_alignment_issues">https://dendibakh.github.io/blog/2018/01/18/Code_alignment_issues</a>
    </dd><dt id="biblio-echarts">[ECharts]
-   </dt><dd><a href="https://ecomfe.github.io/echarts-doc/public/en/index.html">ECharts</a>. URL: <a href="https://ecomfe.github.io/echarts-doc/public/en/index.html">https://ecomfe.github.io/echarts-doc/public/en/index.html</a>
+   </dt><dd><a href="https://echarts.apache.org/en/index.html">ECharts</a>. URL: <a href="https://echarts.apache.org/en/index.html">https://echarts.apache.org/en/index.html</a>
    </dd><dt id="biblio-expected">[Expected]
    </dt><dd>Sy Brand. <a href="https://github.com/TartanLlama/expected">expected: C++11/14/17 std::expected with functional-style extensions</a>. URL: <a href="https://github.com/TartanLlama/expected">https://github.com/TartanLlama/expected</a>
    </dd><dt id="biblio-mca">[MCA]
@@ -2592,6 +2639,8 @@ echarts.
    </dt><dd>Modi Mo. <a href="https://devblogs.microsoft.com/cppblog/making-cpp-exception-handling-smaller-x64/">Making C++ Exception Handling Smaller On x64</a>. URL: <a href="https://devblogs.microsoft.com/cppblog/making-cpp-exception-handling-smaller-x64/">https://devblogs.microsoft.com/cppblog/making-cpp-exception-handling-smaller-x64/</a>
    </dd><dt id="biblio-outcome">[Outcome]
    </dt><dd>Niall Douglas. <a href="https://github.com/ned14/outcome">outcome: Provides very lightweight outcome&lt;T&gt; and result&lt;T&gt; (non-Boost edition)</a>. URL: <a href="https://github.com/ned14/outcome">https://github.com/ned14/outcome</a>
+   </dd><dt id="biblio-p1640r0">[P1640R0]
+   </dt><dd>Ben Craig. <a href="https://wg21.link/p1640r0">Error size benchmarking</a>. 3 June 2019. URL: <a href="https://wg21.link/p1640r0">https://wg21.link/p1640r0</a>
    </dd><dt id="biblio-spencer18">[Spencer18]
    </dt><dd>Michael Spencer. <a href="https://www.youtube.com/watch?v=C4gpj-MDstY">C++Now 2018: How Compilers Reason About Exceptions</a>. URL: <a href="https://www.youtube.com/watch?v=C4gpj-MDstY">https://www.youtube.com/watch?v=C4gpj-MDstY</a>
   </dd></dl></body></html>
