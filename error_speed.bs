@@ -26,13 +26,13 @@ Gathering representative timings for very small pieces of code is difficult on m
 
 This research used a novel technique to get representative timings across a wide range of jump alignments.  At the beginning of each function, a random number of `nop` instructions (0 to 31 inclusive) were inserted.  A matching set of `nop` instructions were inserted at a later point in the execution path so that a total of 31 user inserted `nop` instructions were always executed.  1024 instances of this program, all with different layouts of nops, were then built and run.
 
-Tests were built to optimize for speed.  The test case optimizes away in the face of link-time optimizations (LTO) / whole program optimizations, so they were not used.  Some compilers only support profile-guided optimizations (PGO) after turning on link-time optimizations, so PGO wasn't used either.  Only the exception cases were built with exceptions turned on.
+Tests were compiled to optimize for speed.  Link-time optimizations (LTO) / whole program optimizations were not used.  Had we used LTO, the entire program would be optimized away, and the benchmarks would be invalid.  Some compilers only support profile-guided optimizations (PGO) after turning on link-time optimizations, so PGO wasn't used either.  Only the exception cases were built with exceptions turned on.
 
-For all but the exception failure cases, 16K warm-up iterations were run before starting timing.  Within the timer bounds, 512K iterations of the test case were run.  The exception failure cases only had 256 warm-up iterations and 16K timed iterations, due to just how slow throwing an exception can be.
+For all but the exception failure cases, 16K warm-up iterations were run before starting timing.  Within the timer bounds, 512K iterations of the test case were run.  The exception failure cases only had 256 warm-up iterations and 16K timed iterations, due to how slow throwing an exception can be.
 
 These tests are all testing code that is "hot".  The branch predictors should all be primed, and everything should be in cache.  Cold code benchmarks would likely show different results.
 
-All tests were run on the same machine.  The processor was an Intel Core i7-3770 running at 3.3915 GHz.  The Core i7-3770 has an Ivy Bridge micro-architecture, and was released in April 2012.  C-states, Hyper-Threading, and Turbo Boost were all disabled in order to improve benchmark reproducibility.  MSVC benchmarks were run on the 64-bit version of Windows 10.  Clang and GCC benchmarks were run on the Slax Linux distribution. (TODO: verify)
+All tests were run on the same machine.  The processor was an Intel Core i7-3770 running at 3.3915 GHz.  The Core i7-3770 has an Ivy Bridge micro-architecture, and was released in April 2012.  C states, HyperThreading, Intel TurboBoost and Intel SpeedStep were all disabled in order to improve benchmark reproducibility.  MSVC benchmarks were run on the 64-bit version of Windows 10 Enterprise (10.0.17134.1006).  Clang and GCC benchmarks were run on the Linux slax 4.9.0-9-amd64 #1 SMP Debian 4.9.168-1 (2019-04-12) x86_64 GNU/Linux.
 
 Justification of test case choices {#code_choice_justification}
 ==========================================
@@ -288,7 +288,7 @@ add rsp, 40
 ret 0</pre></code></td>
   </tr>
 </table>
-With MSVC x64, we get almost identical codegen between code with exceptions and without.  On MSVC x64, there are some optimization passes that don't run when exceptions are turned on, and one of those passes is responsible for switching the order of the `lea` and `mov` instructions.  I have observed a 1-3 cycle difference in benchmark results just from switching the order of those two instructions.  In the data I am providing, this results in the exception based code being slightly faster than the abort based code.
+With MSVC x64, we get almost identical codegen between code with exceptions and without.  On MSVC x64, there are some optimization passes that don't run when exceptions are turned on, and one of those passes is responsible for switching the order of the `lea` and `mov` instructions.  I have observed a 1-3 cycle difference in benchmark results just from switching the order of those two instructions.  In the data I am providing, this results in the exception based code being slightly faster than the abort based code.  The "optimization" pass in the no-exception code causes a minor speed penalty.
 
 <table>
   <tr>
