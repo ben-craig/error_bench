@@ -4,7 +4,7 @@ GAUSS_CASES = 1023
 FRAME_COUNT = 7
 
 TERM_TYPES = [
-    {:dir => "terminate_________", :cc_flags => "-fno-exceptions"},
+    {:dir => "terminate_________", :cc_flags => "-fno-exceptions -fno-rtti"},
 #    {:dir => "noexcept_terminate", :cc_flags => ""},
 ]
 ERROR_TYPES = [
@@ -13,12 +13,12 @@ ERROR_TYPES = [
     {:dir => "throw_exception___", :cc_flags => ""},
 #    {:dir => "tls_error_val_____", :cc_flags => "-fno-exceptions"},
 #    {:dir => "tls_error_struct__", :cc_flags => "-fno-exceptions"},
-    {:dir => "return_val________", :cc_flags => "-fno-exceptions"},
-    {:dir => "return_struct_____", :cc_flags => "-fno-exceptions"},
-    {:dir => "return_nt_struct__", :cc_flags => "-fno-exceptions"},
-    {:dir => "ref_struct________", :cc_flags => "-fno-exceptions"},
+    {:dir => "return_val________", :cc_flags => "-fno-exceptions -fno-rtti"},
+    {:dir => "return_struct_____", :cc_flags => "-fno-exceptions -fno-rtti"},
+    {:dir => "return_nt_struct__", :cc_flags => "-fno-exceptions -fno-rtti"},
+    {:dir => "ref_struct________", :cc_flags => "-fno-exceptions -fno-rtti"},
 #    {:dir => "ref_val___________", :cc_flags => "-fno-exceptions"},
-    {:dir => "expected_struct___", :cc_flags => "-fno-exceptions"},
+    {:dir => "expected_struct___", :cc_flags => "-fno-exceptions -fno-rtti"},
 #    {:dir => "expected_val______", :cc_flags => "-fno-exceptions"},
 #    {:dir => "outcome_struct____", :cc_flags => "-fno-exceptions -fno-rtti"},
 #    {:dir => "outcome_val_______", :cc_flags => "-fno-exceptions -fno-rtti"},
