@@ -307,7 +307,7 @@ def emit_all_bars(fout, df):
   emit_bar_formatters(fout, df)
 
   happy_df = df[(df.mood == "happy") | (df.mood == "happy_param") | (df.mood == "happy_ret")]
-  reduced_happy_df = happy_df[(happy_df.case == "throw_exception") | (happy_df.case == "terminate") | (happy_df.case == "return_val")]
+  reduced_happy_df = happy_df[(happy_df.case == "throw_exception") | (happy_df.case == "abort") | (happy_df.case == "return_val")]
 
   sad_df = df[(df.mood == "sad") | (df.mood == "sad_param") | (df.mood == "sad_ret")]
   reduced_sad_df = sad_df[(sad_df.case == "throw_exception") | (sad_df.case == "return_val")]
@@ -329,7 +329,7 @@ def main():
   df = pd.read_csv('gauss_times.csv')
 
   df = df[(df.mood != "happy_ret_nd") & (df.mood != "sad_ret_nd")]
-  is_sad_terminate = ((df.case == "terminate") & ( (df.mood == "sad") | (df.mood == "sad_ret") | (df.mood == "sad_param")))
+  is_sad_terminate = ((df.case == "abort") & ( (df.mood == "sad") | (df.mood == "sad_ret") | (df.mood == "sad_param")))
   df = df[~is_sad_terminate]
   df.time = df.time * CPU_FREQ
 
