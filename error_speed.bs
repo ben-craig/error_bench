@@ -1,12 +1,12 @@
 <pre class='metadata'>
 Title: Error speed benchmarking
-Shortname: D????
-Revision: 0.0
+Shortname: D1886
+Revision: 0.1
 Audience: WG21; DG
 Status: D
 Group: WG21
-URL: https://wg21.link/P????
-!Source: <a href="https://github.com/ben-craig/error_bench/blob/master/bench_blog.bs">???</a>
+URL: https://wg21.link/P1886R0
+!Source: <a href="https://github.com/ben-craig/error_bench/blob/master/error_speed.bs">github</a>
 Editor: Ben Craig, National Instruments, ben.craig@gmail.com
 Abstract: The author measures the speed of various error handling approaches.  Abort and x64 exceptions are fast on the happy path.  Error code strategies are fast on the sad path.
 Markup Shorthands: markdown yes
@@ -30,20 +30,39 @@ Tests were built to optimize for speed.  The test case optimizes away in the fac
 
 For all but the exception failure cases, 16K warm-up iterations were run before starting timing.  Within the timer bounds, 512K iterations of the test case were run.  The exception failure cases only had 256 warm-up iterations and 16K timed iterations, due to just how slow throwing an exception can be.
 
-All tests were run on the same machine.  The processor was an Intel Core i7-3770 running at 3.3915 GHz.  The Core i7-3770 has an Ivy Bridge microarchitecture, and was released in April 2012.  C-states, Hyper-Threading, and Turbo Boost were all disabled in order to improve benchmark reproducibility. (TODO: verify)
+These tests are all testing code that is "hot".  The branch predictors should all be primed, and everything should be in cache.  Cold code benchmarks would likely show different results.
+
+All tests were run on the same machine.  The processor was an Intel Core i7-3770 running at 3.3915 GHz.  The Core i7-3770 has an Ivy Bridge micro-architecture, and was released in April 2012.  C-states, Hyper-Threading, and Turbo Boost were all disabled in order to improve benchmark reproducibility.  MSVC benchmarks were run on the 64-bit version of Windows 10.  Clang and GCC benchmarks were run on the Slax Linux distribution. (TODO: verify)
+
+Justification of test case choices {#code_choice_justification}
+==========================================
+This paper takes three abstract programs, translates them into several different error handling strategies, then benchmarks roughly a thousand nop-randomized versions of those programs, all on one machine.  Ideally, there would be many machines of different architectures and micro-architectures used.  There would be dozens, or hundreds of abstract programs chosen, and all performance differences would be root caused.  The results would then be run through rigorous statistical devices, correlating the results of the abstract programs and giving confidence values.
+
+The author doesn't have the time, resources, or expertise for that.  The author (arguably) has the time, resources, and expertise to benchmark more than just one abstract program.
+
+The first abstract program ("Write to a global") was based heavily off of the program used in [[P1640R0]].  The essentials of error handling were captured in that program, and I saw little reason to change it significantly.
+
+The second program ("Write through an argument") came about as part of my investigation into the MSVC x64 performance anomaly where exceptions beat abort.  This program demonstrates that minor changes, such as adding a parameter to a function, or using a smaller `mov` instruction, can affect the performance delta between exceptions and abort.
+
+The third program ("Return a value") was authored to ensure that I wasn't showing favoritism to the return code error handling strategy.
+
+Each of the programs has a top level main, eight layers of "caller" functions, and a final "callee" function that decides whether to signal an error based off of a parameter.  Eight was chosen mostly arbitrarily.  I wasn't able to get sufficient nop-randomization with a single "callee" function, and calling sixteen functions exceeded the size of the return stack buffer on my machine.
 
 Starter test case for on-line analysis {#starter_case}
 =====================
+In the code examples, anything using a `$` is something that gets generated before the C++ compiler or preprocessor ever sees it.  `X`, `Y`, `Z`, and `K[0]` through `K[7]` are all random numbers in the range of [0,31], determined at build time.
+
 To start with, we will look at code similar to the following:
 ```
-struct Dtor\[N] {
-  extern ~Dtor\[N]() {
-    /* Random number of NOPs K\[N] := [0,31] */
+struct Dtor$N {
+  extern ~Dtor$N() {
+    /* K\[N] NOPs */
   }
 };
 struct inline_nops {
+  /* only one inline_nops class per executable, no $ variables needed */
   inline inline_nops() {
-    /* Random number of NOPs Z := [0,31] */
+    /* Z NOPs */
   }
   inline ~inline_nops() {
     /* 31 - Z NOPs */
@@ -56,11 +75,13 @@ int callee(bool do_err) {
     return 1;
   return 0;
 }
-int caller\[N](bool do_err) {
+int caller$N(bool do_err) {
   /* 31 - K\[N] NOPs */
-  Dtor\[N] d;
-  /* NEXT_FUNC is callee when N == 7, or caller[N+1] otherwise */
-  int e = NEXT_FUNC(do_err);
+  Dtor$N d;
+  $if N == 7
+    int e = callee(do_err);
+  $else
+    int e = caller$N+1(do_err);
   if(e) return e;
   global_int = 0;
   return 0;
@@ -70,7 +91,8 @@ int main() {
   startTimer();
   /* X NOPs */
   for (int i = 0; i < ITERATIONS; ++i) {
-    (void)caller\[0](false);
+    /* invokes caller$N with N == 0 */
+    (void)caller0(false);
   }
   /* 31 - X NOPs */
   endTimer();
@@ -80,7 +102,7 @@ int main() {
   startTimer();
   /* Y NOPs */
   for (int i = 0; i < ITERATIONS; ++i) {
-    (void)caller\[0](true);
+    (void)caller0(true);
   }
   /* 31 - Y NOPs */
   endTimer();
@@ -89,14 +111,14 @@ int main() {
 ```
 This code has some important properties.
 * `callee()` will raise an error based off of runtime state
-* `caller[N]()` needs to clean up the `d` object in error and non-error conditions.
-* `caller[N]()` should only set `global_int` in success cases.
+* `caller$N()` needs to clean up the `d` object in error and non-error conditions.
+* `caller$N()` should only set `global_int` in success cases.
 * The inserted NOPs allow us to sample various alignments while keeping the same program structure.
 
 In the actual tests all the function bodies are in separate .cpp files, and link-time / whole-program optimizations aren't used.  If they had been used, the entire program would get optimized away, removing our ability to measure error handling differences.
 
 The initial part of this paper is only looking at three types of error handling.
-* abort: When an error is encountered, kill the program with `std::abort`.  No "sad" path benchmarks were taken for this case.
+* abort: The program directly calls `std::abort` when an error condition is encountered.  No error handling code beyond `std::abort` is present in the code. No "sad" path benchmarks were taken for this case.
 * return_val: Return an integer error code, where zero represents success.
 * throw_exception: Throw an exception deriving from std::exception, that contains only an int.  This should represent typical exception usage cases.  The exception is only caught with a `catch(...)`.
 
@@ -105,7 +127,7 @@ The actual code used for the benchmark can be found [on my github](https://githu
 Happy path measurements {#happy_path_measurements}
 ============================
 
-Abort and x64 exceptions are consistently faster than return codes.  Windows x86 exceptions are slower than both return codes and abort semantics.  While return codes are slower than abort and x64 exceptions, they aren't much slower.  The cost ranges from less than a cycle per function to four cycles per function in my experiments.
+Abort and x64 exceptions have similar happy path performance characteristics.  Return codes cost one to four extra cycles per function.  x86 exceptions cost five to seven extra cycles per function in comparison to abort.
 
 Write to a global {#write_to_a_global}
 -----------------------
@@ -128,11 +150,13 @@ int callee(int *val, bool do_err) {
     return 1;
   return 0;
 }
-int caller\[N](int *val, bool do_err) {
+int caller$N(int *val, bool do_err) {
   /* 31 - K\[N] NOPs */
-  Dtor\[N] d;
-  /* NEXT_FUNC is callee when N == 7, or caller[N+1] otherwise */
-  int e = NEXT_FUNC(val, do_err);
+  Dtor$N d;
+  $if N == 7
+    int e = callee(val, do_err);
+  $else
+    int e = caller$N+1(val, do_err);
   if(e) return e;
   *val = 0;
   return 0;
@@ -157,12 +181,14 @@ int callee(int *val, bool do_err) {
   *val = 0;
   return 0;
 }
-int caller\[N](int *val, bool do_err) {
+int caller$N(int *val, bool do_err) {
   /* 31 - K\[N] NOPs */
-  Dtor\[N] d;
+  Dtor$N d;
   int out_val = 0;
-  /* NEXT_FUNC is callee when N == 7, or caller[N+1] otherwise */
-  int e = NEXT_FUNC(&out_val, do_err);
+  $if N == 7
+    int e = callee(&out_val, do_err);
+  $else
+    int e = caller$N+1(&out_val, do_err);
   if(e) return e;
   *val = out_val + 1;
   return 0;
@@ -188,7 +214,7 @@ Write to a global {#sad_write_to_a_global}
 <script type="text/javascript">
 echarts.
   init(document.getElementById('bar_reduced_sad_sad_div')).
-  setOption(bar_reduced_sad_sad);
+  setOption(Object.assign({dataZoom: [{show: true}]},bar_reduced_sad_sad));
 </script>
 
 Write through an argument {#sad_write_through_an_argument}
@@ -198,7 +224,7 @@ Write through an argument {#sad_write_through_an_argument}
 <script type="text/javascript">
 echarts.
   init(document.getElementById('bar_reduced_sad_sad_param_div')).
-  setOption(bar_reduced_sad_sad_param);
+  setOption(Object.assign({dataZoom: [{show: true}]},bar_reduced_sad_sad_param));
 </script>
 
 "Return" a value {#sad_return_a_value}
@@ -208,7 +234,7 @@ echarts.
 <script type="text/javascript">
 echarts.
   init(document.getElementById('bar_reduced_sad_sad_ret_div')).
-  setOption(bar_reduced_sad_sad_ret);
+  setOption(Object.assign({dataZoom: [{show: true}]},bar_reduced_sad_sad_ret));
 </script>
 
 Off-line analysis {#offline_analysis}
@@ -274,7 +300,7 @@ With MSVC x64, we get almost identical codegen between code with exceptions and 
     <td>Clang 9.0 x64</td>
 
     <td>1397 cycles over 100 iterations.<br/>
-Counts on Intel Ivy Bridge microarchitecture
+Counts on Intel Ivy Bridge micro-architecture
 <code><pre>pushq %rbx
 subq $16, %rsp
 callq callee()
@@ -286,7 +312,7 @@ popq %rbx
 retq</pre></code></td>
 
     <td>1199 cycles over 100 iterations.<br/>
-Counts on Intel Ivy Bridge microarchitecture
+Counts on Intel Ivy Bridge micro-architecture
 <code><pre>pushq %rax
 ; no subq here
 callq callee()
@@ -301,7 +327,7 @@ retq</pre></code></td>
   <tr>
     <td>GCC 8.2 x64</td>
     <td>1397 cycles over 100 iterations.<br/>
-Counts on Intel Ivy Bridge microarchitecture
+Counts on Intel Ivy Bridge micro-architecture
 <code><pre>pushq %rbx
 subq $16, %rsp
 call callee()
@@ -314,7 +340,7 @@ popq %rbx
 ret</pre></code></td>
 
     <td>752 cycles over 100 iterations.<br/>
-Counts on Intel Ivy Bridge microarchitecture
+Counts on Intel Ivy Bridge micro-architecture
 <code><pre>; no pushq
 subq $24, %rsp
 call callee()
@@ -483,6 +509,7 @@ Exceptions are reasonable error handling strategies in many environments, but th
 
 Acknowledgments {#ack}
 ======================
+Niall Douglas, Herb Sutter, Nathan Sidwell, Joshua Cannon, and Mike Petersen all provided valuable early feedback on this paper.
 
 Charts generated with [[ECharts]].
 
@@ -499,10 +526,30 @@ struct error_struct {
 ```
 A null error pointer indicates no error.
 * ref_struct: Pass an `error_struct` by reference, and check `error` after each call.
+
+```
+void callee(bool do_err, error_struct &e)
+```
 * return_struct: Like return_val, but with an `error_struct` instead.
+
+```
+error_struct callee(bool do_err)
+```
 * return_nt_struct: Like return_struct, but `error_struct` has a destructor of the form `~error_struct() {}`.  "nt" means "non-trivial".
+
+```
+error_struct /* with non-trivial destructor */ callee(bool do_err)
+```
 * expected_struct: This uses Sy Brand's [[Expected]] library with `error_struct` as the error type.  This should closely resemble the proposed `std::expected`.
-* outcome_std_error: This uses a branch of Niall Douglas's [[Outcome]] library.  This branch is specially optimized for GCC.
+
+```
+tl::expected<void, error_struct> callee(bool do_err)
+```
+* outcome_std_error: This uses a branch of Niall Douglas's [[Outcome]] library.  This branch is specially optimized for GCC on the happy path.
+
+```
+outcome::experimental::status_result<void> callee(bool do_err)
+```
 
 In the sad path graphs, exceptions are omitted so that the remaining values can be easily compared.
 
@@ -516,7 +563,7 @@ echarts.
   setOption(bar_happy);
 </script>
 
-Write through an argument (happy path)  {#big_happy_write_through_an_argument}
+Happy path: Write through an argument {#big_happy_write_through_an_argument}
 ---------------------------------------------
 <p align="center">Write to global: Median cycles per iteration.  A histogram can be found [here](#happy_write_through_an_argument_histogram)</p>
 <div id="bar_happy_param_div" style="width: 100%;height:300px;"></div>
@@ -526,7 +573,7 @@ echarts.
   setOption(bar_happy_param);
 </script>
 
-"Return" a value (happy path) {#big_happy_return_a_value}
+Happy path: "Return" a value {#big_happy_return_a_value}
 ----------------------------------------
 <p align="center">Write to global: Median cycles per iteration.  A histogram can be found [here](#happy_return_a_value_histogram)</p>
 <div id="bar_happy_ret_div" style="width: 100%;height:300px;"></div>
@@ -536,7 +583,7 @@ echarts.
   setOption(bar_happy_ret);
 </script>
 
-Write to a global (sad path) {#sad_happy_write_to_a_global}
+Sad path: Write to a global {#sad_happy_write_to_a_global}
 -----------------------
 <p align="center">Write to global: Median cycles per iteration.  A histogram can be found [here](#sad_write_to_a_global_histogram)</p>
 <div id="bar_noexcept_sad_sad_div" style="width: 100%;height:300px;"></div>
@@ -546,7 +593,7 @@ echarts.
   setOption(bar_noexcept_sad_sad);
 </script>
 
-Write through an argument (sad path)  {#big_sad_write_through_an_argument}
+Sad path: Write through an argument {#big_sad_write_through_an_argument}
 ---------------------------------------------
 <p align="center">Write to global: Median cycles per iteration.  A histogram can be found [here](#sad_write_through_an_argument_histogram)</p>
 <div id="bar_noexcept_sad_sad_param_div" style="width: 100%;height:300px;"></div>
@@ -556,7 +603,7 @@ echarts.
   setOption(bar_noexcept_sad_sad_param);
 </script>
 
-"Return" a value (sad path) {#big_sad_return_a_value}
+Sad path: "Return" a value {#big_sad_return_a_value}
 ----------------------------------------
 <p align="center">Write to global: Median cycles per iteration.  A histogram can be found [here](#sad_return_a_value_histogram)</p>
 <div id="bar_noexcept_sad_sad_ret_div" style="width: 100%;height:300px;"></div>
@@ -580,11 +627,9 @@ Compiler toolkit version: 14.22.27905
 
 cl.exe version: 19.22.27905
 
-Compiler codegen flags (no exceptions): /GR /Gy /Gw /O2 /MT /d2FH4 /std:c++latest /permissive- /DNDEBUG
+Compiler codegen flags (no exceptions): /GR- /Gy /Gw /O2 /MT /d2FH4 /std:c++latest /permissive- /DNDEBUG
 
-Compiler codegen flags (with exceptions): /EHs /GR /Gy /Gw /O2 /MT /d2FH4 /std:c++latest /permissive- /DNDEBUG
-
-Compiler codegen flags (outcome): /GR- /Gy /Gw /O2 /MT /d2FH4 /std:c++latest /permissive- /DNDEBUG
+Compiler codegen flags (with exceptions): /EHsc /GR /Gy /Gw /O2 /MT /d2FH4 /std:c++latest /permissive- /DNDEBUG
 
 Linker flags: /OPT:REF /release /subsystem:CONSOLE /incremental:no /OPT:ICF /NXCOMPAT /DYNAMICBASE *.obj
 
@@ -594,11 +639,9 @@ Toolchains used:
 * Clang 8.0.0 and libc++
 * System linker from Ubuntu 14.04.3's GCC 4.8.4 installation
 
-Compiler codegen flags (no exceptions): -fno-exceptions -O2 -mtune=ivybridge -ffunction-sections -fdata-sections -std=c++17 -stdlib=libc++ -static -DNDEBUG
+Compiler codegen flags (no exceptions): -fno-exceptions -fno-rtti -O2 -mtune=ivybridge -ffunction-sections -fdata-sections -std=c++17 -stdlib=libc++ -static -DNDEBUG
 
 Compiler codegen flags (exceptions): -O2 -mtune=ivybridge -ffunction-sections -fdata-sections -std=c++17 -stdlib=libc++ -static -DNDEBUG
-
-Compiler codegen flags (outcome): -fno-exceptions -fno-rtti -O2 -mtune=ivybridge -ffunction-sections -fdata-sections -std=c++17 -stdlib=libc++ -static -DNDEBUG
 
 Linking flags: -Wl,--gc-sections -pthread -static -static-libgcc -stdlib=libc++ *.o libc++abi.a
 
@@ -606,11 +649,9 @@ GCC x64 {#gcc_x64}
 ------------------
 Toolchain used: GCC 7.3.1 from the Red Hat Developer Toolset 7.1
 
-Compiler codegen flags (no exceptions): -fno-exceptions -O2 -mtune=ivybridge -ffunction-sections -fdata-sections -std=c++17 -static -DNDEBUG
+Compiler codegen flags (no exceptions): -fno-exceptions -fno-rtti -O2 -mtune=ivybridge -ffunction-sections -fdata-sections -std=c++17 -static -DNDEBUG
 
 Compiler codegen flags (exceptions): -O2 -mtune=ivybridge -ffunction-sections -fdata-sections -std=c++17 -static -DNDEBUG
-
-Compiler codegen flags (outcome): -fno-exceptions -fno-rtti -O2 -mtune=ivybridge -ffunction-sections -fdata-sections -std=c++17 -static -DNDEBUG
 
 Linking flags: -Wl,--gc-sections -pthread -static -static-libgcc -static-libstdc++ *.o
 
@@ -624,14 +665,14 @@ Common support code {#code_support}
 <summary>Expand to see code snippets</summary>
 **All cases**
 ```
-struct Dtor\[N] {
-  extern ~Dtor\[N]() {
-    /* Random number of NOPs K\[N] := [0,31] */
+struct Dtor$N {
+  extern ~Dtor$N() {
+    /* K\[N] NOPs */
   }
 };
 struct inline_nops {
   inline inline_nops() {
-    /* Random number of NOPs Z := [0,31] */
+    /* Z NOPs */
   }
   inline ~inline_nops() {
     /* 31 - Z NOPs */
@@ -646,7 +687,7 @@ int main() {
   startTimer();
   /* X NOPs */
   for (int i = 0; i < ITERATIONS; ++i) {
-    (void)caller\[0](false);
+    (void)caller0(false);
   }
   /* 31 - X NOPs */
   endTimer();
@@ -655,7 +696,7 @@ int main() {
   startTimer();
   /* Y NOPs */
   for (int i = 0; i < ITERATIONS; ++i) {
-    (void)caller\[0](true);
+    (void)caller0(true);
   }
   /* 31 - Y NOPs */
   endTimer();
@@ -676,7 +717,7 @@ int main() {
   startTimer();
   /* X NOPs */
   for (int i = 0; i < ITERATIONS; ++i) {
-    try { (void)caller\[0](false); } catch(...){}
+    try { (void)caller0(false); } catch(...){}
   }
   /* 31 - X NOPs */
   endTimer();
@@ -686,7 +727,7 @@ int main() {
   startTimer();
   /* Y NOPs */
   for (int i = 0; i < ITERATIONS; ++i) {
-    try { (void)caller\[0](true); } catch(...){}
+    try { (void)caller0(true); } catch(...){}
   }
   /* 31 - Y NOPs */
   endTimer();
@@ -712,11 +753,13 @@ int callee(bool do_err) {
     return 1;
   return 0;
 }
-int caller\[N](bool do_err) {
+int caller$N(bool do_err) {
   /* 31 - K\[N] NOPs */
-  Dtor\[N] d;
-  /* NEXT_FUNC is callee when N == 7, or caller[N+1] otherwise */
-  int e = NEXT_FUNC(do_err);
+  Dtor$N d;
+  $if N == 7
+    int e = callee(do_err);
+  $else
+    int e = caller$N+1(do_err);
   if(e) return e;
   global_int = 0;
   return 0;
@@ -725,11 +768,13 @@ int caller\[N](bool do_err) {
 
 **abort, throw_exception**
 ```
-void caller\[N](bool do_err) {
+void caller$N(bool do_err) {
   /* 31 - K\[N] NOPs */
-  Dtor\[N] d;
-  /* NEXT_FUNC is callee when N == 7, or caller[N+1] otherwise */
-  NEXT_FUNC(do_err);
+  Dtor$N d;
+  $if N == 7
+    callee(do_err);
+  $else
+    caller$N+1(do_err);
   global_int = 0;
 }
 ```
@@ -763,7 +808,7 @@ int main() {
   startTimer();
   /* X NOPs */
   for (int i = 0; i < ITERATIONS; ++i) {
-    (void)caller\[0](&val, false);
+    (void)caller0(&val, false);
   }
   /* 31 - X NOPs */
   endTimer();
@@ -773,7 +818,7 @@ int main() {
   startTimer();
   /* Y NOPs */
   for (int i = 0; i < ITERATIONS; ++i) {
-    (void)caller\[0](&val, true);
+    (void)caller0(&val, true);
   }
   /* 31 - Y NOPs */
   endTimer();
@@ -789,11 +834,13 @@ int callee(int *, bool do_err) {
     return 1;
   return 0;
 }
-int caller\[N](int *val, bool do_err) {
+int caller$N(int *val, bool do_err) {
   /* 31 - K\[N] NOPs */
-  Dtor\[N] d;
-  /* NEXT_FUNC is callee when N == 7, or caller[N+1] otherwise */
-  int e = NEXT_FUNC(val, do_err);
+  Dtor$N d;
+  $if N == 7
+    int e = callee(val, do_err);
+  $else
+    int e = caller$N+1(val, do_err);
   if(e) return e;
   *val = 0;
   return 0;
@@ -802,11 +849,13 @@ int caller\[N](int *val, bool do_err) {
 
 **abort, throw_exception**
 ```
-void caller\[N](int *val, bool do_err) {
+void caller$N(int *val, bool do_err) {
   /* 31 - K\[N] NOPs */
-  Dtor\[N] d;
-  /* NEXT_FUNC is callee when N == 7, or caller[N+1] otherwise */
-  NEXT_FUNC(val, do_err);
+  Dtor$N d;
+  $if N == 7
+    callee(val, do_err);
+  $else
+    caller$N+1(val, do_err);
   *val = 0;
 }
 ```
@@ -831,7 +880,7 @@ int main() {
   startTimer();
   /* X NOPs */
   for (int i = 0; i < ITERATIONS; ++i) {
-    try { (void)caller\[0](&val, false); } catch(...) {}
+    try { (void)caller0(&val, false); } catch(...) {}
   }
   /* 31 - X NOPs */
   endTimer();
@@ -841,7 +890,7 @@ int main() {
   startTimer();
   /* Y NOPs */
   for (int i = 0; i < ITERATIONS; ++i) {
-    try { (void)caller\[0](&val, true); } catch(...) {}
+    try { (void)caller0(&val, true); } catch(...) {}
   }
   /* 31 - Y NOPs */
   endTimer();
@@ -863,12 +912,14 @@ int callee(int *val, bool do_err) {
   *val = 0;
   return 0;
 }
-int caller\[N](int *val, bool do_err) {
+int caller$N(int *val, bool do_err) {
   /* 31 - K\[N] NOPs */
-  Dtor\[N] d;
+  Dtor$N d;
   int out_val = 0;
-  /* NEXT_FUNC is callee when N == 7, or caller[N+1] otherwise */
-  int e = NEXT_FUNC(&out_val, do_err);
+  $if N == 7
+    int e = callee(&out_val, do_err);
+  $else
+    int e = caller$N+1(&out_val, do_err);
   if(e) return e;
   *val = out_val + 1;
   return 0;
@@ -879,7 +930,7 @@ int main() {
   /* X NOPs */
   for (int i = 0; i < ITERATIONS; ++i) {
     int val=0;
-    (void)caller\[0](&val, false);
+    (void)caller0(&val, false);
   }
   /* 31 - X NOPs */
   endTimer();
@@ -890,7 +941,7 @@ int main() {
   /* Y NOPs */
   for (int i = 0; i < ITERATIONS; ++i) {
     int val=0;
-    (void)caller\[0](&val, true);
+    (void)caller0(&val, true);
   }
   /* 31 - Y NOPs */
   endTimer();
@@ -900,11 +951,13 @@ int main() {
 
 **abort, throw_exception**
 ```
-int caller\[N](bool do_err) {
+int caller$N(bool do_err) {
   /* 31 - K\[N] NOPs */
-  Dtor\[N] d;
-  /* NEXT_FUNC is callee when N == 7, or caller[N+1] otherwise */
-  return 1 + NEXT_FUNC(do_err);
+  Dtor$N d;
+  $if N == 7
+    return 1 + callee(do_err);
+  $else
+    return 1 + caller$N+1(do_err);
 }
 ```
 **abort**
@@ -1047,7 +1100,7 @@ echarts.
       "title": "llvm-mca - LLVM Machine Code Analyzer"
     },
     "ECharts": {
-      "href": "https://ecomfe.github.io/echarts-doc/public/en/index.html",
+      "href": "https://echarts.apache.org/en/index.html",
       "title": "ECharts"
     },
     "Outcome": {
