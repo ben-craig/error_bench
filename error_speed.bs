@@ -30,7 +30,7 @@ Tests were compiled to optimize for speed.  Link-time optimizations (LTO) / whol
 
 For all but the exception failure cases, 16K warm-up iterations were run before starting timing.  Within the timer bounds, 512K iterations of the test case were run.  The exception failure cases only had 256 warm-up iterations and 16K timed iterations, due to how slow throwing an exception can be.
 
-These tests are all testing code that is "hot".  The branch predictors should all be primed, and everything should be in cache.  Cold code benchmarks would likely show different results.
+These tests are all testing code that is "hot".  Before the tests are timed, the scenario under test is run many iterations to "warm up" the code.  This should ensure that the code is all in cache, and leave the branch predictors in the ideal state.  Cold code benchmarks would likely show different results.
 
 All tests were run on the same machine.  The processor was an Intel Core i7-3770 running at 3.3915 GHz.  The Core i7-3770 has an Ivy Bridge micro-architecture, and was released in April 2012.  C states, HyperThreading, Intel TurboBoost and Intel SpeedStep were all disabled in order to improve benchmark reproducibility.  MSVC benchmarks were run on the 64-bit version of Windows 10 Enterprise (10.0.17134.1006).  Clang and GCC benchmarks were run on Linux slax 4.9.0-9-amd64 #1 SMP Debian 4.9.168-1 (2019-04-12) x86_64 GNU/Linux.
 
@@ -40,7 +40,7 @@ This paper takes three abstract programs, translates them into several different
 
 The author doesn't have the time, resources, or expertise for that.  The author (arguably) has the time, resources, and expertise to benchmark more than just one abstract program.
 
-These programs perform virtually no "real" work.  In many production scenarios, the costs of error handling will be hidden through out-of-order execution in combination with expensive operations like I/O, synchronization, memory operations, and "large" math operations.  In a production environment, it is possible that the error handling overhead differences only manifest as a slight increase in power consumption.
+These programs perform virtually no "real" work.  In many production scenarios, the costs of error handling will be hidden through out-of-order execution in combination with expensive operations like I/O, synchronization, memory operations, and "large" math operations.  In a production environment, it is possible that the error handling overhead differences only manifest in subtle, hard to observe ways.
 
 These programs are crafted in such a way as to make it possible to measure error overhead.  To use an analogy, it is difficult to measure the weight of a flea.  It is even more difficult to measure the weight of a flea on an elephant by subtracting out the weight of the elephant.  If these programs did real work, then the noise introduced by the real work would likely swamp out the differences that this paper seeks to measure.
 
@@ -513,11 +513,11 @@ The MSVC x64 /d2FH4 implementation does not place any exception handling code ne
 
 Conclusion {#conclusion}
 ========================
-Exceptions are reasonable error handling strategies in many environments, but they don't serve all needs in all use cases.  C++ needs good performance, deterministic, standards conforming ways to signal failures in constructors and operator overloads.  Currently, exceptions do well on the happy path, but there is no good answer for the sad path.  C++ is built on the foundation that you don't pay for what you don't use, and that you can't write the language abstractions better by hand.  This paper provides evidence that you can write error handling code by hand that results in faster code on the sad path than the equivalent exception throwing code.  In each of the sad path test cases, return values beat exceptions by more than a factor of 100.
+Exceptions are reasonable error handling strategies in many environments, but they don't serve all needs in all use cases.  C++ needs high-performance, deterministic, standards-conforming ways to signal failures in constructors and operator overloads.  Currently, exceptions do well on the happy path, but there is no good answer for the sad path.  C++ is built on the foundation that you don't pay for what you don't use, and that you can't write the language abstractions better by hand.  This paper provides evidence that you can write error handling code by hand that results in faster code on the sad path than the equivalent exception throwing code.  In each of the sad path test cases, return values beat exceptions by more than a factor of 100.
 
 Acknowledgments {#ack}
 ======================
-Niall Douglas, Herb Sutter, Nathan Sidwell, Joshua Cannon, and Mike Petersen all provided valuable early feedback on this paper.
+Niall Douglas, Herb Sutter, Nathan Sidwell, Joshua Cannon, Mike Petersen, Brad Keryan, and Ben Saks all provided valuable early feedback on this paper.
 
 Charts generated with [[ECharts]].
 
