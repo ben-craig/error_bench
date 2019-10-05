@@ -1,9 +1,9 @@
 <pre class='metadata'>
 Title: Error speed benchmarking
-Shortname: D1886
-Revision: 0.2
+Shortname: P1886
+Revision: 0
 Audience: WG21; DG
-Status: D
+Status: P
 Group: WG21
 URL: https://wg21.link/P1886R0
 !Source: <a href="https://github.com/ben-craig/error_bench/blob/master/error_speed.bs">github</a>
