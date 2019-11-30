@@ -4,25 +4,26 @@ GAUSS_CASES = 1023
 FRAME_COUNT = 7
 
 TERM_TYPES = [
-    {:dir => "terminate_________", :cc_flags => "/GR-"},
+##    {:dir => "terminate_________", :cc_flags => "/GR-"},
 #    #{:dir => "noexcept_terminate", :cc_flags => "/GR /EHs"},
 ]
 ERROR_TYPES = [
+    {:dir => "alt_return________", :cc_flags => "/GR- /GS-"},
 #    {:dir => "throw_val_________", :cc_flags => "/GR /EHsc"},
 #    {:dir => "throw_struct______", :cc_flags => "/GR /EHsc"},
-    {:dir => "throw_exception___", :cc_flags => "/GR /EHsc"},
+##    {:dir => "throw_exception___", :cc_flags => "/GR /EHsc"},
 #    {:dir => "tls_error_val_____", :cc_flags => "/GR-"},
 #    {:dir => "tls_error_struct__", :cc_flags => "/GR-"},
-    {:dir => "return_val________", :cc_flags => "/GR-"},
-    {:dir => "return_struct_____", :cc_flags => "/GR-"},
-    {:dir => "return_nt_struct__", :cc_flags => "/GR-"},
-    {:dir => "ref_struct________", :cc_flags => "/GR-"},
+##    {:dir => "return_val________", :cc_flags => "/GR-"},
+##    {:dir => "return_struct_____", :cc_flags => "/GR-"},
+##    {:dir => "return_nt_struct__", :cc_flags => "/GR-"},
+##    {:dir => "ref_struct________", :cc_flags => "/GR-"},
 #    {:dir => "ref_val___________", :cc_flags => "/GR-"},
-    {:dir => "expected_struct___", :cc_flags => "/GR-"},
+##    {:dir => "expected_struct___", :cc_flags => "/GR-"},
 #    {:dir => "expected_val______", :cc_flags => "/GR-"},
 #    {:dir => "outcome_struct____", :cc_flags => "/GR-"},
 #    {:dir => "outcome_val_______", :cc_flags => "/GR-"},
-    {:dir => "outcome_std_error_", :cc_flags => "/GR- /WX-"},
+##    {:dir => "outcome_std_error_", :cc_flags => "/GR- /WX-"},
 ]
 FULL_CASE_NAMES =   ["one_neutral", "two_neutral", "one_error__", "two_error__"]
 NO_TERM_CASE_NAME = ["one_catch__", "two_catch__"]
@@ -66,7 +67,8 @@ def each_case
 end
 
 def each_gauss_bench
-    ["x86", "x64"].each do |proc|
+    #["x86", "x64"].each do |proc|
+    ["c64"].each do |proc|
         GAUSS_BENCH_CASE_NAMES .each do |c|
             (TERM_TYPES + ERROR_TYPES).each do |t|
                 yield TestCase.new(c, t, proc)

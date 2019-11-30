@@ -21,6 +21,7 @@ PIX_HEIGHT=20
 PLAT_ORDER = [
   "gcc",
   "clang",
+  "MSVC_c64",
   "MSVC_x64",
   "MSVC_x86",
 ]
@@ -33,6 +34,7 @@ CASE_ORDER = [
   "terminate",
   "noexcept_abort",
   "abort",
+  "alt_return",
   "return_val",
   "ref_struct",
   "return_nt_struct",
@@ -307,10 +309,10 @@ def emit_all_bars(fout, df):
   emit_bar_formatters(fout, df)
 
   happy_df = df[(df.mood == "happy") | (df.mood == "happy_param") | (df.mood == "happy_ret")]
-  reduced_happy_df = happy_df[(happy_df.case == "throw_exception") | (happy_df.case == "abort") | (happy_df.case == "return_val")]
+  reduced_happy_df = happy_df[(happy_df.case == "alt_return") | (happy_df.case == "throw_exception") | (happy_df.case == "abort") | (happy_df.case == "return_val")]
 
   sad_df = df[(df.mood == "sad") | (df.mood == "sad_param") | (df.mood == "sad_ret")]
-  reduced_sad_df = sad_df[(sad_df.case == "throw_exception") | (sad_df.case == "return_val")]
+  reduced_sad_df = sad_df[(sad_df.case == "alt_return") | (sad_df.case == "throw_exception") | (sad_df.case == "return_val")]
   noexcept_sad_df = sad_df[~(sad_df.case == "throw_exception")]
 
   emit_bars(fout, "", happy_df)

@@ -6,6 +6,7 @@ ninja_required_version = 1.7
 MY_VC_DIR=C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.22.27905
 x64_MY_VC_BIN_DIR=$MY_VC_DIR\bin\Hostx64\x64
 x86_MY_VC_BIN_DIR=$MY_VC_DIR\bin\Hostx86\x86
+c64_MY_VC_BIN_DIR=$MY_VC_DIR\bin\Hostx64\x64
 #MY_DDK_VER=10.0.17763.0
 MY_DDK_VER=10.0.18362.0
 MY_DDK_INCLUDE=C:\Program Files (x86)\Windows Kits\10\Include\$MY_DDK_VER
@@ -15,6 +16,8 @@ x64_CC="$x64_MY_VC_BIN_DIR\cl.exe"
 x64_LINK_PROG="$x64_MY_VC_BIN_DIR\link.exe"
 x86_CC="$x86_MY_VC_BIN_DIR\cl.exe"
 x86_LINK_PROG="$x86_MY_VC_BIN_DIR\link.exe"
+c64_CC=E:\bin\LLVM_9\bin\clang-cl.exe
+c64_LINK_PROG="$x64_MY_VC_BIN_DIR\link.exe"
 DUMPBIN_PROG="$x64_MY_VC_BIN_DIR\dumpbin.exe"
 NOP_COUNTS = /DNOP_COUNT_1=0 /DNOP_COUNT_2=0
 
@@ -50,7 +53,6 @@ bench_CCFLAGS= $
 /Gw $
 /O2 $
 /MT $
-/d2FH4 $
 /wd4530 $
 /std:c++latest $
 /permissive- $
@@ -62,6 +64,7 @@ bench_CCFLAGS= $
 /I"$MY_DDK_INCLUDE\shared" $
 /I"$MY_VC_DIR\include"
 
+#/d2FH4 $
 
 allproc_LINK_FLAGS= $
 /nologo $
@@ -87,6 +90,8 @@ x64_LINK_FLAGS= $
 /LIBPATH:"$MY_VC_DIR\lib\x64" $
 $allproc_LINK_FLAGS $
 
+c64_LINK_FLAGS=$x64_LINK_FLAGS
+
 rule x64_compile
     command = $x64_CC $CCFLAGS $EXTRA_FLAGS /Fo$out $in
     description = x64_CXX $out
@@ -104,6 +109,24 @@ rule x64_bench_link
 rule x64_map_link
     command = $x64_LINK_PROG $x64_LINK_FLAGS /MAP:$out.map /OUT:$out $in
     description = x64_MAP_LINK $out
+
+rule c64_compile
+    command = $c64_CC $CCFLAGS $EXTRA_FLAGS /Fo$out $in
+    description = c64_CXX $out
+    deps = msvc
+
+rule c64_bench_compile
+    command = $c64_CC $bench_CCFLAGS $EXTRA_FLAGS $NOP_COUNTS /Fo$out $in
+    description = c64_CXX $out
+    deps = msvc
+
+rule c64_bench_link
+    command = $c64_LINK_PROG $c64_LINK_FLAGS $EXTRA_FLAGS /OUT:$out $in
+    description = c64_LINK $out
+
+rule c64_map_link
+    command = $c64_LINK_PROG $c64_LINK_FLAGS /MAP:$out.map /OUT:$out $in
+    description = c64_MAP_LINK $out
 
 rule x86_compile
     command = $x86_CC $CCFLAGS $EXTRA_FLAGS /Fo$out $in
